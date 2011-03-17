@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<window type="window" id="14001">
+	<defaultcontrol always="true">160</defaultcontrol>
+	<allowoverlay>no</allowoverlay>
+	<onload lang="python"><![CDATA[
+print "FACEBOOK MEDIA - AUTH WINDOW LOADED"
+session.addUser()
+]]></onload>
+	<controls>
+		<control type="image">
+			<posx>0</posx>
+			<posy>0</posy>
+			<width>1280</width>
+			<height>720</height>
+			<colordiffuse>80FFFFFF</colordiffuse>
+			<texture>facebook-media-adduser-background.png</texture>
+		</control>
+		<control type="image">
+			<posx>63</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF888888</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_1),)]</visible>
+		</control>
+		<control type="image">
+			<posx>63</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF9A9F1F</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_1),pending)]</visible>
+		</control>
+		<control type="image">
+			<posx>63</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF1F9F31</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_1),complete)]</visible>
+		</control>
+		<control type="label">
+			<posx>93</posx>
+			<posy>154</posy>
+			<width>207</width>
+			<height>319</height>
+			<font>title20b</font>
+			<align>center</align>
+			<aligny>center</aligny>
+			<textcolor>white</textcolor>
+			<wrapmultiline>true</wrapmultiline>
+			<label>Authorize Via Boxee Browser</label>
+		</control>
+		<control type="image">
+			<posx>359</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF888888</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_2),)]</visible>
+		</control>
+		<control type="image">
+			<posx>359</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF9A9F1F</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_2),pending)]</visible>
+		</control>
+		<control type="image">
+			<posx>359</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF1F9F31</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_2),complete)]</visible>
+		</control>
+		<control type="label">
+			<posx>389</posx>
+			<posy>154</posy>
+			<width>207</width>
+			<height>319</height>
+			<font>title20b</font>
+			<align>center</align>
+			<aligny>center</aligny>
+			<textcolor>white</textcolor>
+			<wrapmultiline>true</wrapmultiline>
+			<label>Get Authorization Data</label>
+		</control>
+		<control type="image">
+			<posx>655</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF888888</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_3),)]</visible>
+		</control>
+		<control type="image">
+			<posx>655</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF9A9F1F</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_3),pending)]</visible>
+		</control>
+		<control type="image">
+			<posx>655</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF1F9F31</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_3),complete)]</visible>
+		</control>
+		<control type="label">
+			<posx>685</posx>
+			<posy>154</posy>
+			<width>207</width>
+			<height>319</height>
+			<font>title20b</font>
+			<align>center</align>
+			<aligny>center</aligny>
+			<textcolor>white</textcolor>
+			<wrapmultiline>true</wrapmultiline>
+			<label>Get User Data</label>
+		</control>
+		<control type="image">
+			<posx>951</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF888888</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_4),)]</visible>
+		</control>
+		<control type="image">
+			<posx>951</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF9A9F1F</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_4),pending)]</visible>
+		</control>
+		<control type="image">
+			<posx>951</posx>
+			<posy>124</posy>
+			<width>267</width>
+			<height>379</height>
+			<colordiffuse>FF1F9F31</colordiffuse>
+			<texture>facebook-media-adduser-stepbackground.png</texture>
+			<visible>$INFO[StringCompare(App.String(auth_step_4),complete)]</visible>
+		</control>
+		<control type="label">
+			<posx>981</posx>
+			<posy>154</posy>
+			<width>207</width>
+			<height>319</height>
+			<font>title20b</font>
+			<align>center</align>
+			<aligny>center</aligny>
+			<textcolor>white</textcolor>
+			<wrapmultiline>true</wrapmultiline>
+			<label>Get User Profile Image</label>
+		</control>
+	</controls>
+</window>
