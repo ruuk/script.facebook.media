@@ -350,7 +350,7 @@ session.mediaPrev()
 			<width>65</width>
 			<height>51</height>
 			<aspectratio>keep</aspectratio>
-			<info>App.String(current_user_pic)</info>
+			<texture fallback="facebook-media-icon-generic-user.png">$INFO[App.String(current_user_pic)]</texture>
 		</control>
 		<control type="image">
 			<description>Current User Back</description>

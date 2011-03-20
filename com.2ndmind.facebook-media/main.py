@@ -29,7 +29,8 @@ class FacebookUser:
 class FacebookSession:
 	def __init__(self):
 		self.lastItemNumber = 0
-		self.CACHE_PATH = mc.GetTempDir()
+		self.CACHE_PATH = os.path.join(mc.GetTempDir(),'facebook-media')
+		if not os.path.exists(self.CACHE_PATH): os.makedirs(self.CACHE_PATH)
 		self.newUserCache = None
 		self.currentUser = None
 		self.setFriend()
@@ -41,6 +42,7 @@ class FacebookSession:
 		
 	def start(self):
 		user = self.getCurrentUser()
+		
 		if not user:
 			self.openAddUserWindow()
 			return
@@ -50,8 +52,9 @@ class FacebookSession:
 									user.id,
 									user.token,
 									self.newTokenCallback )
+		
 		print user.username
-		print user.email
+		#print user.email
 		
 		self.CATEGORIES()
 		
@@ -80,8 +83,8 @@ class FacebookSession:
 			return
 		else:
 			uid = uids[idx]
+			self.getProfilePic(uid)
 			self.setCurrentUser(uid)
-		
 		
 	def openAddUserWindow(self):
 		params = mc.Parameters()
@@ -341,10 +344,8 @@ class FacebookSession:
 		out = ''
 		for k in self.imageURLCache:
 			out += '%s=%s\n' % (k,self.imageURLCache[k])
-		
-		cache_file_path = os.path.join(self.CACHE_PATH,'facebook-media')
-		if not os.path.exists(cache_file_path): os.makedirs(cache_file_path)
-		cache_file = os.path.join(cache_file_path,'imagecache')
+				
+		cache_file = os.path.join(self.CACHE_PATH,'imagecache')
 
 		f = open(cache_file,"w")
 		f.write(out)
@@ -490,6 +491,7 @@ class FacebookSession:
 	def getFile(self,url,target_file):
 		try:
 			request = urllib2.urlopen(url)
+			target_file = self.fixExtension(request.info().get('content-type',''),target_file)
 		except:
 			print 'ERROR: urlopen() in getFile()'
 			return ''
@@ -497,6 +499,14 @@ class FacebookSession:
 		f.write(request.read())
 		f.close()
 		return target_file
+	
+	def fixExtension(self,content_type,fn):
+		if not 'image' in content_type: return
+		ext = content_type.split('/',1)[-1]
+		if not ext in 'jpeg,png,gif,bmp': return
+		if ext == 'jpeg': ext = 'jpg'
+		fn = os.path.splitext(fn)[0] + '.' + ext
+		return fn
 	
 	def addUser(self,email=None,password=None):
 		if self.newUserCache:
@@ -536,7 +546,7 @@ class FacebookSession:
 		self.setSetting('token_%s' % uid,graph.access_token)
 		#if self.token: self.setSetting('token_%s' % uid,self.token)
 		self.setSetting('auth_step_4','pending')
-		self.getProfilePic(uid)
+		self.getProfilePic(uid,force=True)
 		self.setSetting('auth_step_4','complete')
 		mc.ShowDialogOk("User Added",ENCODE(username))
 		mc.CloseWindow()
@@ -584,18 +594,23 @@ class FacebookSession:
 		if not uid: return None
 		self.currentUser = FacebookUser(uid)
 		self.setSetting('current_user_name', self.currentUser.username)
-		self.setSetting('current_user_pic', self.currentUser.pic)
+		self.setSetting('current_user_pic',self.getProfilePic(self.currentUser.id))
 		return self.currentUser
 	
-	def getProfilePic(self,uid):
+	def getProfilePic(self,uid,force=False):
 		url = "https://graph.facebook.com/%s/picture?type=large" % uid
 		fbase = binascii.hexlify(uid.encode('utf-8'))
 		fn = os.path.join(self.CACHE_PATH,fbase + '.jpg')
+		if not force:
+			current_pic = self.getSetting('profile_pic_%s' % uid)
+			if current_pic and os.path.exists(current_pic): return current_pic
 		try:
 			fn = self.getFile(url,fn)
 			self.setSetting('profile_pic_%s' % uid,fn)
+			return fn
 		except:
 			print 'FACEBOOK MEDIA - ERROR GETTING PROFILE PIC AT: ' % url
+			return ''
 			
 	def setSetting(self,key,value):
 		mc.GetApp().GetLocalConfig().SetValue(str(key),str(value))
@@ -654,6 +669,9 @@ def doKeyboard(prompt,default='',hidden=False):
 
 params = mc.Parameters()
 params['none'] = 'NONE'
+
+mc.GetApp().GetLocalConfig().SetValue('current_user_pic','facebook-media-icon-generic-user.png')
+
 mc.GetApp().ActivateWindow(14000,params)
 
 session = FacebookSession()
