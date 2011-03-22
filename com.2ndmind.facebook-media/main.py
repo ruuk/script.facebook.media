@@ -98,6 +98,7 @@ class FacebookSession:
 	def CATEGORIES(self,uid='me',name=''):
 		print "FACEBOOK MEDIA CATEGORIES - STARTED"
 		window = mc.GetWindow(14000)
+		if not uid == 'me': window.PushState()
 		
 		items = mc.ListItems()
 		cids = ('albums','videos','friends','photosofme','videosofme','changeuser')
@@ -112,16 +113,14 @@ class FacebookSession:
 			#item.SetContentType("")
 			item.SetLabel(cat)
 			#item.SetDescription(desc)
-			item.SetPath(cid)
+			item.SetProperty('category',cid)
 			item.SetProperty('uid',uid)
 			item.SetThumbnail('facebook-media-icon-%s.png' % cid)
 			item.SetProperty('background','')
 			items.append(item)
 		
 		mc.HideDialogWait()
-		if uid != 'me':
-			window.PushState()
-			mc.GetWindow(14000).GetControl(180).SetVisible(True)
+		
 		window.GetList(120).SetItems(items)
 		window.GetControl(120).SetFocus()
 		print "FACEBOOK MEDIA CATEGORIES - STOPPED"
@@ -129,6 +128,7 @@ class FacebookSession:
 	def ALBUMS(self,uid='me',name=''):
 		print "FACEBOOK MEDIA ALBUMS - STARTED"
 		window = mc.GetWindow(14000)
+		window.PushState()
 		
 		self.startProgress('GETTING ALBUMS...')
 			
@@ -162,14 +162,14 @@ class FacebookSession:
 				item.SetImage(0,ENCODE(tn_url))
 				#item.SetProperty('background',str(tn_url))
 				item.SetProperty('album',ENCODE(aid))
-				item.SetPath('photos')
+				item.SetProperty('uid',ENCODE(uid))
+				item.SetProperty('category','photos')
 				items.append(item)
 			self.saveImageURLCache()
 		finally:
 			self.endProgress()
 			window.GetControl(120).SetFocus()
 	
-		window.PushState()
 		if items: window.GetList(120).SetItems(items)
 		window.GetControl(120).SetFocus()
 		
@@ -186,6 +186,7 @@ class FacebookSession:
 	def FRIENDS(self,uid='me'):
 		print "FACEBOOK MEDIA FRIENDS - STARTED"
 		window = mc.GetWindow(14000)
+		window.PushState()
 		
 		self.startProgress('GETTING FRIENDS...')
 		
@@ -203,19 +204,19 @@ class FacebookSession:
 			total = len(srt)
 			ct=0
 			for s in srt:
-				uid = show[s].get('id','')
-				#fbase = binascii.hexlify(uid.encode('utf-8'))
+				fid = show[s].get('id','')
+				#fbase = binascii.hexlify(fid.encode('utf-8'))
 				#fn = os.path.join(self.CACHE_PATH,fbase + '.jpg') #still works even if image is not jpg - doesn't work without the extension
 				ct+=1
 				self.updateProgress(ct, total, 'FRIEND %s of %s' % (ct,total))
 				
-				if uid in self.imageURLCache:
-					tn_url = self.imageURLCache[uid]
+				if fid in self.imageURLCache:
+					tn_url = self.imageURLCache[fid]
 				else:
-					tn = "https://graph.facebook.com/"+uid+"/picture?type=large&access_token=" + self.graph.access_token
+					tn = "https://graph.facebook.com/"+fid+"/picture?type=large&access_token=" + self.graph.access_token
 					req = urllib2.urlopen(tn)
 					tn_url = req.geturl()
-					self.imageURLCache[uid] = tn_url
+					self.imageURLCache[fid] = tn_url
 				#print fn
 #				if not os.path.exists(fn):
 #					#if self.get_friends_photos:
@@ -232,18 +233,18 @@ class FacebookSession:
 				item.SetLabel(ENCODE(name))
 				item.SetThumbnail(ENCODE(tn_url))
 				item.SetProperty('uid',ENCODE(uid))
-				item.SetPath('friend')
+				item.SetProperty('fid',ENCODE(fid))
+				item.SetProperty('category','friend')
 				items.append(item)
 				
 			self.saveImageURLCache()
 		finally:
 			self.endProgress()
 			
-		window.PushState()
 		if items: window.GetList(120).SetItems(items)
 		window.GetControl(120).SetFocus()
 			
-	def PHOTOS(self,aid,isPaging=False):
+	def PHOTOS(self,aid,uid='me',isPaging=False):
 		print "FACEBOOK MEDIA PHOTOS - STARTED: %s" % aid 
 		window = mc.GetWindow(14000)
 		if not isPaging: window.PushState()
@@ -269,8 +270,11 @@ class FacebookSession:
 				source = ENCODE(p.get('source',''))
 				caption = ENCODE(urllib.unquote(p.get('name','')))
 				item.SetPath(source)
+				item.SetProperty('category','photovideo')
+				item.SetLabel('')
 				item.SetImage(0,source)
 				item.SetThumbnail(ENCODE(tn))
+				item.SetProperty('uid',ENCODE(uid))
 				item.SetProperty('next',ENCODE(next))
 				item.SetProperty('prev',ENCODE(prev))
 				item.SetProperty('caption',caption)
@@ -279,12 +283,9 @@ class FacebookSession:
 				self.updateProgress(ct,tot,message='Loading photo %s of %s' % (ct,tot))
 
 			self.endProgress()
-			window.GetList(121).SetItems(items)
+			window.GetList(120).SetItems(items)
 		finally:
 			self.endProgress()
-			window.GetControl(121).SetVisible(True)
-			window.GetControl(121).SetEnabled(True)
-			window.GetControl(121).SetFocus()
 		
 		print "FACEBOOK MEDIA PHOTOS - STOPPED"
 	
@@ -312,6 +313,8 @@ class FacebookSession:
 				caption = ENCODE(urllib.unquote(v.get('name','')))
 				item.SetLabel(ENCODE(self.removeCRLF(v.get('name',v.get('id','None')))))
 				item.SetPath(ENCODE(v.get('source','')))
+				item.SetProperty('uid',ENCODE(uid))
+				item.SetProperty('category','photovideo')
 				item.SetThumbnail(ENCODE(tn))
 				item.SetImage(0,ENCODE(tn))
 				item.SetProperty('next',ENCODE(next))
@@ -320,13 +323,9 @@ class FacebookSession:
 				items.append(item)
 				ct+=1
 				self.updateProgress(ct, total, 'Loading video %s of %s' % (ct,total))
-			window.GetList(121).SetItems(items)
+			window.GetList(120).SetItems(items)
 		finally:
 			self.endProgress()
-			window.GetControl(121).SetVisible(True)
-			window.GetControl(121).SetEnabled(True)
-			window.GetControl(121).SetFocus()
-		
 		
 	def getPaging(self,obj):
 		paging = obj.get('paging')
@@ -365,7 +364,7 @@ class FacebookSession:
 		
 	def mediaNextPrev(self,np):
 		print "FACEBOOK MEDIA PHOTOS - %s" % np.upper()
-		item = mc.GetActiveWindow().GetList(121).GetItem(0)
+		item = mc.GetActiveWindow().GetList(120).GetItem(0)
 		url = item.GetProperty(np)
 		print "%s URL: %s" % (np.upper(),url)
 		if url:
@@ -374,10 +373,10 @@ class FacebookSession:
 			else:
 				self.VIDEOS(url, isPaging=True)
 			if np == 'prev':
-				list = mc.GetWindow(14000).GetList(121)
+				list = mc.GetWindow(14000).GetList(120)
 				idx = len(list.GetItems()) - 1
 				if idx < 0: idx = 0
-				mc.GetWindow(14000).GetList(121).SetFocusedItem(idx)
+				mc.GetWindow(14000).GetList(120).SetFocusedItem(idx)
 		
 	def mediaNext(self):
 		self.mediaNextPrev('next')
@@ -386,24 +385,23 @@ class FacebookSession:
 		self.mediaNextPrev('prev')
 
 	def menuItemSelected(self):
-		itemNumber = mc.GetActiveWindow().GetList(120).GetFocusedItem()
-		item = mc.GetActiveWindow().GetList(120).GetItem(itemNumber)
+		item = self.getFocusedItem(120)
 		
-		cat = item.GetPath()
+		cat = item.GetProperty('category')
 		uid = item.GetProperty('uid') or 'me'
 		
 		if cat == 'friend':
 			name = item.GetLabel()
 			self.setFriend(name)
-			self.CATEGORIES(uid,name)
+			self.CATEGORIES(item.GetProperty('fid'),name)
 			return
 		else:
 			if uid == 'me': self.setFriend()
 			
 		if cat == 'albums':
-			self.ALBUMS(uid=uid)
+			self.ALBUMS(uid)
 		elif cat == 'photos':
-			self.PHOTOS(item.GetProperty('album'))
+			self.PHOTOS(item.GetProperty('album'),uid=uid)
 		elif cat == 'friends':
 			self.FRIENDS(uid)
 		elif cat == 'videos':
@@ -414,33 +412,28 @@ class FacebookSession:
 			self.VIDEOS(uid)
 		elif cat == 'changeuser':
 			self.changeAddUser()
+		elif cat == 'photovideo':
+			self.showMedia(item)
 	
 	def setFriend(self,name=''):
 		self.setSetting('current_friend_name',name)
 		
 	def startProgress(self,message):
 		mc.ShowDialogWait()
+		mc.GetWindow(14000).GetLabel(152).SetLabel(message)
 		self.updateProgress(0,1)
-		window = mc.GetWindow(14000)
-		window.GetImage(150).SetVisible(True)
-		window.GetControl(160).SetEnabled(True)
-		#window.GetControl(160).SetFocus()
-		window.GetLabel(152).SetLabel(message)
 		
 	def updateProgress(self,ct,total,message=''):
 		if ct < 0 or ct > total:
 			print 'FACBOOK MEDIA - PROGRESS OUT OF BOUNDS'
 			return
-		pct = int((ct / float(total)) * 10) * 10
+		pct = int((ct / float(total)) * 20) * 5
 		window = mc.GetWindow(14000)
-		window.GetImage(151).SetTexture('facebook-media-progress-bar-%s.png' % pct)
+		self.setSetting('progress',str(pct))
 		window.GetLabel(152).SetLabel(message)
 	
 	def endProgress(self):
-		window = mc.GetWindow(14000)
-		window.GetImage(150).SetVisible(False)
-		window.GetControl(160).SetEnabled(False)
-		window.GetControl(160).SetVisible(False)
+		self.setSetting('progress','')
 		mc.HideDialogWait()
 	
 	def showImages(self,items,number=0):
@@ -670,7 +663,10 @@ def doKeyboard(prompt,default='',hidden=False):
 params = mc.Parameters()
 params['none'] = 'NONE'
 
-mc.GetApp().GetLocalConfig().SetValue('current_user_pic','facebook-media-icon-generic-user.png')
+config = mc.GetApp().GetLocalConfig()
+config.SetValue('current_user_pic','facebook-media-icon-generic-user.png')
+config.SetValue('current_friend_name','')
+config.SetValue('progress','')
 
 mc.GetApp().ActivateWindow(14000,params)
 
