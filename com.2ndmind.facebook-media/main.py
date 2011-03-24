@@ -750,6 +750,3 @@ config.SetValue('last_item','')
 
 CLOSEREADY = False
 mc.GetApp().ActivateWindow(14000,params)
-mc.GetApp().ActivateWindow(14001,params)
-
-session = FacebookSession()

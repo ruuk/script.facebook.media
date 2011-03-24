@@ -4,14 +4,16 @@
 	<allowoverlay>no</allowoverlay>
 	<onload lang="python"><![CDATA[
 print "LOAD"
-
-try:
-	mc.GetActiveWindow().ClearStateStack()
-	session.restoreState(session.current_state)
-	print "STATE RESTORED"
-except:
-	import traceback
-	traceback.print_exc()
+if CLOSEREADY:
+	try:
+		mc.GetActiveWindow().ClearStateStack()
+		session.restoreState(session.current_state)
+		print "STATE RESTORED"
+	except:
+		import traceback
+		traceback.print_exc()
+else:
+		session = FacebookSession()
 ]]></onload>
 <onunload lang="python"><![CDATA[
 print "UNLOAD"
