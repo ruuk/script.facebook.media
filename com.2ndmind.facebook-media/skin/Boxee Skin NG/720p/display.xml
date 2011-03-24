@@ -43,18 +43,64 @@ CLOSEREADY = True
 			<texture>facebook-media-tube-back.png</texture>
 			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:category),photovideo)]</visible>
 		</control>
+		<control type="image">
+			<posx>0</posx>
+			<posy>145</posy>
+			<width>375</width>
+			<height>100</height>
+			<texture>facebook-media-tube-back.png</texture>
+			<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:category),photovideo)]</visible>
+		</control>
+		
+		<control type="label">
+			<posx>20</posx>
+			<posy>145</posy>
+			<width>100</width>
+			<height>100</height>
+			<font>font16b</font>
+			<align>center</align>
+			<aligny>center</aligny>
+			<info>Container(120).ListItem.property(custom:previous)</info>
+			<wrapmultiline>true</wrapmultiline>
+			<textcolor>FFFFFFFF</textcolor>
+		</control>
+		<control type="image">
+			<posx>130</posx>
+			<posy>155</posy>
+			<width>17</width>
+			<height>80</height>
+			<colordiffuse>66FFFFFF</colordiffuse>
+			<texture>facebook-media-left-arrow.png</texture>
+			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:previous),)]</visible>
+		</control>
+		<control type="image">
+			<posx>353</posx>
+			<posy>155</posy>
+			<width>17</width>
+			<height>80</height>
+			<colordiffuse>66FFFFFF</colordiffuse>
+			<texture flipx="true">facebook-media-left-arrow.png</texture>
+		</control>
 		
 		<control type="image">
 			<posx>0</posx>
 			<posy>145</posy>
-			<width>220</width>
+			<width>350</width>
 			<height>100</height>
 			<texture>facebook-media-tube-overlay.png</texture>
 			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:category),photovideo)]</visible>
 		</control>
+		<control type="image">
+			<posx>0</posx>
+			<posy>145</posy>
+			<width>375</width>
+			<height>100</height>
+			<texture border="2">facebook-media-tube-overlay-right.png</texture>
+			<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:category),photovideo)]</visible>
+		</control>
 		
 		<control type="group">
-			<posx>20</posx>
+			<posx>150</posx>
 			<posy>0</posy>
 			<control type="wraplist" id="120">
 				
@@ -156,7 +202,7 @@ CLOSEREADY = True
 					<control type="label">
 						<posx>230</posx>
 						<posy>8</posy>
-						<width>1040</width>
+						<width>910</width>
 						<height>110</height>
 						<font>font80b</font>
 						<align>left</align>
@@ -220,7 +266,7 @@ session.menuItemDeSelected()
         </control>
        
 		<control type="image" id="190">
-			<posx>220</posx>
+			<posx>350</posx>
 			<posy>145</posy>
 			<width>1060</width>
 			<height>100</height>
