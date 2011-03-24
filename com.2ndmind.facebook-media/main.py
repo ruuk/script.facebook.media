@@ -36,7 +36,6 @@ class FacebookSession:
 	def __init__(self):
 		self.states = []
 		self.current_state = None
-		self.lastItemName = ''
 		self.lastItemNumber = 0
 		self.CACHE_PATH = os.path.join(mc.GetTempDir(),'facebook-media')
 		if not os.path.exists(self.CACHE_PATH): os.makedirs(self.CACHE_PATH)
@@ -119,7 +118,7 @@ class FacebookSession:
 		state.settings['current_friend_name'] = self.getSetting('current_friend_name')
 		state.settings['current_user_pic'] = self.getSetting('current_user_pic')
 		state.settings['current_user_name'] = self.getSetting('current_user_name')
-		state.settings['last_item'] = self.getSetting('last_item')
+		state.settings['last_item_name'] = self.getSetting('last_item_name')
 		return state
 	
 	def setCurrentState(self,items=None):
@@ -177,7 +176,7 @@ class FacebookSession:
 			item.SetProperty('uid',uid)
 			item.SetThumbnail('facebook-media-icon-%s.png' % cid)
 			item.SetProperty('background','')
-			item.SetProperty('previous',self.lastItemName)
+			item.SetProperty('previous',self.getSetting('last_item_name'))
 			items.append(item)
 		
 		mc.HideDialogWait()
@@ -185,7 +184,7 @@ class FacebookSession:
 		window.GetList(120).SetItems(items)
 		window.GetControl(120).SetFocus()
 		self.setCurrentState(items)
-		self.lastItemName = 'CATEGORIES'
+		self.setSetting('last_item_name','CATEGORIES')
 		print "FACEBOOK MEDIA CATEGORIES - STOPPED"
 
 	def ALBUMS(self,uid='me',name=''):
@@ -226,7 +225,7 @@ class FacebookSession:
 				item.SetProperty('album',ENCODE(aid))
 				item.SetProperty('uid',uid)
 				item.SetProperty('category','photos')
-				item.SetProperty('previous',self.lastItemName)
+				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 			self.saveImageURLCache()
 		finally:
@@ -299,7 +298,7 @@ class FacebookSession:
 				item.SetProperty('uid',uid)
 				item.SetProperty('fid',ENCODE(fid))
 				item.SetProperty('category','friend')
-				item.SetProperty('previous',self.lastItemName)
+				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				
 			self.saveImageURLCache()
@@ -344,7 +343,7 @@ class FacebookSession:
 				item.SetProperty('next',ENCODE(next))
 				item.SetProperty('prev',ENCODE(prev))
 				item.SetProperty('caption',caption)
-				item.SetProperty('previous',self.lastItemName)
+				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct += 1
 				self.updateProgress(ct,tot,message='Loading photo %s of %s' % (ct,tot))
@@ -388,7 +387,7 @@ class FacebookSession:
 				item.SetProperty('next',ENCODE(next))
 				item.SetProperty('prev',ENCODE(prev))
 				item.SetProperty('caption',caption)
-				item.SetProperty('previous',self.lastItemName)
+				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct+=1
 				self.updateProgress(ct, total, 'Loading video %s of %s' % (ct,total))
@@ -464,7 +463,7 @@ class FacebookSession:
 			name = item.GetLabel()
 			self.setFriend(name)
 			self.CATEGORIES(item.GetProperty('fid'),name)
-			self.lastItemName = item.GetLabel()
+			self.setSetting('last_item_name',item.GetLabel())
 			return
 		else:
 			if uid == 'me': self.setFriend()
@@ -486,7 +485,7 @@ class FacebookSession:
 		elif cat == 'photovideo':
 			self.setCurrentState()
 			self.showMedia(item)
-		self.lastItemName = item.GetLabel()
+		self.setSetting('last_item_name',item.GetLabel())
 		
 	def menuItemDeSelected(self):
 		self.popState()
@@ -746,7 +745,7 @@ config = mc.GetApp().GetLocalConfig()
 config.SetValue('current_user_pic','facebook-media-icon-generic-user.png')
 config.SetValue('current_friend_name','')
 config.SetValue('progress','')
-config.SetValue('last_item','')
+config.SetValue('last_item_name','')
 
 CLOSEREADY = False
 mc.GetApp().ActivateWindow(14000,params)
