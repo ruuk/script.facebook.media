@@ -45,7 +45,11 @@ class FacebookSession:
 		
 		self.imageURLCache = {}
 		self.loadImageURLCache()
-				
+		
+		self.stateSettings = (	'current_friend_name',
+								'current_user_pic',
+								'current_user_name',
+								'last_item_name')
 		self.start()
 		
 	def start(self):
@@ -115,10 +119,7 @@ class FacebookSession:
 			items = ilist.GetItems()
 			state.listIndex = ilist.GetFocusedItem()
 		state.items = items
-		state.settings['current_friend_name'] = self.getSetting('current_friend_name')
-		state.settings['current_user_pic'] = self.getSetting('current_user_pic')
-		state.settings['current_user_name'] = self.getSetting('current_user_name')
-		state.settings['last_item_name'] = self.getSetting('last_item_name')
+		for set in self.stateSettings: state.settings[set] = self.getSetting(set)
 		return state
 	
 	def setCurrentState(self,items=None):
@@ -130,8 +131,8 @@ class FacebookSession:
 		self.restoreState(state)
 	
 	def restoreState(self,state):
-		for set in state.settings: self.setSetting(set, '')
-		for set in state.settings: self.setSetting(set, state.settings[set])
+		for set in self.stateSettings: self.setSetting(set, '')
+		for set in self.stateSettings: self.setSetting(set, state.settings.get(set,''))
 		ilist = mc.GetWindow(14001).GetList(120)
 		ilist.SetItems(state.items)
 		ilist.SetFocusedItem(state.listIndex)
@@ -235,6 +236,8 @@ class FacebookSession:
 		if items:
 			window.GetList(120).SetItems(items)
 			self.setCurrentState(items)
+		else:
+			self.noItems('albums')
 		window.GetControl(120).SetFocus()
 		
 		print "FACEBOOK MEDIA ALBUMS - STOPPED"
@@ -329,7 +332,7 @@ class FacebookSession:
 			ct=0
 			for p in photos['data']:
 				tn = p.get('picture','') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
-				tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn) # this seems to get better results then using the random server
+				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn) # this seems to get better results then using the random server
 				item = mc.ListItem( mc.ListItem.MEDIA_PICTURE )
 				item.SetLabel(ENCODE(self.removeCRLF(p.get('name',p.get('id','None')))))
 				source = ENCODE(p.get('source',''))
@@ -347,12 +350,14 @@ class FacebookSession:
 				items.append(item)
 				ct += 1
 				self.updateProgress(ct,tot,message='Loading photo %s of %s' % (ct,tot))
-
 			self.endProgress()
-			window.GetList(120).SetItems(items)
 		finally:
 			self.endProgress()
-		self.setCurrentState(items)
+		if items:
+			window.GetList(120).SetItems(items)
+			self.setCurrentState(items)
+		else:
+			self.noItems('photos')
 		print "FACEBOOK MEDIA PHOTOS - STOPPED"
 	
 	def VIDEOS(self,uid,uploaded=False,isPaging=False):
@@ -375,7 +380,7 @@ class FacebookSession:
 			for v in videos['data']:
 				item = mc.ListItem( mc.ListItem.MEDIA_VIDEO_OTHER )
 				tn = v.get('picture','') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
-				tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn)
+				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn)
 				caption = ENCODE(urllib.unquote(v.get('name','')))
 				#item.SetLabel(ENCODE(self.removeCRLF(v.get('name',v.get('id','None')))))
 				#item.SetLabel('')
@@ -391,11 +396,17 @@ class FacebookSession:
 				items.append(item)
 				ct+=1
 				self.updateProgress(ct, total, 'Loading video %s of %s' % (ct,total))
-			window.GetList(120).SetItems(items)
 		finally:
 			self.endProgress()
-		self.setCurrentState(items)
+		if items:
+			window.GetList(120).SetItems(items)
+			self.setCurrentState(items)
+		else:
+			self.noItems('videos')
 		
+	def noItems(self,itype='items'):
+		mc.ShowDialogOk("None Available", "No %s available for this selection." % itype)
+	
 	def getPaging(self,obj):
 		paging = obj.get('paging')
 		next = ''
@@ -461,8 +472,8 @@ class FacebookSession:
 		
 		if cat == 'friend':
 			name = item.GetLabel()
-			self.setFriend(name)
 			self.CATEGORIES(item.GetProperty('fid'),name)
+			self.setFriend(name)
 			self.setSetting('last_item_name',item.GetLabel())
 			return
 		else:
@@ -477,13 +488,14 @@ class FacebookSession:
 		elif cat == 'videos':
 			self.VIDEOS(uid,uploaded=True)
 		elif cat == 'photosofme':
-			self.PHOTOS(uid)
+			self.PHOTOS(uid,uid=uid)
 		elif cat == 'videosofme':
 			self.VIDEOS(uid)
 		elif cat == 'changeuser':
 			self.changeAddUser()
 		elif cat == 'photovideo':
 			self.setCurrentState()
+			self.setFriend('')
 			self.showMedia(item)
 		self.setSetting('last_item_name',item.GetLabel())
 		

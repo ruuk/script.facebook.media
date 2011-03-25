@@ -2,7 +2,7 @@
 <app>
 	<id>com.2ndmind.facebook-media</id>
 	<name>Facebook Media</name>
-	<version>0.20</version>
+	<version>0.22</version>
 	<description>Facebook Photos And Videos</description>
 	<thumb>http://2ndmind.com/boxee/thumbs/facebook-media.png</thumb>
 	<repositoryid>com.2ndmind</repositoryid>

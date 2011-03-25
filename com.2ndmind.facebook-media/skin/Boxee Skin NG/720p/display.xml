@@ -59,7 +59,7 @@ CLOSEREADY = True
 			<posy>145</posy>
 			<width>100</width>
 			<height>100</height>
-			<font>font16b</font>
+			<font>font14b</font>
 			<align>center</align>
 			<aligny>center</aligny>
 			<info>Container(120).ListItem.property(custom:previous)</info>
@@ -227,7 +227,9 @@ print "FOCUS"
 				</content>
 				<onright lang="python">
 <![CDATA[
-session.menuItemSelected()	
+mc.GetActiveWindow().ClearStateStack()
+session.menuItemSelected()
+mc.GetActiveWindow().ClearStateStack()
 ]]>
 				</onright>
 				<ondown lang="python">
@@ -242,7 +244,9 @@ session.mediaPrev()
 				</onup>
 				<onleft lang="python">
 <![CDATA[
-session.menuItemDeSelected()	
+mc.GetActiveWindow().ClearStateStack()
+session.menuItemDeSelected()
+mc.GetActiveWindow().ClearStateStack()
 ]]>
 				</onleft>
 			</control>
@@ -277,20 +281,20 @@ session.menuItemDeSelected()
 		</control>
 		
 		<control type="group">
-			<posx>240</posx>
-			<posy>117r</posy>
-			<width>500</width>
-			<height>100</height>
+			<posx>370</posx>
+			<posy>147r</posy>
+			<width>370</width>
+			<height>130</height>
 			<control type="image">
-				<width>500</width>
-				<height>100</height>
+				<width>370</width>
+				<height>130</height>
 				<texture border="20">facebook-media-caption-back.png</texture>
 			</control>
 			<control type="label">
 				<posx>20</posx>
 				<posy>10</posy>
-				<width>460</width>
-				<height>80</height>
+				<width>330</width>
+				<height>110</height>
 				<font>font20b</font>
 				<align>center</align>
 				<aligny>center</aligny>
@@ -328,7 +332,7 @@ session.menuItemDeSelected()
 				<height>60</height>
 				<texture border="2">facebook-media-tube-overlay-left.png</texture>
 			</control>
-			<visible>!INFO[StringCompare(Container(120).ListItem.property(custom:uid),me)] + !INFO[StringCompare(App.String(current_friend_name),)]</visible>
+			<visible>!INFO[StringCompare(App.String(current_friend_name),)]</visible>
 		</control>
 		
 		<control type="group" id="150">
