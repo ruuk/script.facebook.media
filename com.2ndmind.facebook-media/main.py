@@ -3,6 +3,7 @@ import re,os,binascii,urllib,urllib2,time
 
 #import traceback
 import facebook
+from facebook import GraphAPIError
 
 import locale
 loc = locale.getdefaultlocale()
@@ -194,10 +195,10 @@ class FacebookSession:
 		self.saveState()
 		
 		self.startProgress('GETTING ALBUMS...')
-			
+		
+		items = mc.ListItems()
 		try:
 			albums = self.graph.connections.albums(id=uid)
-			items = mc.ListItems()
 			total = len(albums['data'])
 			ct = 0
 			for a in albums['data']:
@@ -257,11 +258,11 @@ class FacebookSession:
 		
 		self.startProgress('GETTING FRIENDS...')
 		
+		items = mc.ListItems()
 		try:
 			friends = self.graph.connections.friends(uid)
 			srt = []
 			show = {}
-			items = mc.ListItems()
 			for f in friends['data']:
 				name = f.get('name','')
 				s = name.rsplit(' ',1)[-1] + name.rsplit(' ',1)[0]
@@ -305,8 +306,14 @@ class FacebookSession:
 				items.append(item)
 				
 			self.saveImageURLCache()
-		finally:
 			self.endProgress()
+		except GraphAPIError,e:
+			self.endProgress()
+			if not '#604' in str(e): raise
+			print "FACEBOOK MEDIA - CAN'T ACCESS USER'S FRIENDS"
+		except:
+			self.endProgress()
+			raise
 			
 		if items:
 			window.GetList(120).SetItems(items)
@@ -315,7 +322,7 @@ class FacebookSession:
 			self.noItems('Friends')
 			
 		window.GetControl(120).SetFocus()
-		
+		print "FACEBOOK MEDIA FRIENDS - STOPPED"
 			
 	def PHOTOS(self,aid,uid='me',isPaging=False):
 		print "FACEBOOK MEDIA PHOTOS - STARTED: %s" % aid
@@ -323,14 +330,14 @@ class FacebookSession:
 		if not isPaging: self.saveState()
 		
 		self.startProgress('GETTING PHOTOS...')
-
+		
+		items = mc.ListItems()
 		try:
 			if isPaging:
 				photos = self.graph.request(aid)
 			else:
 				photos = self.graph.connections.photos(aid)
 			tot = len(photos['data'])
-			items = mc.ListItems()
 			
 			prev,next = self.getPaging(photos)
 			
@@ -371,6 +378,7 @@ class FacebookSession:
 		if not isPaging: self.saveState()
 		
 		self.startProgress('GETTING VIDEOS...')
+		items = mc.ListItems()
 		try:
 			if isPaging:
 				videos = self.graph.request(uid)
@@ -378,7 +386,6 @@ class FacebookSession:
 				if uploaded: videos = self.graph.connections.videos__uploaded(uid)
 				else: videos = self.graph.connections.videos(uid)
 			total = len(videos['data'])
-			items = mc.ListItems()
 			
 			prev,next = self.getPaging(videos)
 			ct=0
