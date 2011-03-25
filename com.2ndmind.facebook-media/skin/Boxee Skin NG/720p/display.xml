@@ -227,9 +227,7 @@ print "FOCUS"
 				</content>
 				<onright lang="python">
 <![CDATA[
-mc.GetActiveWindow().ClearStateStack()
 session.menuItemSelected()
-mc.GetActiveWindow().ClearStateStack()
 ]]>
 				</onright>
 				<ondown lang="python">
@@ -244,9 +242,7 @@ session.mediaPrev()
 				</onup>
 				<onleft lang="python">
 <![CDATA[
-mc.GetActiveWindow().ClearStateStack()
 session.menuItemDeSelected()
-mc.GetActiveWindow().ClearStateStack()
 ]]>
 				</onleft>
 			</control>

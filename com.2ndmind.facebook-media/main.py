@@ -237,7 +237,7 @@ class FacebookSession:
 			window.GetList(120).SetItems(items)
 			self.setCurrentState(items)
 		else:
-			self.noItems('albums')
+			self.noItems('Albums')
 		window.GetControl(120).SetFocus()
 		
 		print "FACEBOOK MEDIA ALBUMS - STOPPED"
@@ -308,9 +308,14 @@ class FacebookSession:
 		finally:
 			self.endProgress()
 			
-		if items: window.GetList(120).SetItems(items)
+		if items:
+			window.GetList(120).SetItems(items)
+			self.setCurrentState(items)
+		else:
+			self.noItems('Friends')
+			
 		window.GetControl(120).SetFocus()
-		self.setCurrentState(items)
+		
 			
 	def PHOTOS(self,aid,uid='me',isPaging=False):
 		print "FACEBOOK MEDIA PHOTOS - STARTED: %s" % aid
@@ -357,7 +362,7 @@ class FacebookSession:
 			window.GetList(120).SetItems(items)
 			self.setCurrentState(items)
 		else:
-			self.noItems('photos')
+			self.noItems('Photos')
 		print "FACEBOOK MEDIA PHOTOS - STOPPED"
 	
 	def VIDEOS(self,uid,uploaded=False,isPaging=False):
@@ -402,10 +407,11 @@ class FacebookSession:
 			window.GetList(120).SetItems(items)
 			self.setCurrentState(items)
 		else:
-			self.noItems('videos')
+			self.noItems('Videos')
 		
 	def noItems(self,itype='items'):
-		mc.ShowDialogOk("None Available", "No %s available for this selection." % itype)
+		self.popState()
+		mc.ShowDialogOk("None Available", "%s not available/authorized for this selection." % itype)
 	
 	def getPaging(self,obj):
 		paging = obj.get('paging')
