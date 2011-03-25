@@ -125,10 +125,10 @@ class FacebookSession:
 	def setCurrentState(self,items=None):
 		self.current_state = self.createCurrentState(items)
 		
-	def popState(self):
+	def popState(self,clear=False):
 		if not self.states: return
 		state = self.states.pop()
-		self.restoreState(state)
+		if not clear: self.restoreState(state)
 	
 	def restoreState(self,state):
 		for set in self.stateSettings: self.setSetting(set, '')
@@ -410,7 +410,7 @@ class FacebookSession:
 			self.noItems('Videos')
 		
 	def noItems(self,itype='items'):
-		self.popState()
+		self.popState(clear=True)
 		mc.ShowDialogOk("None Available", "%s not available/authorized for this selection." % itype)
 	
 	def getPaging(self,obj):
