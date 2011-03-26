@@ -3,6 +3,7 @@ import re,os,binascii,urllib,urllib2,time
 
 #import traceback
 import facebook
+reload(facebook)
 from facebook import GraphAPIError
 
 import locale
@@ -198,33 +199,45 @@ class FacebookSession:
 		
 		items = mc.ListItems()
 		try:
-			albums = self.graph.connections.albums(id=uid)
-			total = len(albums['data'])
+			albums = self.graph.getObject(uid).connections.albums(paging=False)
+			cids = []
+			for a in albums:
+				cid = a.cover_photo()
+				if cid:
+					cids.append(cid)
+			cover_objects = {}
+			if cids: cover_objects = self.graph.getObjects(cids)
+					
+			
+			total = len(albums)
 			ct = 0
-			for a in albums['data']:
+			for a in albums:
 				ct += 1
-				self.updateProgress(ct, total,'ALBUM %s OF %s' % (ct,total))
-				aid = a.get('id','')
-				#fbase = binascii.hexlify(aid.encode('utf-8'))
-				#fn = os.path.join(self.CACHE_PATH,fbase + '.jpg') #still works even if image is not jpg - doesn't work without the extension
-				if aid in self.imageURLCache:
-					tn_url = self.imageURLCache[aid]
+				cover = None
+				acp = a.cover_photo()
+				if acp: cover = cover_objects[acp]
+				if cover:
+					tn_url = cover.picture('')
+					src_url = cover.source('')
 				else:
-					tn = "https://graph.facebook.com/"+aid+"/picture?access_token=" + self.graph.access_token
-					tn_url = self.getRealURL(tn)
-					self.imageURLCache[aid] = tn_url
-#				if not os.path.exists(fn):
-#					#if self.get_album_photos:
-#					if True: fn = self.getFile(str(tn),str(fn))
-#					else: fn = ''
-				aname = a.get('name','').encode('ISO-8859-1','replace')
+					if a.id in self.imageURLCache:
+						tn_url = self.imageURLCache[a.id]
+					else:
+						tn = "https://graph.facebook.com/"+a.id+"/picture?access_token=" + self.graph.access_token
+						tn_url = self.getRealURL(tn)
+						self.imageURLCache[a.id] = tn_url
+					src_url = tn_url
+					
+				self.updateProgress(ct, total,'ALBUM %s OF %s' % (ct,total))
+
+				#aname = a.get('name','').encode('ISO-8859-1','replace')
+				aname = ENCODE(a.name(''))
 				
 				item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
 				item.SetLabel(aname)
 				item.SetThumbnail(ENCODE(tn_url))
-				item.SetImage(0,ENCODE(tn_url))
-				#item.SetProperty('background',str(tn_url))
-				item.SetProperty('album',ENCODE(aid))
+				item.SetImage(0,ENCODE(src_url))
+				item.SetProperty('album',ENCODE(a.id))
 				item.SetProperty('uid',uid)
 				item.SetProperty('category','photos')
 				item.SetProperty('previous',self.getSetting('last_item_name'))
@@ -260,11 +273,11 @@ class FacebookSession:
 		
 		items = mc.ListItems()
 		try:
-			friends = self.graph.connections.friends(uid)
+			friends = self.graph.getObject(uid).connections.friends(paging=False,fields="picture,name")
 			srt = []
 			show = {}
-			for f in friends['data']:
-				name = f.get('name','')
+			for f in friends:
+				name = f.name('')
 				s = name.rsplit(' ',1)[-1] + name.rsplit(' ',1)[0]
 				srt.append(s)
 				show[s] = f
@@ -272,30 +285,18 @@ class FacebookSession:
 			total = len(srt)
 			ct=0
 			for s in srt:
-				fid = show[s].get('id','')
-				#fbase = binascii.hexlify(fid.encode('utf-8'))
-				#fn = os.path.join(self.CACHE_PATH,fbase + '.jpg') #still works even if image is not jpg - doesn't work without the extension
+				fid = show[s].id
+				tn_url = show[s].picture('').replace('_q.','_n.')
 				ct+=1
 				self.updateProgress(ct, total, 'FRIEND %s of %s' % (ct,total))
 				
-				if fid in self.imageURLCache:
-					tn_url = self.imageURLCache[fid]
-				else:
-					tn = "https://graph.facebook.com/"+fid+"/picture?type=large&access_token=" + self.graph.access_token
-					tn_url = self.getRealURL(tn)
-					self.imageURLCache[fid] = tn_url
-				#print fn
-#				if not os.path.exists(fn):
-#					#if self.get_friends_photos:
-#					if True:
-#						try:
-#							fn = self.getFile(tn,fn)
-#						except:
-#							fn = ''
-#					else:
-#						fn = ''
-				#fn = "https://graph.facebook.com/"+uid+"/picture?access_token=" + self.graph.access_token + "&nonsense=image.jpg" #<-- crashes XBMC
-				name = show[s].get('name','')
+				#if fid in self.imageURLCache:
+				#	tn_url = self.imageURLCache[fid]
+				#else:
+				#	tn = "https://graph.facebook.com/"+fid+"/picture?type=large&access_token=" + self.graph.access_token
+				#	tn_url = self.getRealURL(tn)
+				#	self.imageURLCache[fid] = tn_url
+				name = show[s].name('')
 				item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
 				item.SetLabel(ENCODE(name))
 				item.SetThumbnail(ENCODE(tn_url))
@@ -334,21 +335,19 @@ class FacebookSession:
 		items = mc.ListItems()
 		try:
 			if isPaging:
-				photos = self.graph.request(aid)
+				photos,next,prev = self.graph.urlRequest(aid)
 			else:
-				photos = self.graph.connections.photos(aid)
-			tot = len(photos['data'])
-			
-			prev,next = self.getPaging(photos)
-			
+				photos,next,prev = self.graph.getObject(aid).connections.photos()
+			tot = len(photos)
+						
 			ct=0
-			for p in photos['data']:
-				tn = p.get('picture','') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
+			for p in photos:
+				tn = p.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn) # this seems to get better results then using the random server
 				item = mc.ListItem( mc.ListItem.MEDIA_PICTURE )
-				item.SetLabel(ENCODE(self.removeCRLF(p.get('name',p.get('id','None')))))
-				source = ENCODE(p.get('source',''))
-				caption = ENCODE(urllib.unquote(p.get('name','')))
+				item.SetLabel(ENCODE(self.removeCRLF(p.name(p.id))))
+				source = ENCODE(p.source())
+				caption = ENCODE(urllib.unquote(p.name('')))
 				item.SetPath(source)
 				item.SetProperty('category','photovideo')
 				item.SetLabel('')
@@ -381,22 +380,21 @@ class FacebookSession:
 		items = mc.ListItems()
 		try:
 			if isPaging:
-				videos = self.graph.request(uid)
+				videos,next,prev = self.graph.urlRequest(uid)
 			else:
-				if uploaded: videos = self.graph.connections.videos__uploaded(uid)
-				else: videos = self.graph.connections.videos(uid)
-			total = len(videos['data'])
+				if uploaded: videos, next, prev = self.graph.getObject(uid).connections.videos__uploaded()
+				else: videos, next, prev = self.graph.getObject(uid).connections.videos()
+			total = len(videos)
 			
-			prev,next = self.getPaging(videos)
 			ct=0
-			for v in videos['data']:
+			for v in videos:
 				item = mc.ListItem( mc.ListItem.MEDIA_VIDEO_OTHER )
-				tn = v.get('picture','') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
+				tn = v.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn)
-				caption = ENCODE(urllib.unquote(v.get('name','')))
+				caption = ENCODE(urllib.unquote(v.name('')))
 				#item.SetLabel(ENCODE(self.removeCRLF(v.get('name',v.get('id','None')))))
 				#item.SetLabel('')
-				item.SetPath(ENCODE(v.get('source','')))
+				item.SetPath(ENCODE(v.source('')))
 				item.SetProperty('uid',uid)
 				item.SetProperty('category','photovideo')
 				item.SetThumbnail(ENCODE(tn))

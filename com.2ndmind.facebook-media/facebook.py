@@ -34,7 +34,7 @@ usage of this module might look like this:
 """
 
 import urllib
-import sys
+import sys, re
 
 # Find a JSON parser
 try:
@@ -196,48 +196,95 @@ class GraphWrapAuthError(Exception):
 		self.message = message
 
 class GraphObject:
-	def __init__(self,wrap):
-		self.wrap = wrap
-		self.cache = {}
+	def __init__(self,id=None,graph=None,data=None):
+		self.id = id
+		self.graph = graph
+		self.connections = GraphConnections(self)
+		self._data = data
+		self._cache = {}
 		
-	def __getattr__(self, method):
-		if method in self.cache:
-			return self.cache[method]
-				
-		def handler(**args):
-			fail = False
-			try:
-				return self.wrap.get_object(method,**args)
-			except GraphAPIError,e:
-				if not e.type == 'OAuthException': raise
-				fail = True
-				
-			if fail:
-				print "ERROR GETTING OBJECT - GETTING NEW TOKEN"
-				if not self.wrap.getNewToken():
-					if self.wrap.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
-					else: return None
-				return self.wrap.get_object(method,**args)
+	def __getattr__(self, property):
+		if property.startswith('_'): return object.__getattr__(self,property)
+		if property in self._cache:
+			return self._cache[property]
+		
+		if not self._data: self._data = self._getObjectData(self.id)
+		
+		def handler(default=None):
+			return self._data.get(property) or default
 			
-		handler.method = method
+		handler.method = property
 		
-		self.cache[method] = handler
+		self._cache[property] = handler
 		return handler
 	
+	def _getObjectData(self,id,**args):
+		fail = False
+		try:
+			return self.graph.get_object(id,**args)
+		except GraphAPIError,e:
+			if not e.type == 'OAuthException': raise
+			fail = True
+			
+		if fail:
+			print "ERROR GETTING OBJECT - GETTING NEW TOKEN"
+			if not self.graph.getNewToken():
+				if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
+				else: return None
+			return self.graph.get_object(id,**args)
+		
+class GraphData:
+	def __init__(self,graphObject,data=None):
+		self.graphObject = graphObject
+		self.graph = self.graphObject.graph
+		
+	
+	def __getattr__(self, property):
+		if property.startswith('_'): return object.__getattr__(self,property)
+		if property in self._cache:
+			return self._cache[property]
+		
+		if not self._data: self._data = self._getObjectData(self.graphObject.id)
+		
+		def handler(default=None):
+			return self._data.get(property,default)
+			
+		handler.method = property
+		
+		self._cache[property] = handler
+		return handler
+	
+	def _getObjectData(self,id,**args):
+		fail = False
+		try:
+			return self.graph.get_object(id,**args)
+		except GraphAPIError,e:
+			if not e.type == 'OAuthException': raise
+			fail = True
+			
+		if fail:
+			print "ERROR GETTING OBJECT - GETTING NEW TOKEN"
+			if not self.graph.getNewToken():
+				if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
+				else: return None
+			return self.graph.get_object(id,**args)
+	
 class GraphConnections:
-	def __init__(self,wrap):
-		self.wrap = wrap
+	def __init__(self,graphObject):
+		self.graphObject = graphObject
+		self.graph = self.graphObject.graph
 		self.cache = {}
 		
 	def __getattr__(self, method):
+		if method.startswith('_'): return object.__getattr__(self,method)
 		if method in self.cache:
 			return self.cache[method]
 				
-		def handler(id=None,**args):
-			if not id: id = self.wrap.uid or 'me'
+		def handler(paging=True,**args):
 			fail = False
 			try:
-				return self.wrap.get_connections(id, method, **args)
+				connections = self.graph.get_connections(self.graphObject.id, method.replace('__','/'), **args)
+				return self._processConnections(connections,paging)
 			except GraphAPIError,e:
 				print e.type
 				if not e.type == 'OAuthException': raise
@@ -245,23 +292,65 @@ class GraphConnections:
 	
 			if fail:
 				print "ERROR GETTING CONNECTIONS - GETTING NEW TOKEN"
-				if not self.wrap.getNewToken():
-					if self.wrap.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
+				if not self.graph.getNewToken():
+					if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 					else: return None
-				return self.wrap.get_connections(id, method.replace('__','/'), **args)
+				connections =  self.graph.get_connections(self.graphObject.id, method.replace('__','/'), **args)
+				return self._processConnections(connections,paging)
 			
 		handler.method = method
 		
 		self.cache[method] = handler
 		return handler
 	
+	def _processConnections(self,connections,paging):
+		return self.graph._processConnections(connections,paging)
+			
 class GraphWrap(GraphAPI):
 	def __init__(self,token,new_token_callback=None):
 		GraphAPI.__init__(self,token)
-		self.object = GraphObject(self)
-		self.connections = GraphConnections(self)
 		self.uid = None
 		self._newTokenCallback = new_token_callback
+	
+	def getObject(self,id):
+		return GraphObject(id,self)
+	
+	def getObjects(self,ids=[]):
+		data = self.get_objects(ids)
+		objects = {}
+		for id in data:
+			objects[id] = GraphObject(id,self,data[id])
+		return objects
+		
+	def urlRequest(self,url,paging=True):
+		connections = self.request(url)
+		return self._processConnections(connections, paging)
+		
+	def _processConnections(self,connections,paging):
+		cons = []
+		for c in connections['data']:
+			cons.append(GraphObject(c['id'],self,c))
+		if not paging: return cons
+		next,prev = self._getPaging(connections)
+		return cons,next,prev
+
+	def _getPaging(self,obj):
+		paging = obj.get('paging')
+		next = ''
+		prev = ''
+		if paging:
+			next = paging.get('next','')
+			prev = paging.get('previous','')
+			if self.areAlmostTheSame(prev,next):
+				prev = ''
+				next = ''
+		return prev,next
+	
+	def areAlmostTheSame(self,first,second):
+		if not first or not second: return False
+		first = re.sub('(\d{4}-\d{2}-\d{2}T\d{2}%3A\d{2}%3A\d)\d(%2B\d{4})',r'\1x\2',first)
+		second = re.sub('(\d{4}-\d{2}-\d{2}T\d{2}%3A\d{2}%3A\d)\d(%2B\d{4})',r'\1x\2',second)
+		return first == second
 	
 	def setLogin(self,email,passw,uid=None,token=None):
 		self.uid = uid
@@ -371,7 +460,6 @@ class GraphWrap(GraphAPI):
 	def tokenIsValid(self,token):
 		if not token: return False
 		if 'login_form' in token and 'standard_explanation' in token:
-			import re
 			reason = re.findall('id="standard_explanation">(?:<p>)?([^<]*)<',token)
 			if reason: print reason[0]
 			print "TOKEN: " + token

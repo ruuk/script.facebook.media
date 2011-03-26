@@ -217,14 +217,9 @@ CLOSEREADY = True
 				<content type="url">
 					<onclick lang="python">
 <![CDATA[
-session.menuItemSelected()	
+session.menuItemSelected()
 ]]>
 					</onclick>
-					<onfocus lang="python">
-<![CDATA[
-print "FOCUS"	
-]]>
-				</onfocus>
 				</content>
 				<onright lang="python">
 <![CDATA[
@@ -285,7 +280,7 @@ session.menuItemDeSelected()
 			<control type="image">
 				<width>370</width>
 				<height>130</height>
-				<texture border="20">facebook-media-caption-back.png</texture>
+				<texture border="20">facebook-media-tube-back.png</texture>
 			</control>
 			<control type="label">
 				<posx>20</posx>
@@ -299,6 +294,11 @@ session.menuItemDeSelected()
 				<info>Container(120).ListItem.property(custom:caption)</info>
 				<shadowcolor>ff000000</shadowcolor>
 				<wrapmultiline>true</wrapmultiline>
+			</control>
+			<control type="image">
+				<width>370</width>
+				<height>130</height>
+				<texture border="20">facebook-media-tube-overlay-lr.png</texture>
 			</control>
 			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:caption),)]</visible>
 		</control>
