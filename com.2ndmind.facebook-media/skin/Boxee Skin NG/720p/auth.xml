@@ -13,7 +13,7 @@ session.addUser()
 			<width>1280</width>
 			<height>720</height>
 			<colordiffuse>80FFFFFF</colordiffuse>
-			<texture>facebook-media-adduser-background.png</texture>
+			<texture>facebook-media-menu-background.png</texture>
 		</control>
 		<control type="image">
 			<posx>63</posx>
@@ -169,7 +169,7 @@ session.addUser()
 			<aligny>center</aligny>
 			<textcolor>white</textcolor>
 			<wrapmultiline>true</wrapmultiline>
-			<label>Get User Profile Image</label>
+			<label>DONE</label>
 		</control>
 	</controls>
 </window>

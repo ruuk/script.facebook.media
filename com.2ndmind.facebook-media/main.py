@@ -1,5 +1,5 @@
 import mc #@UnresolvedImport
-import re,os,binascii,urllib,urllib2,time
+import os,binascii,urllib,urllib2,time
 
 #import traceback
 import facebook
@@ -36,6 +36,7 @@ class WindowState:
 			
 class FacebookSession:
 	def __init__(self):
+		self.graph = None
 		self.states = []
 		self.current_state = None
 		self.lastItemNumber = 0
@@ -70,6 +71,7 @@ class FacebookSession:
 		print user.username
 		#print user.email
 		
+		self.loadOptions()
 		self.CATEGORIES()
 		self.setCurrentState()
 		
@@ -83,23 +85,25 @@ class FacebookSession:
 		self.token = token
 		if self.currentUser: self.currentUser.updateToken(token)
 		
-	def changeAddUser(self):
-		import xbmcgui #@UnresolvedImport
-		uids = self.getUserList()
-		options = []
-		for uid in uids: options.append(self.getSetting('username_%s' % uid))
-		options.append('Add User')
-
-		idx = xbmcgui.Dialog().select('Options',options)
-		if idx < 0:
-			return
-		elif idx == len(options) -1:
-			self.openAddUserWindow()
-			return
-		else:
-			uid = uids[idx]
-			self.getProfilePic(uid)
-			self.setCurrentUser(uid)
+	def loadOptions(self):
+		items = mc.ListItems()
+		for user in self.getUsers():
+			item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
+			item.SetLabel(user.username)
+			item.SetThumbnail(user.pic)
+			item.SetProperty('uid',user.id)
+			items.append(item)
+		options = [	('add_user','facebook-media-icon-adduser.png','Add User','data'),
+					('remove_user','facebook-media-icon-removeuser.png','Remove User','data')]
+		for action,icon,label,data in options:
+			item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
+			item.SetThumbnail(icon)
+			item.SetLabel(label)
+			item.SetProperty('action',action)
+			item.SetProperty('data',data)
+			items.append(item)
+			
+		mc.GetWindow(14001).GetList(125).SetItems(items)
 		
 	def openAddUserWindow(self):
 		params = mc.Parameters()
@@ -128,9 +132,10 @@ class FacebookSession:
 		self.current_state = self.createCurrentState(items)
 		
 	def popState(self,clear=False):
-		if not self.states: return
+		if not self.states: return False
 		state = self.states.pop()
 		if not clear: self.restoreState(state)
+		return True
 	
 	def restoreState(self,state):
 		for set in self.stateSettings: self.setSetting(set, '')
@@ -163,12 +168,11 @@ class FacebookSession:
 		if not uid == 'me': self.saveState()
 		
 		items = mc.ListItems()
-		cids = ('albums','videos','friends','photosofme','videosofme','changeuser')
+		cids = ('albums','videos','friends','photosofme','videosofme')
 		if uid == 'me':
-			cats = ('ALBUMS','VIDEOS','FRIENDS','PHOTOS OF ME','VIDEOS OF ME','MANAGE USERS')
+			cats = ('ALBUMS','VIDEOS','FRIENDS','PHOTOS OF ME','VIDEOS OF ME')
 		else:
 			cats = ('ALBUMS','VIDEOS','FRIENDS','PHOTOS OF USER','VIDEOS OF USER')
-			cids = ('albums','videos','friends','photosofme','videosofme')
 			
 		for cat,cid in zip(cats,cids):
 			item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
@@ -226,7 +230,7 @@ class FacebookSession:
 						tn = "https://graph.facebook.com/"+a.id+"/picture?access_token=" + self.graph.access_token
 						tn_url = self.getRealURL(tn)
 						self.imageURLCache[a.id] = tn_url
-					src_url = tn_url
+					src_url = tn_url.replace('_a.','_n.')
 					
 				self.updateProgress(ct, total,'ALBUM %s OF %s' % (ct,total))
 
@@ -284,11 +288,12 @@ class FacebookSession:
 				srt.sort()
 			total = len(srt)
 			ct=0
+			offset = total/2
 			for s in srt:
 				fid = show[s].id
 				tn_url = show[s].picture('').replace('_q.','_n.')
 				ct+=1
-				self.updateProgress(ct, total, 'FRIEND %s of %s' % (ct,total))
+				self.updateProgress(ct+offset, total+offset, 'FRIEND %s of %s' % (ct,total))
 				
 				#if fid in self.imageURLCache:
 				#	tn_url = self.imageURLCache[fid]
@@ -417,18 +422,6 @@ class FacebookSession:
 	def noItems(self,itype='items'):
 		self.popState(clear=True)
 		mc.ShowDialogOk("None Available", "%s not available/authorized for this selection." % itype)
-	
-	def getPaging(self,obj):
-		paging = obj.get('paging')
-		next = ''
-		prev = ''
-		if paging:
-			next = paging.get('next','')
-			prev = paging.get('previous','')
-			if self.areAlmostTheSame(prev,next):
-				prev = ''
-				next = ''
-		return prev,next
 		
 	def saveImageURLCache(self):
 		out = ''
@@ -502,8 +495,6 @@ class FacebookSession:
 			self.PHOTOS(uid,uid=uid)
 		elif cat == 'videosofme':
 			self.VIDEOS(uid)
-		elif cat == 'changeuser':
-			self.changeAddUser()
 		elif cat == 'photovideo':
 			self.setCurrentState()
 			self.setFriend('')
@@ -511,8 +502,48 @@ class FacebookSession:
 		self.setSetting('last_item_name',item.GetLabel())
 		
 	def menuItemDeSelected(self):
-		self.popState()
+		if not self.popState():
+			mc.GetWindow(14001).GetControl(125).SetFocus()
 	
+	def optionMenuItemSelected(self):
+		print "OPTION ITEM SELECTED"
+		item = self.getFocusedItem(125)
+		mc.GetWindow(14001).GetControl(120).SetFocus()
+		uid = item.GetProperty('uid')
+		if uid:
+			self.setCurrentUser(uid)
+		else:
+			action = item.GetProperty('action')
+			if action == 'add_user':
+				self.openAddUserWindow()
+			elif action == 'remove_user':
+				self.removeUserMenu()
+		
+	def removeUserMenu(self):
+		import xbmcgui #@UnresolvedImport
+		uids = self.getUserList()
+		options = []
+		for uid in uids: options.append(self.getSetting('username_%s' % uid))
+
+		idx = xbmcgui.Dialog().select('Choose User To Remove',options)
+		if idx < 0:
+			return
+		else:
+			uid = uids[idx]
+			self.removeUser(uid)		
+		
+	def removeUser(self,uid):
+		self.removeUserFromList(uid)
+		self.clearSetting('login_email_%s' % uid)
+		self.clearSetting('login_pass_%s' % uid)
+		self.clearSetting('token_%s' % uid)
+		self.clearSetting('profile_pic_%s' % uid)
+		self.clearSetting('username_%s' % uid)
+		self.setSetting('current_user','')
+		self.currentUser = None
+		self.getCurrentUser()
+		self.loadOptions()
+		
 	def setFriend(self,name=''):
 		self.setSetting('current_friend_name',name)
 		
@@ -566,12 +597,6 @@ class FacebookSession:
 		itemNumber = lc.GetFocusedItem()
 		self.lastItemNumber = itemNumber
 		return lc.GetItem(itemNumber)
-		
-	def areAlmostTheSame(self,first,second):
-		if not first or not second: return False
-		first = re.sub('(\d{4}-\d{2}-\d{2}T\d{2}%3A\d{2}%3A\d)\d(%2B\d{4})',r'\1x\2',first)
-		second = re.sub('(\d{4}-\d{2}-\d{2}T\d{2}%3A\d{2}%3A\d)\d(%2B\d{4})',r'\1x\2',second)
-		return first == second
 	
 	def removeCRLF(self,text):
 		return " ".join(text.split())
@@ -607,10 +632,14 @@ class FacebookSession:
 		self.setSetting('auth_step_1','pending')
 		if not email:
 			email = doKeyboard("Login Email")
-		if not email: return None
+		if not email:
+			mc.CloseWindow()
+			return
 		if not password:
 			password = doKeyboard("Login Password",hidden=True)
-		if not password: return None
+		if not password:
+			mc.CloseWindow()
+			return
 		self.newUserCache = (email,password)
 		self.getAuth()
 		
@@ -624,11 +653,10 @@ class FacebookSession:
 		graph.getNewToken()
 		self.setSetting('auth_step_2','complete')
 		self.setSetting('auth_step_3','pending')
-		user = graph.object.me()
+		user = graph.getObject('me',fields='id,name,picture')
 		self.setSetting('auth_step_3','complete')
-		print user
-		uid = user['id']
-		username = user['name']
+		uid = user.id
+		username = user.name()
 		if not self.addUserToList(uid):
 			print "FACEBOOK MEDIA - USER ALREADY ADDED"
 		self.setSetting('login_email_%s' % uid,email)
@@ -637,10 +665,12 @@ class FacebookSession:
 		self.setSetting('token_%s' % uid,graph.access_token)
 		#if self.token: self.setSetting('token_%s' % uid,self.token)
 		self.setSetting('auth_step_4','pending')
-		self.getProfilePic(uid,force=True)
+		self.setSetting('profile_pic_%s' % uid,user.picture('').replace('_q.','_n.'))
+		#self.getProfilePic(uid,force=True)
 		self.setSetting('auth_step_4','complete')
 		mc.ShowDialogOk("User Added",ENCODE(username))
 		mc.CloseWindow()
+		self.loadOptions()
 		if not self.getSetting('has_user'):
 			self.setSetting('has_user','true')
 			self.start()
@@ -651,6 +681,12 @@ class FacebookSession:
 		ustring = self.getSetting('user_list')
 		if not ustring: return []
 		return ustring.split(',')
+	
+	def getUsers(self):
+		ulist = []
+		for uid in self.getUserList():
+			ulist.append(FacebookUser(uid))
+		return ulist
 	
 	def addUserToList(self,uid):
 		ulist = self.getUserList()
@@ -672,22 +708,29 @@ class FacebookSession:
 		self.setSetting('current_user', uid)
 		u = self.currentUser
 		self.setSetting('current_user_name', u.username)
-		self.setSetting('current_user_pic', u.pic)
-		self.graph.setLogin(u.email,u.password,u.id,u.token)
+		self.updateUserPic()
+		if self.graph: self.graph.setLogin(u.email,u.password,u.id,u.token)
 		
 	def getCurrentUser(self):
 		if self.currentUser: return self.currentUser
 		uid = self.getSetting('current_user')
 		if not uid:
 			ulist = self.getUserList()
-			if ulist: uid = ulist[0]
+			if ulist:
+				uid = ulist[0]
+				if uid: self.setCurrentUser(uid)
 		print uid
 		if not uid: return None
 		self.currentUser = FacebookUser(uid)
 		self.setSetting('current_user_name', self.currentUser.username)
-		self.setSetting('current_user_pic',self.getProfilePic(self.currentUser.id))
+		self.updateUserPic()
 		return self.currentUser
 	
+	def updateUserPic(self):
+		self.setSetting('current_user_pic','')
+		outfile = os.path.join(self.CACHE_PATH,'current_user_pic')
+		self.setSetting('current_user_pic',self.getFile(self.currentUser.pic,outfile))
+		
 	def getProfilePic(self,uid,force=False):
 		url = "https://graph.facebook.com/%s/picture?type=large" % uid
 		fbase = binascii.hexlify(uid.encode('utf-8'))
@@ -703,6 +746,9 @@ class FacebookSession:
 			print 'FACEBOOK MEDIA - ERROR GETTING PROFILE PIC AT: ' % url
 			return ''
 			
+	def clearSetting(self,key):
+		mc.GetApp().GetLocalConfig().Reset(str(key))
+		
 	def setSetting(self,key,value):
 		mc.GetApp().GetLocalConfig().SetValue(str(key),str(value))
 		
@@ -768,7 +814,7 @@ config = mc.GetApp().GetLocalConfig()
 config.SetValue('current_user_pic','facebook-media-icon-generic-user.png')
 config.SetValue('current_friend_name','')
 config.SetValue('progress','')
-config.SetValue('last_item_name','')
+config.SetValue('last_item_name','OPTIONS')
 
 CLOSEREADY = False
 mc.GetApp().ActivateWindow(14000,params)

@@ -196,19 +196,28 @@ class GraphWrapAuthError(Exception):
 		self.message = message
 
 class GraphObject:
-	def __init__(self,id=None,graph=None,data=None):
+	def __init__(self,id=None,graph=None,data=None,**args):
 		self.id = id
+		self.args = args
 		self.graph = graph
-		self.connections = GraphConnections(self)
-		self._data = data
 		self._cache = {}
+		self._data = data
+		self.connections = GraphConnections(self)
+		if id == 'me':
+			self._data = self._getObjectData(id,**args)
+			self.id = self._data.get('id') or 'me'
 		
 	def __getattr__(self, property):
 		if property.startswith('_'): return object.__getattr__(self,property)
 		if property in self._cache:
 			return self._cache[property]
 		
-		if not self._data: self._data = self._getObjectData(self.id)
+		if not self._data:
+			print "FROG 1"
+			self._data = self._getObjectData(self.id,**self.args)
+			if self.id == 'me': self.id = self._data.get('id') or 'me'
+			print "FROG 2"
+			print self.id
 		
 		def handler(default=None):
 			return self._data.get(property) or default
@@ -312,8 +321,8 @@ class GraphWrap(GraphAPI):
 		self.uid = None
 		self._newTokenCallback = new_token_callback
 	
-	def getObject(self,id):
-		return GraphObject(id,self)
+	def getObject(self,id,**args):
+		return GraphObject(id,self,**args)
 	
 	def getObjects(self,ids=[]):
 		data = self.get_objects(ids)
