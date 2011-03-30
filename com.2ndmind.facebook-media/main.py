@@ -3,6 +3,7 @@ import os,binascii,urllib,urllib2,time
 
 #import traceback
 import facebook
+reload(facebook)
 from facebook import GraphAPIError
 
 import locale
@@ -41,6 +42,7 @@ class FacebookSession:
 		self.graph = None
 		self.states = []
 		self.current_state = None
+		self.paging = []
 		self.lastItemNumber = 0
 		self.CACHE_PATH = os.path.join(mc.GetTempDir(),'facebook-media')
 		if not os.path.exists(self.CACHE_PATH): os.makedirs(self.CACHE_PATH)
@@ -152,6 +154,7 @@ class FacebookSession:
 		params['none'] = 'NONE'
 		mc.GetApp().ActivateWindow(14001,params)
 		self.restoreState(self.current_state)
+		self.setPathDisplay()
 
 	def getRealURL(self,url):
 		if not url: return url
@@ -164,6 +167,38 @@ class FacebookSession:
 		else:
 			return url
 		return req.geturl()
+	
+	def setListFocus(self,nextprev,conn_obj):
+		ilist = mc.GetWindow(14001).GetList(120)
+		if nextprev == 'prev':
+			if conn_obj.next: self.jumpToListEnd(ilist,-1)
+			else: self.jumpToListEnd(ilist)
+		else:
+			if conn_obj.previous: ilist.SetFocusedItem(1)
+				
+	def jumpToListEnd(self,ilist,offset=0):
+		idx = len(ilist.GetItems()) - 1
+		idx += offset
+		if idx < 0: idx = 0
+		ilist.SetFocusedItem(idx)
+		
+	def getPagingItem(self,nextprev,url,itype,current_url=''):
+		item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
+		item.SetThumbnail('facebook-media-icon-%s.png' % nextprev)
+		if nextprev == 'prev': caption = 'PREVIOUS %s' % itype.upper()
+		else: caption = 'NEXT %s' % itype.upper()
+		if itype == 'albums':
+			item.SetLabel(caption)
+		else:
+			item.SetProperty('caption',caption)
+		
+		item.SetProperty('category','paging')
+		item.SetProperty('paging',ENCODE(url))
+		item.SetProperty('nextprev',nextprev)
+		item.SetProperty('mediatype',itype)
+		item.SetProperty('from_url',current_url)
+		item.SetProperty('previous',self.getSetting('last_item_name'))
+		return item
 	
 	def CATEGORIES(self,uid='me',name=''):
 		LOG("CATEGORIES - STARTED")
@@ -197,16 +232,34 @@ class FacebookSession:
 		self.setSetting('last_item_name','CATEGORIES')
 		LOG("CATEGORIES - STOPPED")
 
-	def ALBUMS(self,uid='me',name=''):
+	def ALBUMS(self,item):
 		LOG('ALBUMS - STARTED')
+		
+		uid = item.GetProperty('uid')
+		paging = item.GetProperty('paging')
+		nextprev = item.GetProperty('nextprev')
+		fromUrl = item.GetProperty('from_url')
+		
 		window = mc.GetWindow(14001)
-		self.saveState()
+		if not paging: self.saveState()
 		
 		self.startProgress('GETTING ALBUMS...')
 		
 		items = mc.ListItems()
 		try:
-			albums = self.graph.getObject(uid).connections.albums(paging=False)
+			if paging:
+				if fromUrl:
+					self.paging.append(fromUrl)
+				else:
+					if self.paging: paging = self.paging.pop()
+				albums = self.graph.urlRequest(paging)
+			else:
+				self.paging = []
+				albums = self.graph.getObject(uid).connections.albums()
+				
+			print albums.next
+			print albums.previous
+			
 			cids = []
 			for a in albums:
 				cid = a.cover_photo()
@@ -214,7 +267,10 @@ class FacebookSession:
 					cids.append(cid)
 			cover_objects = {}
 			if cids: cover_objects = self.graph.getObjects(cids)
-					
+			
+			if albums.previous:
+				item = self.getPagingItem('prev', albums.previous, 'albums')
+				items.append(item)	
 			
 			total = len(albums)
 			ct = 0
@@ -250,12 +306,18 @@ class FacebookSession:
 				item.SetProperty('category','photos')
 				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
+				
+			if albums.next:
+				item = self.getPagingItem('next', albums.next, 'albums', paging)
+				items.append(item)
+				
 			self.saveImageURLCache()
 		finally:
 			self.endProgress()
 	
 		if items:
 			window.GetList(120).SetItems(items)
+			self.setListFocus(nextprev, albums)
 			self.setCurrentState(items)
 		else:
 			self.noItems('Albums')
@@ -271,7 +333,7 @@ class FacebookSession:
 		
 		items = mc.ListItems()
 		try:
-			friends = self.graph.getObject(uid).connections.friends(paging=False,fields="picture,name")
+			friends = self.graph.getObject(uid).connections.friends(fields="picture,name")
 			srt = []
 			show = {}
 			for f in friends:
@@ -322,23 +384,42 @@ class FacebookSession:
 			self.noItems('Friends')
 			
 		LOG("FRIENDS - STOPPED")
-			
-	def PHOTOS(self,aid,uid='me',isPaging=False):
-		LOG("PHOTOS - STARTED: %s" % aid)
+		
+	def PHOTOS(self,item):
+		LOG("PHOTOS - STARTED")
+		aid = item.GetProperty('album')
+		uid = item.GetProperty('uid')
+		paging = item.GetProperty('paging')
+		nextprev = item.GetProperty('nextprev')
+		fromUrl = item.GetProperty('from_url')
+		if item.GetProperty('category') == 'photosofme': aid = uid
+				
 		window = mc.GetWindow(14001)
-		if not isPaging: self.saveState()
+		if not paging: self.saveState()
 		
 		self.startProgress('GETTING PHOTOS...')
 		
 		items = mc.ListItems()
 		try:
-			if isPaging:
-				photos,next,prev = self.graph.urlRequest(aid)
+			if paging:
+				if fromUrl:
+					self.paging.append(fromUrl)
+				else:
+					if self.paging: paging = self.paging.pop()
+				photos = self.graph.urlRequest(paging)
 			else:
-				photos,next,prev = self.graph.getObject(aid).connections.photos()
+				self.paging = []
+				photos = self.graph.getObject(aid).connections.photos()
+			print photos.next
+			print photos.previous
 			tot = len(photos)
 						
 			ct=0
+			
+			if photos.previous:
+				item = self.getPagingItem('prev', photos.previous, 'photos')
+				items.append(item)
+				
 			for p in photos:
 				tn = p.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn) # this seems to get better results then using the random server
@@ -352,38 +433,62 @@ class FacebookSession:
 				item.SetImage(0,source)
 				item.SetThumbnail(ENCODE(tn))
 				item.SetProperty('uid',uid)
-				item.SetProperty('next',ENCODE(next))
-				item.SetProperty('prev',ENCODE(prev))
+				#item.SetProperty('next',ENCODE(photos.next))
+				#item.SetProperty('prev',ENCODE(photos.previous))
 				item.SetProperty('caption',caption)
 				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct += 1
 				self.updateProgress(ct,tot,message='Loading photo %s of %s' % (ct,tot))
+				
+			if photos.next:
+				item = self.getPagingItem('next', photos.next, 'photos', paging)
+				items.append(item)
+				
 			self.endProgress()
 		finally:
 			self.endProgress()
 		if items:
 			window.GetList(120).SetItems(items)
+			self.setListFocus(nextprev, photos)
 			self.setCurrentState(items)
 		else:
-			self.noItems('Photos')
+			self.noItems('Photos',paging)
 		LOG("PHOTOS - STOPPED")
 	
-	def VIDEOS(self,uid,uploaded=False,isPaging=False):
+	def VIDEOS(self,item):
 		LOG("VIDEOS - STARTED")
+		
+		uploaded = False
+		uid = item.GetProperty('uid')
+		paging = item.GetProperty('paging')
+		nextprev = item.GetProperty('nextprev')
+		fromUrl = item.GetProperty('from_url')
+		if item.GetProperty('category') != 'videosofme': uploaded = True
+		
 		window = mc.GetWindow(14001)
-		if not isPaging: self.saveState()
+		if not paging: self.saveState()
 		
 		self.startProgress('GETTING VIDEOS...')
 		items = mc.ListItems()
 		try:
-			if isPaging:
-				videos,next,prev = self.graph.urlRequest(uid)
+			if paging:
+				if fromUrl:
+					self.paging.append(fromUrl)
+				else:
+					if self.paging: paging = self.paging.pop()
+				videos = self.graph.urlRequest(paging)
 			else:
-				if uploaded: videos, next, prev = self.graph.getObject(uid).connections.videos__uploaded()
-				else: videos, next, prev = self.graph.getObject(uid).connections.videos()
+				self.paging = []
+				if uploaded: videos = self.graph.getObject(uid).connections.videos__uploaded()
+				else: videos = self.graph.getObject(uid).connections.videos()
+			print videos.next
+			print videos.previous	
+			if videos.previous:
+				item = self.getPagingItem('prev', videos.previous, 'videos')
+				items.append(item)
+				
 			total = len(videos)
-			
 			ct=0
 			for v in videos:
 				item = mc.ListItem( mc.ListItem.MEDIA_VIDEO_OTHER )
@@ -397,24 +502,34 @@ class FacebookSession:
 				item.SetProperty('category','photovideo')
 				item.SetThumbnail(ENCODE(tn))
 				item.SetImage(0,ENCODE(tn))
-				item.SetProperty('next',ENCODE(next))
-				item.SetProperty('prev',ENCODE(prev))
+				#item.SetProperty('next',ENCODE(videos.next))
+				#item.SetProperty('prev',ENCODE(videos.previous))
 				item.SetProperty('caption',caption)
 				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct+=1
 				self.updateProgress(ct, total, 'Loading video %s of %s' % (ct,total))
+				
+			if videos.next:
+				item = self.getPagingItem('next', videos.next, 'videos', paging)
+				items.append(item)
+
 		finally:
 			self.endProgress()
 		if items:
 			window.GetList(120).SetItems(items)
+			self.setListFocus(nextprev, videos)
 			self.setCurrentState(items)
 		else:
-			self.noItems('Videos')
+			self.noItems('Videos',paging)
+			
+		LOG("VIDEOS - STOPPED")
 		
-	def noItems(self,itype='items'):
+	def noItems(self,itype='items',paging=None):
 		self.popState(clear=True)
-		mc.ShowDialogOk("None Available", "%s not available/authorized for this selection." % itype)
+		message = "%s not available/authorized for this selection." % itype
+		if paging: message = 'End of %s reached.' % itype
+		mc.ShowDialogOk("None Available", message)
 		
 	def saveImageURLCache(self):
 		out = ''
@@ -461,7 +576,7 @@ class FacebookSession:
 	def mediaPrev(self):
 		self.mediaNextPrev('prev')
 
-	def menuItemSelected(self):
+	def menuItemSelected(self,select=False):
 		item = self.getFocusedItem(120)
 		
 		cat = item.GetProperty('category')
@@ -478,21 +593,31 @@ class FacebookSession:
 			if uid == 'me': self.setFriend()
 			
 		if cat == 'albums':
-			self.ALBUMS(uid)
+			self.ALBUMS(item)
 		elif cat == 'photos':
-			self.PHOTOS(item.GetProperty('album'),uid=uid)
+			self.PHOTOS(item)
 		elif cat == 'friends':
 			self.FRIENDS(uid)
 		elif cat == 'videos':
-			self.VIDEOS(uid,uploaded=True)
+			self.VIDEOS(item)
 		elif cat == 'photosofme':
-			self.PHOTOS(uid,uid=uid)
+			self.PHOTOS(item)
 		elif cat == 'videosofme':
-			self.VIDEOS(uid)
+			self.VIDEOS(item)
 		elif cat == 'photovideo':
+			if not select:
+				self.showPhotoMenu()
+				return
 			self.setCurrentState()
 			self.setFriend('')
 			self.showMedia(item)
+		elif cat == 'paging':
+			self.setSetting('last_item_name',item.GetProperty('previous'))
+			if item.GetProperty('mediatype') == 'photos': 		self.PHOTOS(item)
+			elif item.GetProperty('mediatype') == 'videos': 	self.VIDEOS(item)
+			elif item.GetProperty('mediatype') == 'albums': 	self.ALBUMS(item)
+			return
+		
 		self.setSetting('last_item_name',item.GetLabel())
 		self.setPathDisplay()
 		
@@ -514,6 +639,9 @@ class FacebookSession:
 			elif action == 'remove_user':
 				self.removeUserMenu()
 		
+	def showPhotoMenu(self):
+		pass
+	
 	def removeUserMenu(self):
 		import xbmcgui #@UnresolvedImport
 		uids = self.getUserList()
@@ -544,7 +672,7 @@ class FacebookSession:
 		for state in self.states:
 			path.append(state.settings.get('last_item_name'))
 		path.append(self.getSetting('last_item_name'))
-		path = '> '.join(path[1:])
+		path = ' : '.join(path[1:])
 		self.setSetting('current_nav_path',path)
 		LOG('PATH - %s' % path)
 		

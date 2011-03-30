@@ -144,7 +144,7 @@ CLOSEREADY = True
 						<posy>115</posy>
 						<width>100</width>
 						<height>12</height>
-						<angle>90</angle>
+<!--						<angle>90</angle>-->
 						<font>font12b</font>
 						<align>left</align>
 						<aligny>center</aligny>
@@ -218,7 +218,7 @@ CLOSEREADY = True
 				<content type="url">
 					<onclick lang="python">
 <![CDATA[
-session.menuItemSelected()
+session.menuItemSelected(select=True)
 ]]>
 					</onclick>
 				</content>
@@ -264,17 +264,32 @@ session.menuItemDeSelected()
                 <visible>Control.IsVisible(190)</visible>
         </control>
        
-		<control type="label">
-			<posx>385</posx>
-			<posy>20</posy>
-			<width>1000</width>
-			<height>20</height>
-			<font>font14b</font>
-			<align>left</align>
-			<aligny>center</aligny>
-			<info>App.String(current_nav_path)</info>
-			<textcolor>FFFFFFFF</textcolor>
-			<shadowcolor>ff000000</shadowcolor>
+		<control type="group">
+			<posx>800r</posx>
+			<posy>0</posy>
+			<control type="image">
+				<posy>-40</posy>
+				<width>800</width>
+				<height>80</height>
+				<texture>facebook-media-tube-back.png</texture>
+			</control>
+			<control type="image">
+				<posy>-40</posy>
+				<width>800</width>
+				<height>80</height>
+				<texture border="2">facebook-media-tube-overlay-left.png</texture>
+			</control>
+			<control type="label">
+				<posx>20</posx>
+				<posy>0</posy>
+				<width>760</width>
+				<height>40</height>
+				<font>font16b</font>
+				<align>left</align>
+				<aligny>center</aligny>
+				<info>App.String(current_nav_path)</info>
+				<textcolor>FFFFFFFF</textcolor>
+			</control>
 		</control>
 		
 		<control type="image" id="190">
@@ -349,11 +364,26 @@ session.menuItemDeSelected()
 			<visible>!INFO[StringCompare(App.String(current_friend_name),)]</visible>
 		</control>
 		
+		<control type="button" id="160">
+			<description>Box Focus</description>
+			<posx>0</posx>
+			<posy>0</posy>
+			<width>1280</width>
+			<height>720</height>
+			<onleft>160</onleft>
+			<onright>160</onright>
+			<onup>160</onup>
+			<ondown>160</ondown>
+			<texturefocus>facebook-media-transparent.png</texturefocus>
+			<texturenofocus>facebook-media-transparent.png</texturenofocus>
+			<visible allowhiddenfocus="true">Control.IsVisible(150)</visible>
+		</control>
+		
 		<control type="group" id="150">
 			<animation effect="slide" start="0,0" end="-500,0" time="400">Visible</animation>
 			<animation effect="slide" start="-500,0" end="0,0" time="400">Hidden</animation>
 			<posx>1280</posx>
-			<posy>20</posy>
+			<posy>63</posy>
 			<width>500</width>
 			<height>60</height>
 			<visible>!$INFO[StringCompare(App.String(progress),)]</visible>
@@ -501,21 +531,6 @@ session.menuItemDeSelected()
 			</control>
 		</control>
 		
-		<control type="button" id="160">
-			<description>Box Focus</description>
-			<posx>0</posx>
-			<posy>0</posy>
-			<width>1280</width>
-			<height>720</height>
-			<onleft>160</onleft>
-			<onright>160</onright>
-			<onup>160</onup>
-			<ondown>160</ondown>
-			<texturefocus>facebook-media-transparent.png</texturefocus>
-			<texturenofocus>facebook-media-transparent.png</texturenofocus>
-			<visible allowhiddenfocus="true">Control.HasFocus(160)</visible>
-		</control>
-		
 		<control type="image">
 			<description>Current User Back</description>
 			<posx>810</posx>
@@ -556,10 +571,10 @@ session.menuItemDeSelected()
 		
 		<!-- OPTIONS MENU                                                          OPTIONS MENU  -->
 		<control type="group">
-			<animation effect="slide" start="0,0" end="200,0" time="300">Visible</animation>
-			<animation effect="slide" start="200,0" end="0,0" time="300">Hidden</animation>
+			<animation effect="slide" start="0,0" end="400,0" time="300">Visible</animation>
+			<animation effect="slide" start="400,0" end="0,0" time="300">Hidden</animation>
 			<visible allowhiddenfocus="true">Control.HasFocus(125)</visible>
-			<posx>-200</posx>
+			<posx>-400</posx>
 			<posy>0</posy>
 			
 			<control type="image">

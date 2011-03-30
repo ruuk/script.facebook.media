@@ -35,7 +35,7 @@ usage of this module might look like this:
 
 import urllib
 import sys, re
-
+from cgi import parse_qs
 # Find a JSON parser
 try:
 	import json
@@ -195,6 +195,54 @@ class GraphWrapAuthError(Exception):
 		self.type = type
 		self.message = message
 
+class Connections(list):
+	def __init__(self,graph,connections=None,first=True):
+		list.__init__(self)
+		self.first = first
+		self.graph = graph
+		self.previous = ''
+		self.next = ''
+		if connections: self.processConnections(connections)
+		
+	def processConnections(self,connections):
+		cons = []
+		for c in connections['data']:
+			cons.append(GraphObject(c['id'],self,c))
+		self._getPaging(connections,len(cons))
+		self.extend(cons)
+		
+	def _getPaging(self,obj,count):
+		paging = obj.get('paging')
+		if not paging: return
+		next = paging.get('next','')
+		prev = paging.get('previous','')
+		limit = self._areTheSame(next, prev, count)
+		if limit:
+			self.previous = self._checkForContent(prev)
+			if not self.previous and count < limit and self.first: return
+			self.next = self._checkForContent(next)
+		
+	def _checkForContent(self,url):
+		if not url: return ''
+		connections = self.graph.request(url)
+		if not 'data' in connections: return ''
+		if not len(connections['data']): return ''
+		return url
+	
+	def _areTheSame(self,next,prev,count):
+		try:
+			limit = int(parse_qs(next.split('?')[-1])['limit'][0])
+		except:
+			limit = count
+			
+		try:
+			next_ut = int(parse_qs(next.split('?')[-1])['until'][0])
+			prev_ut = int(parse_qs(prev.split('?')[-1])['since'][0])
+			if prev_ut == next_ut: return 0
+			return limit
+		except:
+			return limit
+		
 class GraphObject:
 	def __init__(self,id=None,graph=None,data=None,**args):
 		self.id = id
@@ -289,11 +337,11 @@ class GraphConnections:
 		if method in self.cache:
 			return self.cache[method]
 				
-		def handler(paging=True,**args):
+		def handler(**args):
 			fail = False
 			try:
 				connections = self.graph.get_connections(self.graphObject.id, method.replace('__','/'), **args)
-				return self._processConnections(connections,paging)
+				return Connections(self.graph,connections)
 			except GraphAPIError,e:
 				print e.type
 				if not e.type == 'OAuthException': raise
@@ -305,7 +353,7 @@ class GraphConnections:
 					if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 					else: return None
 				connections =  self.graph.get_connections(self.graphObject.id, method.replace('__','/'), **args)
-				return self._processConnections(connections,paging)
+				return Connections(self.graph,connections)
 			
 		handler.method = method
 		
@@ -331,35 +379,9 @@ class GraphWrap(GraphAPI):
 			objects[id] = GraphObject(id,self,data[id])
 		return objects
 		
-	def urlRequest(self,url,paging=True):
+	def urlRequest(self,url):
 		connections = self.request(url)
-		return self._processConnections(connections, paging)
-		
-	def _processConnections(self,connections,paging):
-		cons = []
-		for c in connections['data']:
-			cons.append(GraphObject(c['id'],self,c))
-		if not paging: return cons
-		next,prev = self._getPaging(connections)
-		return cons,next,prev
-
-	def _getPaging(self,obj):
-		paging = obj.get('paging')
-		next = ''
-		prev = ''
-		if paging:
-			next = paging.get('next','')
-			prev = paging.get('previous','')
-			if self.areAlmostTheSame(prev,next):
-				prev = ''
-				next = ''
-		return prev,next
-	
-	def areAlmostTheSame(self,first,second):
-		if not first or not second: return False
-		first = re.sub('(\d{4}-\d{2}-\d{2}T\d{2}%3A\d{2}%3A\d)\d(%2B\d{4})',r'\1x\2',first)
-		second = re.sub('(\d{4}-\d{2}-\d{2}T\d{2}%3A\d{2}%3A\d)\d(%2B\d{4})',r'\1x\2',second)
-		return first == second
+		return Connections(self,connections,first=False)
 	
 	def setLogin(self,email,passw,uid=None,token=None):
 		self.uid = uid
@@ -456,7 +478,6 @@ class GraphWrap(GraphAPI):
 	def extractTokenFromURL(self,url):
 		try:
 			#we submitted the form, check the result url for the access token
-			from cgi import parse_qs
 			import urlparse
 			token = parse_qs(urlparse.urlparse(url.replace('#','?',1))[4])['access_token'][0]
 			print "URL TOKEN: %s" % token
