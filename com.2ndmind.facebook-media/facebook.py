@@ -96,7 +96,7 @@ class GraphAPI(object):
 
 	def get_connections(self, id, connection_name, **args):
 		"""Fetchs the connections for given object."""
-		return self.request(id + "/" + connection_name, args)
+		return self.request(id + "/" + connection_name, args,update_prog=True)
 
 	def put_object(self, parent_object, connection_name, **data):
 		"""Writes the given object to the graph, connected to the given parent.
@@ -153,7 +153,7 @@ class GraphAPI(object):
 		"""Deletes the object with the given ID from the graph."""
 		self.request(id, post_args={"method": "delete"})
 
-	def request(self, path, args=None, post_args=None):
+	def request(self, path, args=None, post_args=None,update_prog=False):
 		"""Fetches the given path in the Graph API.
 
 		We translate args to a valid query string. If post_args is given,
@@ -173,6 +173,7 @@ class GraphAPI(object):
 			pre = ''
 			args = ''
 		fileob = urllib.urlopen(pre + path + args, post_data)
+		if update_prog: self.updateProgress(30)
 		try:
 			response = _parse_json(fileob.read())
 		finally:
@@ -210,6 +211,7 @@ class Connections(list):
 			cons.append(GraphObject(c['id'],self,c))
 		self._getPaging(connections,len(cons))
 		self.extend(cons)
+		self.graph.updateProgress(100)
 		
 	def _getPaging(self,obj,count):
 		paging = obj.get('paging')
@@ -341,6 +343,7 @@ class GraphConnections:
 			fail = False
 			try:
 				connections = self.graph.get_connections(self.graphObject.id, method.replace('__','/'), **args)
+				self.graph.updateProgress(70)
 				return Connections(self.graph,connections)
 			except GraphAPIError,e:
 				print e.type
@@ -353,6 +356,7 @@ class GraphConnections:
 					if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 					else: return None
 				connections =  self.graph.get_connections(self.graphObject.id, method.replace('__','/'), **args)
+				self.graph.updateProgress(70)
 				return Connections(self.graph,connections)
 			
 		handler.method = method
@@ -368,7 +372,23 @@ class GraphWrap(GraphAPI):
 		GraphAPI.__init__(self,token)
 		self.uid = None
 		self._newTokenCallback = new_token_callback
+		self._progCallback = None
+		self._progModifier = 1
+		self._progTotal = 100
+		self._progMessage = ''
 	
+	def withProgress(self,callback,modifier=1,total=100,message=''):
+		self._progCallback = callback
+		self._progModifier = modifier
+		self._progTotal = total
+		self._progMessage = message
+		return self
+		
+	def updateProgress(self,level):
+		if self._progCallback:
+			level *= self._progModifier
+			self._progCallback(int(level),self._progTotal,self._progMessage)
+			
 	def getObject(self,id,**args):
 		return GraphObject(id,self,**args)
 	

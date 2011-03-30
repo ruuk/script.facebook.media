@@ -199,7 +199,7 @@ class FacebookSession:
 		item.SetProperty('from_url',current_url)
 		item.SetProperty('previous',self.getSetting('last_item_name'))
 		return item
-	
+		
 	def CATEGORIES(self,uid='me',name=''):
 		LOG("CATEGORIES - STARTED")
 		window = mc.GetWindow(14001)
@@ -247,6 +247,7 @@ class FacebookSession:
 		
 		items = mc.ListItems()
 		try:
+			self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
 			if paging:
 				if fromUrl:
 					self.paging.append(fromUrl)
@@ -274,6 +275,8 @@ class FacebookSession:
 			
 			total = len(albums)
 			ct = 0
+			offset = 50
+			modifier = 50.0 / total
 			for a in albums:
 				ct += 1
 				cover = None
@@ -292,7 +295,7 @@ class FacebookSession:
 						self.imageURLCache[a.id] = tn_url
 					src_url = tn_url.replace('_a.','_n.')
 					
-				self.updateProgress(ct, total,'ALBUM %s OF %s' % (ct,total))
+				self.updateProgress(int(ct*modifier)+offset,100,'ALBUM %s OF %s' % (ct,total))
 
 				#aname = a.get('name','').encode('ISO-8859-1','replace')
 				aname = ENCODE(a.name(''))
@@ -330,6 +333,7 @@ class FacebookSession:
 		self.saveState()
 		
 		self.startProgress('GETTING FRIENDS...')
+		self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
 		
 		items = mc.ListItems()
 		try:
@@ -344,12 +348,13 @@ class FacebookSession:
 				srt.sort()
 			total = len(srt)
 			ct=0
-			offset = total/2
+			offset = 50
+			modifier = 50.0 / total
 			for s in srt:
 				fid = show[s].id
 				tn_url = show[s].picture('').replace('_q.','_n.')
 				ct+=1
-				self.updateProgress(ct+offset, total+offset, 'FRIEND %s of %s' % (ct,total))
+				self.updateProgress(int(ct*modifier)+offset, 100, 'FRIEND %s of %s' % (ct,total))
 				
 				#if fid in self.imageURLCache:
 				#	tn_url = self.imageURLCache[fid]
@@ -398,6 +403,7 @@ class FacebookSession:
 		if not paging: self.saveState()
 		
 		self.startProgress('GETTING PHOTOS...')
+		self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
 		
 		items = mc.ListItems()
 		try:
@@ -415,7 +421,8 @@ class FacebookSession:
 			tot = len(photos)
 						
 			ct=0
-			
+			offset = 50
+			modifier = 50.0/tot
 			if photos.previous:
 				item = self.getPagingItem('prev', photos.previous, 'photos')
 				items.append(item)
@@ -439,7 +446,7 @@ class FacebookSession:
 				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct += 1
-				self.updateProgress(ct,tot,message='Loading photo %s of %s' % (ct,tot))
+				self.updateProgress(int(ct*modifier)+offset,100,message='Loading photo %s of %s' % (ct,tot))
 				
 			if photos.next:
 				item = self.getPagingItem('next', photos.next, 'photos', paging)
@@ -490,6 +497,8 @@ class FacebookSession:
 				
 			total = len(videos)
 			ct=0
+			offset = 50
+			modifier = 50.0/total
 			for v in videos:
 				item = mc.ListItem( mc.ListItem.MEDIA_VIDEO_OTHER )
 				tn = v.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
@@ -508,7 +517,7 @@ class FacebookSession:
 				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct+=1
-				self.updateProgress(ct, total, 'Loading video %s of %s' % (ct,total))
+				self.updateProgress(int(ct*modifier)+offset,100, 'Loading video %s of %s' % (ct,total))
 				
 			if videos.next:
 				item = self.getPagingItem('next', videos.next, 'videos', paging)
@@ -606,8 +615,8 @@ class FacebookSession:
 			self.VIDEOS(item)
 		elif cat == 'photovideo':
 			if not select:
-				self.showPhotoMenu()
-				return
+				if self.showPhotoMenu():
+					return
 			self.setCurrentState()
 			self.setFriend('')
 			self.showMedia(item)
@@ -640,7 +649,7 @@ class FacebookSession:
 				self.removeUserMenu()
 		
 	def showPhotoMenu(self):
-		pass
+		return False
 	
 	def removeUserMenu(self):
 		import xbmcgui #@UnresolvedImport
