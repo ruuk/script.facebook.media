@@ -144,7 +144,7 @@ CLOSEREADY = True
 						<posy>115</posy>
 						<width>100</width>
 						<height>12</height>
-<!--						<angle>90</angle>-->
+						<angle>450</angle>
 						<font>font12b</font>
 						<align>left</align>
 						<aligny>center</aligny>
@@ -196,7 +196,7 @@ CLOSEREADY = True
 						<posy>115</posy>
 						<width>100</width>
 						<height>12</height>
-						<angle>90</angle>
+						<angle>45</angle>
 						<font>font12b</font>
 						<align>left</align>
 						<aligny>center</aligny>
