@@ -146,7 +146,7 @@ class FacebookSession:
 		for set in self.stateSettings: self.setSetting(set, '')
 		for set in self.stateSettings: self.setSetting(set, state.settings.get(set,''))
 		ilist = mc.GetWindow(14001).GetList(120)
-		ilist.SetItems(state.items)
+		self.fillList(state.items)
 		ilist.SetFocusedItem(state.listIndex)
 			
 	def reInitState(self):
@@ -200,6 +200,19 @@ class FacebookSession:
 		item.SetProperty('previous',self.getSetting('last_item_name'))
 		return item
 		
+	def fillList(self,items):
+		#Fix for unpredictable Boxee wraplist behavior
+		if len(items) < 6:
+			newitems = mc.ListItems()
+			for y in items: newitems.append(y)
+			mult = 6/len(items)
+			if mult < 2: mult = 2
+			for x in range(1,mult): #@UnusedVariable
+				for y in items: newitems.append(y)
+			mc.GetWindow(14001).GetList(120).SetItems(newitems)
+		else:
+			mc.GetWindow(14001).GetList(120).SetItems(items)
+		
 	def CATEGORIES(self,uid='me',name=''):
 		LOG("CATEGORIES - STARTED")
 		window = mc.GetWindow(14001)
@@ -226,7 +239,7 @@ class FacebookSession:
 		
 		mc.HideDialogWait()
 		
-		window.GetList(120).SetItems(items)
+		self.fillList(items)
 		window.GetControl(120).SetFocus()
 		self.setCurrentState(items)
 		self.setSetting('last_item_name','CATEGORIES')
@@ -240,7 +253,6 @@ class FacebookSession:
 		nextprev = item.GetProperty('nextprev')
 		fromUrl = item.GetProperty('from_url')
 		
-		window = mc.GetWindow(14001)
 		if not paging: self.saveState()
 		
 		self.startProgress('GETTING ALBUMS...')
@@ -319,7 +331,7 @@ class FacebookSession:
 			self.endProgress()
 	
 		if items:
-			window.GetList(120).SetItems(items)
+			self.fillList(items)
 			self.setListFocus(nextprev, albums)
 			self.setCurrentState(items)
 		else:
@@ -329,7 +341,6 @@ class FacebookSession:
 			
 	def FRIENDS(self,uid='me'):
 		LOG('FRIENDS - STARTED')
-		window = mc.GetWindow(14001)
 		self.saveState()
 		
 		self.startProgress('GETTING FRIENDS...')
@@ -383,7 +394,7 @@ class FacebookSession:
 			raise
 			
 		if items:
-			window.GetList(120).SetItems(items)
+			self.fillList(items)
 			self.setCurrentState(items)
 		else:
 			self.noItems('Friends')
@@ -399,7 +410,6 @@ class FacebookSession:
 		fromUrl = item.GetProperty('from_url')
 		if item.GetProperty('category') == 'photosofme': aid = uid
 				
-		window = mc.GetWindow(14001)
 		if not paging: self.saveState()
 		
 		self.startProgress('GETTING PHOTOS...')
@@ -456,7 +466,7 @@ class FacebookSession:
 		finally:
 			self.endProgress()
 		if items:
-			window.GetList(120).SetItems(items)
+			self.fillList(items)
 			self.setListFocus(nextprev, photos)
 			self.setCurrentState(items)
 		else:
@@ -473,7 +483,6 @@ class FacebookSession:
 		fromUrl = item.GetProperty('from_url')
 		if item.GetProperty('category') != 'videosofme': uploaded = True
 		
-		window = mc.GetWindow(14001)
 		if not paging: self.saveState()
 		
 		self.startProgress('GETTING VIDEOS...')
@@ -526,7 +535,8 @@ class FacebookSession:
 		finally:
 			self.endProgress()
 		if items:
-			window.GetList(120).SetItems(items)
+			self.fillList(items)
+			#window.GetList(120).SetItems(items)
 			self.setListFocus(nextprev, videos)
 			self.setCurrentState(items)
 		else:
@@ -721,6 +731,7 @@ class FacebookSession:
 		mc.GetPlayer().Play(item)
 		
 	def showMedia(self,item):
+		mc.GetWindow(14001).GetList(120).SetItems(mc.ListItems())
 		if self.itemType(item) == 'image':
 			self.showImage(item)
 		else:
