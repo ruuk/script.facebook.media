@@ -1,9 +1,9 @@
 import mc #@UnresolvedImport
 import os,binascii,urllib,urllib2,time
+import sys, traceback
 
 #import traceback
 import facebook
-reload(facebook)
 from facebook import GraphAPIError
 
 import locale
@@ -16,6 +16,11 @@ def ENCODE(string):
 
 def LOG(message):
 	print 'FACEBOOK MEDIA: %s' % message
+	
+def ERROR(message):
+	LOG(message)
+	traceback.print_exc()
+	return str(sys.exc_info()[1])
 	
 class FacebookUser:
 	def __init__(self,uid):
@@ -146,6 +151,9 @@ class FacebookSession:
 		for set in self.stateSettings: self.setSetting(set, '')
 		for set in self.stateSettings: self.setSetting(set, state.settings.get(set,''))
 		ilist = mc.GetWindow(14001).GetList(120)
+		blank = mc.ListItems()
+		blank.append(mc.ListItem( mc.ListItem.MEDIA_UNKNOWN ))
+		ilist.SetItems(blank)
 		self.fillList(state.items)
 		ilist.SetFocusedItem(state.listIndex)
 			
@@ -247,7 +255,6 @@ class FacebookSession:
 
 	def ALBUMS(self,item):
 		LOG('ALBUMS - STARTED')
-		
 		uid = item.GetProperty('uid')
 		paging = item.GetProperty('paging')
 		nextprev = item.GetProperty('nextprev')
@@ -285,7 +292,7 @@ class FacebookSession:
 				item = self.getPagingItem('prev', albums.previous, 'albums')
 				items.append(item)	
 			
-			total = len(albums)
+			total = len(albums) or 1
 			ct = 0
 			offset = 50
 			modifier = 50.0 / total
@@ -357,7 +364,7 @@ class FacebookSession:
 				srt.append(s)
 				show[s] = f
 				srt.sort()
-			total = len(srt)
+			total = len(srt) or 1
 			ct=0
 			offset = 50
 			modifier = 50.0 / total
@@ -428,7 +435,7 @@ class FacebookSession:
 				photos = self.graph.getObject(aid).connections.photos()
 			print photos.next
 			print photos.previous
-			tot = len(photos)
+			tot = len(photos) or 1
 						
 			ct=0
 			offset = 50
@@ -504,7 +511,7 @@ class FacebookSession:
 				item = self.getPagingItem('prev', videos.previous, 'videos')
 				items.append(item)
 				
-			total = len(videos)
+			total = len(videos) or 1
 			ct=0
 			offset = 50
 			modifier = 50.0/total
@@ -546,7 +553,7 @@ class FacebookSession:
 		
 	def noItems(self,itype='items',paging=None):
 		self.popState(clear=True)
-		message = "%s not available/authorized for this selection." % itype
+		message = "No %s or not authorized." % itype
 		if paging: message = 'End of %s reached.' % itype
 		mc.ShowDialogOk("None Available", message)
 		
@@ -596,49 +603,53 @@ class FacebookSession:
 		self.mediaNextPrev('prev')
 
 	def menuItemSelected(self,select=False):
-		item = self.getFocusedItem(120)
-		
-		cat = item.GetProperty('category')
-		uid = item.GetProperty('uid') or 'me'
-		
-		if cat == 'friend':
-			name = item.GetLabel()
-			self.CATEGORIES(item.GetProperty('fid'),name)
-			self.setFriend(name)
+		try:
+			item = self.getFocusedItem(120)
+			
+			cat = item.GetProperty('category')
+			uid = item.GetProperty('uid') or 'me'
+			
+			if cat == 'friend':
+				name = item.GetLabel()
+				self.CATEGORIES(item.GetProperty('fid'),name)
+				self.setFriend(name)
+				self.setSetting('last_item_name',item.GetLabel())
+				self.setPathDisplay()
+				return
+			else:
+				if uid == 'me': self.setFriend()
+				
+			if cat == 'albums':
+				self.ALBUMS(item)
+			elif cat == 'photos':
+				self.PHOTOS(item)
+			elif cat == 'friends':
+				self.FRIENDS(uid)
+			elif cat == 'videos':
+				self.VIDEOS(item)
+			elif cat == 'photosofme':
+				self.PHOTOS(item)
+			elif cat == 'videosofme':
+				self.VIDEOS(item)
+			elif cat == 'photovideo':
+				if not select:
+					if self.showPhotoMenu():
+						return
+				self.setCurrentState()
+				self.setFriend('')
+				self.showMedia(item)
+			elif cat == 'paging':
+				self.setSetting('last_item_name',item.GetProperty('previous'))
+				if item.GetProperty('mediatype') == 'photos': 		self.PHOTOS(item)
+				elif item.GetProperty('mediatype') == 'videos': 	self.VIDEOS(item)
+				elif item.GetProperty('mediatype') == 'albums': 	self.ALBUMS(item)
+				return
+			
 			self.setSetting('last_item_name',item.GetLabel())
 			self.setPathDisplay()
-			return
-		else:
-			if uid == 'me': self.setFriend()
-			
-		if cat == 'albums':
-			self.ALBUMS(item)
-		elif cat == 'photos':
-			self.PHOTOS(item)
-		elif cat == 'friends':
-			self.FRIENDS(uid)
-		elif cat == 'videos':
-			self.VIDEOS(item)
-		elif cat == 'photosofme':
-			self.PHOTOS(item)
-		elif cat == 'videosofme':
-			self.VIDEOS(item)
-		elif cat == 'photovideo':
-			if not select:
-				if self.showPhotoMenu():
-					return
-			self.setCurrentState()
-			self.setFriend('')
-			self.showMedia(item)
-		elif cat == 'paging':
-			self.setSetting('last_item_name',item.GetProperty('previous'))
-			if item.GetProperty('mediatype') == 'photos': 		self.PHOTOS(item)
-			elif item.GetProperty('mediatype') == 'videos': 	self.VIDEOS(item)
-			elif item.GetProperty('mediatype') == 'albums': 	self.ALBUMS(item)
-			return
-		
-		self.setSetting('last_item_name',item.GetLabel())
-		self.setPathDisplay()
+		except:
+			message = ERROR('UNHANDLED ERROR')
+			mc.ShowDialogOk('ERROR',message)
 		
 	def menuItemDeSelected(self):
 		if not self.popState():
@@ -731,7 +742,6 @@ class FacebookSession:
 		mc.GetPlayer().Play(item)
 		
 	def showMedia(self,item):
-		mc.GetWindow(14001).GetList(120).SetItems(mc.ListItems())
 		if self.itemType(item) == 'image':
 			self.showImage(item)
 		else:

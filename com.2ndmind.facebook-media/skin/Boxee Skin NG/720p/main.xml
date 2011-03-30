@@ -5,7 +5,7 @@
 	<onload lang="python"><![CDATA[
 import mc
 if CLOSEREADY:
-	response = mc.ShowDialogConfirm("Really Exit", "Are you sure you want to exit?", "No", "Yes")
+	response = mc.ShowDialogConfirm("Really Exit", "Are you sure you want to exit Facebook Media?", "No", "Yes")
 	if response:
 		mc.CloseWindow()
 	else:
