@@ -107,12 +107,12 @@ CLOSEREADY = True
 		<control type="group">
 			<posx>150</posx>
 			<posy>0</posy>
-			<control type="wraplist" id="120">
+			<control type="fixedlist" id="120">
 				
 				<width>1252</width>
 				<height>720</height>
 				<orientation>vertical</orientation>
-				<focusposition>1</focusposition>
+				<focusposition>2</focusposition>
 				<scrolltime>400</scrolltime>
 				<itemlayout width="200" height="130">
 					<control type="image">
@@ -141,10 +141,10 @@ CLOSEREADY = True
 					</control>
 					<control type="label">
 						<posx>40</posx>
-						<posy>115</posy>
-						<width>100</width>
+						<posy>105</posy>
+						<width>120</width>
 						<height>12</height>
-						<angle>450</angle>
+<!--						<angle>90</angle>-->
 						<font>font12b</font>
 						<align>left</align>
 						<aligny>center</aligny>
@@ -193,10 +193,10 @@ CLOSEREADY = True
 					</control>
 					<control type="label">
 						<posx>40</posx>
-						<posy>115</posy>
-						<width>100</width>
+						<posy>105</posy>
+						<width>120</width>
 						<height>12</height>
-						<angle>45</angle>
+<!--						<angle>90</angle>-->
 						<font>font12b</font>
 						<align>left</align>
 						<aligny>center</aligny>
