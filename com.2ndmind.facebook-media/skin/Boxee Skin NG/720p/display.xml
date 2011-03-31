@@ -6,7 +6,7 @@
 print "LOAD"
 if CLOSEREADY:
 	try:
-		mc.GetActiveWindow().ClearStateStack()
+		#mc.GetActiveWindow().ClearStateStack()
 		session.loadOptions()
 		session.restoreState(session.current_state)
 		print "FACEBOOK MEDIA: STATE RESTORED"
@@ -19,7 +19,7 @@ CLOSEREADY = True
 ]]></onload>
 <onunload lang="python"><![CDATA[
 print "UNLOAD"
-mc.GetActiveWindow().ClearStateStack()
+#mc.GetActiveWindow().ClearStateStack()
 session.setFriend('')
 CLOSEREADY = True
 ]]></onunload>

@@ -552,7 +552,7 @@ class FacebookSession:
 		LOG("VIDEOS - STOPPED")
 		
 	def noItems(self,itype='items',paging=None):
-		self.popState(clear=True)
+		if not paging: self.popState(clear=True)
 		message = "No %s or not authorized." % itype
 		if paging: message = 'End of %s reached.' % itype
 		mc.ShowDialogOk("None Available", message)
