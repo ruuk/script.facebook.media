@@ -48,6 +48,7 @@ class FacebookSession:
 		self.states = []
 		self.current_state = None
 		self.paging = []
+		self.cancel_progress = False
 		self.lastItemNumber = 0
 		self.CACHE_PATH = os.path.join(mc.GetTempDir(),'facebook-media')
 		if not os.path.exists(self.CACHE_PATH): os.makedirs(self.CACHE_PATH)
@@ -221,10 +222,15 @@ class FacebookSession:
 		else:
 			mc.GetWindow(14001).GetList(120).SetItems(items)
 		
-	def CATEGORIES(self,uid='me',name=''):
+	def CATEGORIES(self,item=None):
 		LOG("CATEGORIES - STARTED")
 		window = mc.GetWindow(14001)
-		if not uid == 'me': self.saveState()
+		uid = 'me'
+		friend_thumb = None
+		if item:
+			self.saveState()
+			uid = item.GetProperty('fid')
+			friend_thumb = item.GetProperty('friend_thumb')
 		
 		items = mc.ListItems()
 		cids = ('albums','videos','friends','photosofme','videosofme')
@@ -237,10 +243,10 @@ class FacebookSession:
 			item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
 			#item.SetContentType("")
 			item.SetLabel(cat)
-			#item.SetDescription(desc)
 			item.SetProperty('category',cid)
 			item.SetProperty('uid',uid)
 			item.SetThumbnail('facebook-media-icon-%s.png' % cid)
+			if friend_thumb: item.SetProperty('friend_thumb',friend_thumb)
 			item.SetProperty('background','')
 			item.SetProperty('previous',self.getSetting('last_item_name'))
 			items.append(item)
@@ -314,7 +320,8 @@ class FacebookSession:
 						self.imageURLCache[a.id] = tn_url
 					src_url = tn_url.replace('_a.','_n.')
 					
-				self.updateProgress(int(ct*modifier)+offset,100,'ALBUM %s OF %s' % (ct,total))
+				if not self.updateProgress(int(ct*modifier)+offset,100,'ALBUM %s OF %s' % (ct,total)):
+					return
 
 				#aname = a.get('name','').encode('ISO-8859-1','replace')
 				aname = ENCODE(a.name(''))
@@ -384,6 +391,7 @@ class FacebookSession:
 				item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
 				item.SetLabel(ENCODE(name))
 				item.SetThumbnail(ENCODE(tn_url))
+				item.SetProperty('friend_thumb',ENCODE(tn_url))
 				item.SetProperty('uid',uid)
 				item.SetProperty('fid',ENCODE(fid))
 				item.SetProperty('category','friend')
@@ -611,7 +619,7 @@ class FacebookSession:
 			
 			if cat == 'friend':
 				name = item.GetLabel()
-				self.CATEGORIES(item.GetProperty('fid'),name)
+				self.CATEGORIES(item)
 				self.setFriend(name)
 				self.setSetting('last_item_name',item.GetLabel())
 				self.setPathDisplay()
@@ -710,25 +718,35 @@ class FacebookSession:
 		self.setSetting('current_friend_name',name)
 		
 	def startProgress(self,message):
+		self.cancel_progress = False
 		mc.GetWindow(14001).GetControl(160).SetFocus()
 		mc.ShowDialogWait()
 		mc.GetWindow(14001).GetLabel(152).SetLabel(message)
 		self.setSetting('progress','0')
 		
 	def updateProgress(self,ct,total,message=''):
-		if ct < 0 or ct > total:
-			LOG('PROGRESS OUT OF BOUNDS')
-			return
-		pct = int((ct / float(total)) * 20) * 5
-		window = mc.GetWindow(14001)
-		self.setSetting('progress',str(pct))
-		window.GetLabel(152).SetLabel(message)
+		if self.cancel_progress: return False
+		try:
+			if ct < 0 or ct > total:
+				LOG('PROGRESS OUT OF BOUNDS')
+				return
+			pct = int((ct / float(total)) * 20) * 5
+			window = mc.GetWindow(14001)
+			self.setSetting('progress',str(pct))
+			window.GetLabel(152).SetLabel(message)
+		except:
+			return False
+		return True
 	
 	def endProgress(self):
 		self.setSetting('progress','')
 		mc.HideDialogWait()
 		mc.GetWindow(14001).GetControl(120).SetFocus()
 	
+	def cancelProgress(self):
+		LOG('PROGRESS CANCEL ATTEMPT')
+		self.cancel_progress = True
+		
 	def showImages(self,items,number=0):
 		LOG('SHOW IMAGES')
 		mc.GetPlayer().PlaySlideshow(items, True, False, str(number), True)

@@ -176,7 +176,7 @@ CLOSEREADY = True
 						<colordiffuse>FF000000</colordiffuse>
 					</control>
 					<control type="image">
-						<animation effect="fade" start="41" end="41" time="400">UnFocus</animation>
+						<animation effect="fade" start="53" end="53" time="400">UnFocus</animation>
 						<posx>32</posx>
 						<posy>5</posy>
 						<width>137</width>
@@ -301,6 +301,17 @@ session.menuItemDeSelected()
 			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:category),photovideo)]</visible>
 		</control>
 		
+		<control type="largeimage">
+			<description>Friend Image</description>
+			<posx>820r</posx>
+			<posy>500r</posy>
+			<width>640</width>
+			<height>480</height>
+			<aspectratio>keep</aspectratio>
+			<texture diffuse="facebook-media-small-swirl-mask.png">$INFO[Container(120).ListItem.Property(custom:friend_thumb)]</texture>
+			<visible>!$INFO[StringCompare(Container(120).ListItem.Property(custom:friend_thumb),)]</visible>
+		</control>
+		
 		<control type="group" id="210">
 			<animation effect="slide" start="0,0" end="740,0" time="400">Visible</animation>
 			<animation effect="slide" start="740,0" end="0,0" time="400">Hidden</animation>
@@ -374,8 +385,8 @@ session.menuItemDeSelected()
 			<onright>160</onright>
 			<onup>160</onup>
 			<ondown>160</ondown>
-			<texturefocus>facebook-media-transparent.png</texturefocus>
-			<texturenofocus>facebook-media-transparent.png</texturenofocus>
+			<texturefocus>facebook-media-progress-overlay.png</texturefocus>
+			<texturenofocus>facebook-media-progress-overlay.png</texturenofocus>
 			<visible allowhiddenfocus="true">Control.IsVisible(150)</visible>
 		</control>
 		
