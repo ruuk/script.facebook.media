@@ -8,7 +8,7 @@ if CLOSEREADY:
 	try:
 		#mc.GetActiveWindow().ClearStateStack()
 		session.loadOptions()
-		session.restoreState(session.current_state)
+		session.restoreState(session.current_state,onload=True)
 		print "FACEBOOK MEDIA: STATE RESTORED"
 	except:
 		import traceback
@@ -46,15 +46,16 @@ CLOSEREADY = True
 			<width>1280</width>
 			<height>100</height>
 			<texture>facebook-media-tube-back.png</texture>
-			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:category),photovideo)]</visible>
+			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
 		</control>
 		<control type="image">
-			<posx>0</posx>
+			<animation effect="slide" start="0,0" end="905,0" time="200" condition="Control.HasFocus(128)">Conditional</animation>
+			<posx>-905</posx>
 			<posy>145</posy>
-			<width>375</width>
+			<width>1280</width>
 			<height>100</height>
 			<texture>facebook-media-tube-back.png</texture>
-			<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:category),photovideo)]</visible>
+			<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
 		</control>
 		
 		<control type="label">
@@ -87,21 +88,137 @@ CLOSEREADY = True
 			<texture flipx="true">facebook-media-left-arrow.png</texture>
 		</control>
 		
+		<control type="group">
+			<posx>890r</posx>
+			<posy>145</posy>
+			<visible allowhiddenfocus="true">Control.HasFocus(128)</visible>
+			<control type="list" id="128">
+				<width>880</width>
+				<height>111</height>
+				<orientation>horizontal</orientation>
+				<scrolltime>100</scrolltime>
+				<itemlayout width="220" height="100">
+					<control type="label">
+						<posx>110</posx>
+						<posy>0</posy>
+						<width>220</width>
+						<height>100</height>
+						<font>font32b</font>
+						<align>center</align>
+						<aligny>center</aligny>
+						<info>ListItem.Label</info>
+						<textcolor>white</textcolor>
+					</control>
+				</itemlayout>
+				<focusedlayout width="220" height="106">
+					<control type="image">
+						<posx>0</posx>
+						<posy>0</posy>
+						<width>220</width>
+						<height>100</height>
+						<texture>facebook-media-progress-bar.png</texture>
+					</control>
+					<control type="image">
+						<posx>0</posx>
+						<posy>0</posy>
+						<width>220</width>
+						<height>100</height>
+						<texture border="2">facebook-media-tube-overlay-lr.png</texture>
+					</control>
+					<control type="group">
+						<visible>!$INFO[StringCompare(Container(128).ListItem.Property(custom:data),)]</visible>
+						<control type="image">
+							<posx>0</posx>
+							<posy>100</posy>
+							<width>220</width>
+							<height>10</height>
+							<texture>facebook-media-tube-back.png</texture>
+						</control>
+						<control type="image">
+							<posx>0</posx>
+							<posy>100</posy>
+							<width>220</width>
+							<height>10</height>
+							<texture>facebook-media-progress-bar.png</texture>
+						</control>
+						<control type="image">
+							<posy>0</posy>
+							<width>220</width>
+							<height>111</height>
+							<texture border="3">facebook-media-clear-overlay.png</texture>
+						</control>
+					</control>
+					<control type="label">
+						<posx>110</posx>
+						<posy>0</posy>
+						<width>220</width>
+						<height>100</height>
+						<font>font32b</font>
+						<align>center</align>
+						<aligny>center</aligny>
+						<info>ListItem.Label</info>
+						<textcolor>white</textcolor>
+					</control>
+				</focusedlayout>
+				<content type="url">
+					<onclick lang="python">
+<![CDATA[
+session.photovideoMenuSelected()
+]]>
+					</onclick>
+				</content>
+				<onleft>120</onleft>
+				<onup>120</onup>
+				<ondown>120</ondown>
+			</control>
+			<control type="group" id="129">
+				<posy>110</posy>
+				<visible>!$INFO[StringCompare(Container(128).ListItem.Property(custom:data),)]</visible>
+				<control type="image">
+					<width>860</width>
+					<height>200</height>
+					<texture>facebook-media-tube-back.png</texture>
+				</control>
+				<control type="image">
+					<width>860</width>
+					<height>200</height>
+					<texture>facebook-media-progress-bar.png</texture>
+				</control>
+				<control type="textbox">
+					<posx>10</posx>
+					<posy>10</posy>
+					<width>840</width>
+					<height>180</height>
+					<font>font20b</font>
+					<info>Container(128).ListItem.Property(custom:data)</info>
+					<textcolor>white</textcolor>
+					<shadowcolor>black</shadowcolor>
+					<autoscroll delay="5000" time="1000" repeat="2000">Control.IsVisible(129)</autoscroll>
+				</control>
+				<control type="image">
+					<width>860</width>
+					<height>200</height>
+					<texture border="3">facebook-media-clear-overlay.png</texture>
+				</control>
+			</control>
+		</control>
+		
 		<control type="image">
 			<posx>0</posx>
 			<posy>145</posy>
 			<width>350</width>
 			<height>100</height>
 			<texture>facebook-media-tube-overlay.png</texture>
-			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:category),photovideo)]</visible>
+			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
 		</control>
 		<control type="image">
-			<posx>0</posx>
+			<animation effect="slide" start="0,0" end="905,0" time="200" condition="Control.HasFocus(128)">Conditional</animation>
+			<posx>-905</posx>
 			<posy>145</posy>
-			<width>375</width>
+			<width>1280</width>
 			<height>100</height>
 			<texture border="2">facebook-media-tube-overlay-right.png</texture>
-			<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:category),photovideo)]</visible>
+			<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
 		</control>
 		
 		<control type="group">
@@ -298,7 +415,7 @@ session.menuItemDeSelected()
 			<width>1060</width>
 			<height>100</height>
 			<texture>facebook-media-tube-overlay.png</texture>
-			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:category),photovideo)]</visible>
+			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
 		</control>
 		
 		<control type="largeimage">

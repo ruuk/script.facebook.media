@@ -40,14 +40,17 @@ from cgi import parse_qs
 try:
 	import json
 	_parse_json = lambda s: json.loads(s)
+	_dump_json = lambda s: json.dumps(s)
 except ImportError:
 	try:
 		import simplejson
 		_parse_json = lambda s: simplejson.loads(s)
+		_dump_json = lambda s: simplejson.dumps(s)
 	except ImportError:
 		# For Google AppEngine
 		from django.utils import simplejson
 		_parse_json = lambda s: simplejson.loads(s)
+		_dump_json = lambda s: simplejson.dumps(s)
 
 
 class GraphAPI(object):
@@ -197,10 +200,11 @@ class GraphWrapAuthError(Exception):
 		self.message = message
 
 class Connections(list):
-	def __init__(self,graph,connections=None,first=True):
+	def __init__(self,graph,connections=None,first=True,progress=True):
 		list.__init__(self)
 		self.first = first
 		self.graph = graph
+		self.progress = progress
 		self.previous = ''
 		self.next = ''
 		if connections: self.processConnections(connections)
@@ -208,10 +212,10 @@ class Connections(list):
 	def processConnections(self,connections):
 		cons = []
 		for c in connections['data']:
-			cons.append(GraphObject(c['id'],self,c))
+			cons.append(GraphObject(c['id'],self.graph,c))
 		self._getPaging(connections,len(cons))
 		self.extend(cons)
-		self.graph.updateProgress(100)
+		if self.progress: self.graph.updateProgress(100)
 		
 	def _getPaging(self,obj,count):
 		paging = obj.get('paging')
@@ -257,25 +261,37 @@ class GraphObject:
 			self._data = self._getObjectData(id,**args)
 			self.id = self._data.get('id') or 'me'
 		
+	def get(self,key,default=None,as_json=False):
+		return self._getData(key,default,as_json)
+		
 	def __getattr__(self, property):
 		if property.startswith('_'): return object.__getattr__(self,property)
 		if property in self._cache:
 			return self._cache[property]
 		
 		if not self._data:
-			print "FROG 1"
 			self._data = self._getObjectData(self.id,**self.args)
 			if self.id == 'me': self.id = self._data.get('id') or 'me'
-			print "FROG 2"
 			print self.id
 		
-		def handler(default=None):
-			return self._data.get(property) or default
+		def handler(default=None,as_json=False):
+			return self._getData(property,default,as_json)
 			
 		handler.method = property
 		
 		self._cache[property] = handler
 		return handler
+	
+	def _getData(self,property,default,as_json):
+		val = self._data.get(property)
+		if not val: return default
+		if type(val) == type({}):
+			if 'data' in val:
+				if as_json:
+					return self._toJSON(val)
+				else:
+					return Connections(self.graph,val,progress=False)
+		return val
 	
 	def _getObjectData(self,id,**args):
 		fail = False
@@ -291,6 +307,9 @@ class GraphObject:
 				if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 				else: return None
 			return self.graph.get_object(id,**args)
+		
+	def _toJSON(self,data_obj):
+		return _dump_json(data_obj)
 		
 class GraphData:
 	def __init__(self,graphObject,data=None):
@@ -388,6 +407,14 @@ class GraphWrap(GraphAPI):
 		if self._progCallback:
 			level *= self._progModifier
 			self._progCallback(int(level),self._progTotal,self._progMessage)
+			
+	def fromJSON(self,json_string):
+		if not json_string: return None
+		data_obj = _parse_json(json_string)
+		if type(data_obj) == type({}):
+			if 'data' in data_obj:
+				return Connections(self,data_obj,progress=False)
+		return data_obj
 			
 	def getObject(self,id,**args):
 		return GraphObject(id,self,**args)

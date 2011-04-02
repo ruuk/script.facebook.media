@@ -4,6 +4,7 @@ import sys, traceback
 
 #import traceback
 import facebook
+reload(facebook)
 from facebook import GraphAPIError
 
 import locale
@@ -148,13 +149,10 @@ class FacebookSession:
 		if not clear: self.restoreState(state)
 		return True
 	
-	def restoreState(self,state):
+	def restoreState(self,state,onload=False):
 		for set in self.stateSettings: self.setSetting(set, '')
 		for set in self.stateSettings: self.setSetting(set, state.settings.get(set,''))
 		ilist = mc.GetWindow(14001).GetList(120)
-		blank = mc.ListItems()
-		blank.append(mc.ListItem( mc.ListItem.MEDIA_UNKNOWN ))
-		ilist.SetItems(blank)
 		self.fillList(state.items)
 		ilist.SetFocusedItem(state.listIndex)
 			
@@ -200,6 +198,7 @@ class FacebookSession:
 			item.SetLabel(caption)
 		else:
 			item.SetProperty('caption',caption)
+			item.SetProperty('hidetube','true')
 		
 		item.SetProperty('category','paging')
 		item.SetProperty('paging',ENCODE(url))
@@ -453,6 +452,8 @@ class FacebookSession:
 				items.append(item)
 				
 			for p in photos:
+				comments = p.comments(as_json=True)
+				tags = p.tags(as_json=True)
 				tn = p.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn) # this seems to get better results then using the random server
 				item = mc.ListItem( mc.ListItem.MEDIA_PICTURE )
@@ -461,13 +462,17 @@ class FacebookSession:
 				caption = ENCODE(urllib.unquote(p.name('')))
 				item.SetPath(source)
 				item.SetProperty('category','photovideo')
+				item.SetProperty('hidetube','true')
 				item.SetLabel('')
 				item.SetImage(0,source)
 				item.SetThumbnail(ENCODE(tn))
 				item.SetProperty('uid',uid)
+				item.SetProperty('id',ENCODE(p.id))
 				#item.SetProperty('next',ENCODE(photos.next))
 				#item.SetProperty('prev',ENCODE(photos.previous))
 				item.SetProperty('caption',caption)
+				if comments: item.SetProperty('comments',str(comments))
+				if tags: item.SetProperty('tags',str(tags))
 				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct += 1
@@ -501,6 +506,8 @@ class FacebookSession:
 		if not paging: self.saveState()
 		
 		self.startProgress('GETTING VIDEOS...')
+		self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
+		
 		items = mc.ListItems()
 		try:
 			if paging:
@@ -525,6 +532,8 @@ class FacebookSession:
 			modifier = 50.0/total
 			for v in videos:
 				item = mc.ListItem( mc.ListItem.MEDIA_VIDEO_OTHER )
+				comments = v.comments(as_json=True)
+				tags = v.tags(as_json=True)
 				tn = v.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn)
 				caption = ENCODE(urllib.unquote(v.name('')))
@@ -532,12 +541,16 @@ class FacebookSession:
 				#item.SetLabel('')
 				item.SetPath(ENCODE(v.source('')))
 				item.SetProperty('uid',uid)
+				item.SetProperty('id',ENCODE(v.id))
 				item.SetProperty('category','photovideo')
+				item.SetProperty('hidetube','true')
 				item.SetThumbnail(ENCODE(tn))
 				item.SetImage(0,ENCODE(tn))
 				#item.SetProperty('next',ENCODE(videos.next))
 				#item.SetProperty('prev',ENCODE(videos.previous))
 				item.SetProperty('caption',caption)
+				if comments: item.SetProperty('comments',str(comments))
+				if tags: item.SetProperty('tags',str(tags))
 				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct+=1
@@ -645,6 +658,7 @@ class FacebookSession:
 						return
 				self.setCurrentState()
 				self.setFriend('')
+				self.preMediaSetup()
 				self.showMedia(item)
 			elif cat == 'paging':
 				self.setSetting('last_item_name',item.GetProperty('previous'))
@@ -677,9 +691,53 @@ class FacebookSession:
 			elif action == 'remove_user':
 				self.removeUserMenu()
 		
-	def showPhotoMenu(self):
-		return False
+	def photovideoMenuSelected(self):
+		mc.GetWindow(14001).GetControl(120).SetFocus()
+		item = self.getFocusedItem(128)
+		name = item.GetProperty('name')
+		itemNumber = int(item.GetProperty('item_number'))
+		if name == 'slideshow':
+			self.setFriend()
+			items = mc.GetWindow(14001).GetList(120).GetItems()
+			self.preMediaSetup()
+			self.showImages(items,itemNumber,options=(False,False,False))
 	
+	def showPhotoMenu(self):
+		self.setCurrentState()
+		items = mc.ListItems()
+		itemNumber = mc.GetWindow(14001).GetList(120).GetFocusedItem()
+		item = self.getFocusedItem(120)
+		comments_string = ''
+		tags_string = ''
+		comments = self.graph.fromJSON(item.GetProperty('comments'))
+		if comments:
+			for c in comments:
+				name = c.get('from',{}).get('name','')
+				comments_string += '[COLOR yellow]%s:[/COLOR][CR]%s[CR][CR]' % (name,c.message(''))
+		tags = self.graph.fromJSON(item.GetProperty('tags'))
+		if tags:
+			for t in tags:
+				tags_string += '[COLOR yellow]%s[/COLOR][CR]' % t.name('')
+				
+		if comments:
+			items.append(self.createPhotoMenuItem('comments', 'COMMENTS', comments_string, itemNumber))
+		if tags:
+			items.append(self.createPhotoMenuItem('tags', 'TAGS', tags_string, itemNumber))
+		if self.itemType(item) == 'image':
+			items.append(self.createPhotoMenuItem('slideshow', 'SLIDESHOW', '', itemNumber))
+		mc.GetWindow(14001).GetList(128).SetItems(items)
+		mc.GetWindow(14001).GetControl(128).SetFocus()
+		return True
+	
+	def createPhotoMenuItem(self,name,label,data,itemNumber):
+		item = mc.ListItem(mc.ListItem.MEDIA_UNKNOWN)
+		item.SetLabel(label)
+		item.SetProperty('name',name)
+		item.SetProperty('item_number',str(itemNumber))
+		item.SetProperty('data',ENCODE(data))
+		return item
+		
+		
 	def removeUserMenu(self):
 		import xbmcgui #@UnresolvedImport
 		uids = self.getUserList()
@@ -747,9 +805,14 @@ class FacebookSession:
 		LOG('PROGRESS CANCEL ATTEMPT')
 		self.cancel_progress = True
 		
-	def showImages(self,items,number=0):
+	def preMediaSetup(self):
+		blank = mc.ListItems()
+		blank.append(mc.ListItem( mc.ListItem.MEDIA_UNKNOWN ))
+		mc.GetWindow(14001).GetList(120).SetItems(blank)
+		
+	def showImages(self,items,number=0,options=(True,False,True)):
 		LOG('SHOW IMAGES')
-		mc.GetPlayer().PlaySlideshow(items, True, False, str(number), True)
+		mc.GetPlayer().PlaySlideshow(items, options[0], options[1], str(number), options[2])
 		
 	def showImage(self,item):
 		items = mc.ListItems()
