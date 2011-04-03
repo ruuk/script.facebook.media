@@ -451,6 +451,8 @@ class FacebookSession:
 				item = self.getPagingItem('prev', photos.previous, 'photos')
 				items.append(item)
 				
+			if uid == 'me': uid = self.currentUser.id
+			
 			for p in photos:
 				comments = p.comments(as_json=True)
 				tags = p.tags(as_json=True)
@@ -459,7 +461,7 @@ class FacebookSession:
 				item = mc.ListItem( mc.ListItem.MEDIA_PICTURE )
 				item.SetLabel(ENCODE(self.removeCRLF(p.name(p.id))))
 				source = ENCODE(p.source())
-				caption = ENCODE(urllib.unquote(p.name('')))
+				caption = self.makeCaption(p, uid)
 				item.SetPath(source)
 				item.SetProperty('category','photovideo')
 				item.SetProperty('hidetube','true')
@@ -525,7 +527,9 @@ class FacebookSession:
 			if videos.previous:
 				item = self.getPagingItem('prev', videos.previous, 'videos')
 				items.append(item)
-				
+			
+			if uid == 'me': uid = self.currentUser.id
+			
 			total = len(videos) or 1
 			ct=0
 			offset = 50
@@ -536,7 +540,7 @@ class FacebookSession:
 				tags = v.tags(as_json=True)
 				tn = v.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn)
-				caption = ENCODE(urllib.unquote(v.name('')))
+				caption = self.makeCaption(v, uid)
 				#item.SetLabel(ENCODE(self.removeCRLF(v.get('name',v.get('id','None')))))
 				#item.SetLabel('')
 				item.SetPath(ENCODE(v.source('')))
@@ -571,6 +575,17 @@ class FacebookSession:
 			self.noItems('Videos',paging)
 			
 		LOG("VIDEOS - STOPPED")
+		
+	def makeCaption(self,obj,uid):
+		name = ''
+		f_id = obj.from_({}).get('id','')
+		if f_id != uid:
+			name = obj.from_({}).get('name','') or ''
+			if name: name = '[COLOR green]FROM: %s[/COLOR][CR]' % name
+		title = obj.name('')
+		if title: title = '[COLOR yellow]%s[/COLOR][CR]' % title
+		caption = name + title + obj.description('')
+		return ENCODE(urllib.unquote(caption))
 		
 	def noItems(self,itype='items',paging=None):
 		if not paging: self.popState(clear=True)
@@ -624,6 +639,7 @@ class FacebookSession:
 		self.mediaNextPrev('prev')
 
 	def menuItemSelected(self,select=False):
+		state_len = len(self.states)
 		try:
 			item = self.getFocusedItem(120)
 			
@@ -670,6 +686,7 @@ class FacebookSession:
 			self.setSetting('last_item_name',item.GetLabel())
 			self.setPathDisplay()
 		except:
+			if len(self.states) > state_len: self.popState()
 			message = ERROR('UNHANDLED ERROR')
 			mc.ShowDialogOk('ERROR',message)
 		
@@ -712,7 +729,7 @@ class FacebookSession:
 		comments = self.graph.fromJSON(item.GetProperty('comments'))
 		if comments:
 			for c in comments:
-				name = c.get('from',{}).get('name','')
+				name = c.from_({}).get('name','')
 				comments_string += '[COLOR yellow]%s:[/COLOR][CR]%s[CR][CR]' % (name,c.message(''))
 		tags = self.graph.fromJSON(item.GetProperty('tags'))
 		if tags:

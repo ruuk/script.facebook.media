@@ -266,6 +266,7 @@ class GraphObject:
 		
 	def __getattr__(self, property):
 		if property.startswith('_'): return object.__getattr__(self,property)
+		if property.endswith('_'): property = property[:-1]
 		if property in self._cache:
 			return self._cache[property]
 		

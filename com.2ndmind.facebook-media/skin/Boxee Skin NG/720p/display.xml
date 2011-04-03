@@ -88,8 +88,10 @@ CLOSEREADY = True
 			<texture flipx="true">facebook-media-left-arrow.png</texture>
 		</control>
 		
+		<!-- PHOTOVIDEO MENU - - - - - - - - - - - - - - - - - - - - - - - - - - PHOTOVIDEO MENU  -->
 		<control type="group">
-			<posx>890r</posx>
+			<animation effect="slide" start="0,0" end="1660,0" time="200" condition="Control.HasFocus(128)">Conditional</animation>
+			<posx>-1270</posx>
 			<posy>145</posy>
 			<visible allowhiddenfocus="true">Control.HasFocus(128)</visible>
 			<control type="list" id="128">
@@ -123,7 +125,7 @@ CLOSEREADY = True
 						<posy>0</posy>
 						<width>220</width>
 						<height>100</height>
-						<texture border="2">facebook-media-tube-overlay-lr.png</texture>
+						<texture border="3">facebook-media-tube-overlay-lr.png</texture>
 					</control>
 					<control type="group">
 						<visible>!$INFO[StringCompare(Container(128).ListItem.Property(custom:data),)]</visible>
@@ -175,20 +177,20 @@ session.photovideoMenuSelected()
 				<posy>110</posy>
 				<visible>!$INFO[StringCompare(Container(128).ListItem.Property(custom:data),)]</visible>
 				<control type="image">
-					<width>860</width>
-					<height>200</height>
+					<width>800</width>
+					<height>300</height>
 					<texture>facebook-media-tube-back.png</texture>
 				</control>
 				<control type="image">
-					<width>860</width>
-					<height>200</height>
+					<width>800</width>
+					<height>300</height>
 					<texture>facebook-media-progress-bar.png</texture>
 				</control>
 				<control type="textbox">
 					<posx>10</posx>
 					<posy>10</posy>
-					<width>840</width>
-					<height>180</height>
+					<width>780</width>
+					<height>280</height>
 					<font>font20b</font>
 					<info>Container(128).ListItem.Property(custom:data)</info>
 					<textcolor>white</textcolor>
@@ -196,8 +198,8 @@ session.photovideoMenuSelected()
 					<autoscroll delay="5000" time="1000" repeat="2000">Control.IsVisible(129)</autoscroll>
 				</control>
 				<control type="image">
-					<width>860</width>
-					<height>200</height>
+					<width>800</width>
+					<height>300</height>
 					<texture border="3">facebook-media-clear-overlay.png</texture>
 				</control>
 			</control>
@@ -217,7 +219,7 @@ session.photovideoMenuSelected()
 			<posy>145</posy>
 			<width>1280</width>
 			<height>100</height>
-			<texture border="2">facebook-media-tube-overlay-right.png</texture>
+			<texture border="3">facebook-media-tube-overlay-right.png</texture>
 			<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
 		</control>
 		
@@ -231,6 +233,7 @@ session.photovideoMenuSelected()
 				<focusposition>1</focusposition>
 				<scrolltime>400</scrolltime>
 				<orientation>vertical</orientation>
+				<hitrect x="0" y="0" w="200" h="720" />
 				<itemlayout width="200" height="130">
 					<control type="image">
 						<posx>32</posx>
@@ -394,7 +397,7 @@ session.menuItemDeSelected()
 				<posy>-40</posy>
 				<width>800</width>
 				<height>80</height>
-				<texture border="2">facebook-media-tube-overlay-left.png</texture>
+				<texture border="3">facebook-media-tube-overlay-left.png</texture>
 			</control>
 			<control type="label">
 				<posx>20</posx>
@@ -441,18 +444,16 @@ session.menuItemDeSelected()
 				<height>130</height>
 				<texture border="20">facebook-media-tube-back.png</texture>
 			</control>
-			<control type="label">
+			<control type="textbox">
 				<posx>20</posx>
 				<posy>10</posy>
 				<width>330</width>
 				<height>110</height>
 				<font>font20b</font>
-				<align>center</align>
-				<aligny>center</aligny>
 				<textcolor>white</textcolor>
 				<info>Container(120).ListItem.property(custom:caption)</info>
 				<shadowcolor>ff000000</shadowcolor>
-				<wrapmultiline>true</wrapmultiline>
+				<autoscroll delay="5000" time="1000" repeat="2000">Control.IsVisible(210)</autoscroll>
 			</control>
 			<control type="image">
 				<width>370</width>
@@ -487,7 +488,7 @@ session.menuItemDeSelected()
 			<control type="image">
 				<width>450</width>
 				<height>60</height>
-				<texture border="2">facebook-media-tube-overlay-left.png</texture>
+				<texture border="3">facebook-media-tube-overlay-left.png</texture>
 			</control>
 			<visible>!INFO[StringCompare(App.String(current_friend_name),)]</visible>
 		</control>
@@ -504,7 +505,8 @@ session.menuItemDeSelected()
 			<ondown>160</ondown>
 			<texturefocus>facebook-media-progress-overlay.png</texturefocus>
 			<texturenofocus>facebook-media-progress-overlay.png</texturenofocus>
-			<visible allowhiddenfocus="true">Control.IsVisible(150)</visible>
+			<visible allowhiddenfocus="true">Control.IsVisible(150) | Control.HasFocus(160)</visible>
+			<enable>Control.HasFocus(160)</enable>
 		</control>
 		
 		<control type="group" id="150">
@@ -655,7 +657,7 @@ session.menuItemDeSelected()
 			<control type="image">
 				<width>500</width>
 				<height>60</height>
-				<texture border="2">facebook-media-tube-overlay-left.png</texture>
+				<texture border="3">facebook-media-tube-overlay-left.png</texture>
 			</control>
 		</control>
 		
@@ -694,10 +696,10 @@ session.menuItemDeSelected()
 			<posy>603</posy>
 			<width>500</width>
 			<height>100</height>
-			<texture border="2">facebook-media-tube-overlay-left.png</texture>
+			<texture border="3">facebook-media-tube-overlay-left.png</texture>
 		</control>
 		
-		<!-- OPTIONS MENU                                                          OPTIONS MENU  -->
+		<!-- OPTIONS MENU - - - - - - - - - - - - - - - - - - - - - - - - - - - - OPTIONS MENU  -->
 		<control type="group">
 			<animation effect="slide" start="0,0" end="400,0" time="300">Visible</animation>
 			<animation effect="slide" start="400,0" end="0,0" time="300">Hidden</animation>
@@ -763,7 +765,7 @@ session.menuItemDeSelected()
 					<control type="image">
 						<width>395</width>
 						<height>100</height>
-						<texture border="2">facebook-media-tube-overlay-right.png</texture>
+						<texture border="3">facebook-media-tube-overlay-right.png</texture>
 					</control>
 				</focusedlayout>
 				<content type="url">
