@@ -4,7 +4,6 @@ import sys, traceback
 
 #import traceback
 import facebook
-reload(facebook)
 from facebook import GraphAPIError
 
 import locale
