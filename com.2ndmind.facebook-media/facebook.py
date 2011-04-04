@@ -251,6 +251,8 @@ class Connections(list):
 		
 class GraphObject:
 	def __init__(self,id=None,graph=None,data=None,**args):
+		if not id and data:
+			if id in data: id = data[id]
 		self.id = id
 		self.args = args
 		self.graph = graph
@@ -261,6 +263,9 @@ class GraphObject:
 			self._data = self._getObjectData(id,**args)
 			self.id = self._data.get('id') or 'me'
 		
+	def toJSON(self):
+		return self._toJSON(self._data)
+	
 	def get(self,key,default=None,as_json=False):
 		return self._getData(key,default,as_json)
 		
@@ -415,6 +420,8 @@ class GraphWrap(GraphAPI):
 		if type(data_obj) == type({}):
 			if 'data' in data_obj:
 				return Connections(self,data_obj,progress=False)
+			elif 'id' in data_obj:
+				return GraphObject(graph=self,data=data_obj)
 		return data_obj
 			
 	def getObject(self,id,**args):

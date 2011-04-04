@@ -29,7 +29,7 @@ CLOSEREADY = True
 			<posy>0</posy>
 			<width>1280</width>
 			<height>720</height>
-			<texture>facebook-media-menu-background.png</texture>
+			<texture>facebook-media-menu-background.jpg</texture>
 		</control>
 		<control type="image" id="100">
 			<posx>0</posx>
@@ -371,7 +371,7 @@ session.menuItemDeSelected()
                 <width>1280</width>
                 <height>720</height>
                 <!--  <aspectratio scalediffuse="false">scale</aspectratio> -->
-                <texture background="true" diffuse="facebook-media-menu-mask.png">facebook-media-menu-background.png</texture>
+                <texture background="true" diffuse="facebook-media-menu-mask.png">facebook-media-menu-background.jpg</texture>
                 <visible>Control.IsVisible(190)</visible>
         </control>
         <control type="image" id="109">

@@ -453,8 +453,8 @@ class FacebookSession:
 			if uid == 'me': uid = self.currentUser.id
 			
 			for p in photos:
-				comments = p.comments(as_json=True)
-				tags = p.tags(as_json=True)
+				#comments = p.comments(as_json=True)
+				#tags = p.tags(as_json=True)
 				tn = p.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn) # this seems to get better results then using the random server
 				item = mc.ListItem( mc.ListItem.MEDIA_PICTURE )
@@ -472,8 +472,9 @@ class FacebookSession:
 				#item.SetProperty('next',ENCODE(photos.next))
 				#item.SetProperty('prev',ENCODE(photos.previous))
 				item.SetProperty('caption',caption)
-				if comments: item.SetProperty('comments',str(comments))
-				if tags: item.SetProperty('tags',str(tags))
+				#if comments: item.SetProperty('comments',str(comments))
+				#if tags: item.SetProperty('tags',str(tags))
+				item.SetProperty('data',p.toJSON())
 				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct += 1
@@ -535,8 +536,8 @@ class FacebookSession:
 			modifier = 50.0/total
 			for v in videos:
 				item = mc.ListItem( mc.ListItem.MEDIA_VIDEO_OTHER )
-				comments = v.comments(as_json=True)
-				tags = v.tags(as_json=True)
+				#comments = v.comments(as_json=True)
+				#tags = v.tags(as_json=True)
 				tn = v.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn)
 				caption = self.makeCaption(v, uid)
@@ -552,8 +553,9 @@ class FacebookSession:
 				#item.SetProperty('next',ENCODE(videos.next))
 				#item.SetProperty('prev',ENCODE(videos.previous))
 				item.SetProperty('caption',caption)
-				if comments: item.SetProperty('comments',str(comments))
-				if tags: item.SetProperty('tags',str(tags))
+				#if comments: item.SetProperty('comments',str(comments))
+				#if tags: item.SetProperty('tags',str(tags))
+				item.SetProperty('data',v.toJSON())
 				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct+=1
@@ -717,30 +719,35 @@ class FacebookSession:
 			items = mc.GetWindow(14001).GetList(120).GetItems()
 			self.preMediaSetup()
 			self.showImages(items,itemNumber,options=(False,False,False))
+		elif name == 'tags':
+			params = mc.Parameters()
+			params['none'] = 'NONE'
+			mc.GetApp().ActivateWindow(14003,params)
 	
 	def showPhotoMenu(self):
 		self.setCurrentState()
 		items = mc.ListItems()
 		itemNumber = mc.GetWindow(14001).GetList(120).GetFocusedItem()
 		item = self.getFocusedItem(120)
+		pv_obj = self.graph.fromJSON(item.GetProperty('data'))
 		comments_string = ''
 		tags_string = ''
-		comments = self.graph.fromJSON(item.GetProperty('comments'))
+		comments = pv_obj.comments()
 		if comments:
 			for c in comments:
 				name = c.from_({}).get('name','')
 				comments_string += '[COLOR yellow]%s:[/COLOR][CR]%s[CR][CR]' % (name,c.message(''))
-		tags = self.graph.fromJSON(item.GetProperty('tags'))
+		tags = pv_obj.tags()
 		if tags:
 			for t in tags:
 				tags_string += '[COLOR yellow]%s[/COLOR][CR]' % t.name('')
-				
 		if comments:
 			items.append(self.createPhotoMenuItem('comments', 'COMMENTS', comments_string, itemNumber))
 		if tags:
 			items.append(self.createPhotoMenuItem('tags', 'TAGS', tags_string, itemNumber))
 		if self.itemType(item) == 'image':
 			items.append(self.createPhotoMenuItem('slideshow', 'SLIDESHOW', '', itemNumber))
+			if tags: self.createTagsWindow(pv_obj)
 		mc.GetWindow(14001).GetList(128).SetItems(items)
 		mc.GetWindow(14001).GetControl(128).SetFocus()
 		return True
@@ -1006,6 +1013,79 @@ class FacebookSession:
 		except:
 			LOG('ERROR GETTING PROFILE PIC AT: ' % url)
 			return ''
+		
+	def createTagsWindow(self,photo):
+		width = int(photo.width(0))
+		height = int(photo.height(0))
+		if not width or not height: return
+		tags = photo.tags()
+		source = photo.source('')
+		tagbox = '''
+			<control type="image">
+				<posx>%s</posx>
+				<posy>%s</posy>
+				<width>%s</width>
+				<height>%s</height>
+				<texture border="3">facebook-media-outline-box.png</texture>
+				<visible>$INFO[StringCompare(Container(120).ListItem.Label,%s)]</visible>
+			</control>'''
+			
+		tagitem = '''
+				<item>
+					<label>%s</label>
+					<onclick lang="python">
+<![CDATA[
+pass
+]]>
+					</onclick>
+				</item>'''
+		aspect = width/float(height)
+		x=0
+		y=0
+		if aspect < (16/9.0):
+			mod = (720.0/height)
+			wmod = int(mod * width)
+			hmod = 720
+			x = (1280 - wmod)/2
+			y = 0
+		else:
+			mod = (1280.0/width) 
+			wmod = 1280
+			hmod = int(mod * height)
+			x = 0
+			y = (720 - hmod) / 2
+			
+		box_len = 200
+		box_off = box_len/2
+		
+		template_file_path = os.path.join(mc.GetApp().GetAppDir(),'tags.xml')
+		tags_file_path = os.path.join(mc.GetApp().GetAppDir(),'skin','Boxee Skin NG','720p','tags.xml')
+		
+		tags_file = open(template_file_path,'r')
+		xml = tags_file.read()
+		tags_file.close()
+		
+		xml = xml.replace('G_X',str(x))
+		xml = xml.replace('G_Y',str(y))
+		xml = xml.replace('I_WIDTH',str(wmod))
+		xml = xml.replace('I_HEIGHT',str(hmod))
+		xml = xml.replace('TAGGED_IMAGE',source)
+		
+		boxes = ''
+		items = ''
+		for tag in tags:
+			tag_name = tag.name('')
+			tag_x = int(wmod * (float(tag.x(0))/100)) - box_off
+			tag_y = int(hmod * (float(tag.y(0))/100)) - box_off
+			boxes += tagbox % (tag_x,tag_y,box_len,box_len,tag_name)
+			items += tagitem % tag_name 
+		
+		xml = xml.replace('<!-- TAGBOXES -->',boxes)
+		xml = xml.replace('<!-- TAGITEMS -->',items)
+		
+		tags_file = open(tags_file_path,'w')
+		tags_file.write(xml)
+		tags_file.close()
 			
 	def clearSetting(self,key):
 		mc.GetApp().GetLocalConfig().Reset(str(key))
