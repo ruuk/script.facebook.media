@@ -251,6 +251,7 @@ class FacebookSession:
 			item.SetProperty('uid',uid)
 			item.SetThumbnail('facebook-media-icon-%s.png' % cid)
 			if friend_thumb: item.SetProperty('friend_thumb',friend_thumb)
+			else: item.SetProperty('friend_thumb','facebook-media-icon-%s.png' % cid)
 			item.SetProperty('background','')
 			item.SetProperty('previous',self.getSetting('last_item_name'))
 			items.append(item)
@@ -840,7 +841,10 @@ class FacebookSession:
 		
 	def showImages(self,items,number=0,options=(True,False,True)):
 		LOG('SHOW IMAGES')
-		mc.GetPlayer().PlaySlideshow(items, options[0], options[1], str(number), options[2])
+		new_items = mc.ListItems()
+		for i in items:
+			if not self.itemType(i) == 'other': new_items.append(i) 
+		mc.GetPlayer().PlaySlideshow(new_items, options[0], options[1], str(number), options[2])
 		
 	def showImage(self,item):
 		items = mc.ListItems()
