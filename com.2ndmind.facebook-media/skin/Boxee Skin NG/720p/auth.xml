@@ -4,7 +4,12 @@
 	<allowoverlay>no</allowoverlay>
 	<onload lang="python"><![CDATA[
 print "FACEBOOK MEDIA - AUTH WINDOW LOADED"
-session.addUser()
+params = mc.GetApp().GetLaunchedWindowParameters()
+email = ''
+password = ''
+if 'email' in params: email = params['email']
+if 'password' in params: password = params['password']
+session.addUser(email,password)
 ]]></onload>
 	<controls>
 		<control type="image">
@@ -52,7 +57,7 @@ session.addUser()
 			<aligny>center</aligny>
 			<textcolor>white</textcolor>
 			<wrapmultiline>true</wrapmultiline>
-			<label>Authorize Via Boxee Browser</label>
+			<label>Enter Login Information</label>
 		</control>
 		<control type="image">
 			<posx>359</posx>
@@ -91,7 +96,7 @@ session.addUser()
 			<aligny>center</aligny>
 			<textcolor>white</textcolor>
 			<wrapmultiline>true</wrapmultiline>
-			<label>Get Authorization Data</label>
+			<label>Authorize Via Boxee Browser</label>
 		</control>
 		<control type="image">
 			<posx>655</posx>
@@ -130,7 +135,7 @@ session.addUser()
 			<aligny>center</aligny>
 			<textcolor>white</textcolor>
 			<wrapmultiline>true</wrapmultiline>
-			<label>Get User Data</label>
+			<label>Get Authorization Data</label>
 		</control>
 		<control type="image">
 			<posx>951</posx>
@@ -169,7 +174,7 @@ session.addUser()
 			<aligny>center</aligny>
 			<textcolor>white</textcolor>
 			<wrapmultiline>true</wrapmultiline>
-			<label>DONE</label>
+			<label>Get User Data</label>
 		</control>
 	</controls>
 </window>

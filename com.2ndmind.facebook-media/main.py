@@ -4,7 +4,7 @@ import sys, traceback
 
 #import traceback
 import facebook
-from facebook import GraphAPIError
+from facebook import GraphAPIError, GraphWrapAuthError
 
 import locale
 loc = locale.getdefaultlocale()
@@ -88,7 +88,7 @@ class FacebookSession:
 		
 	def newGraph(self,email,password,uid=None,token=None,new_token_callback=None):
 		graph = facebook.GraphWrap(token,new_token_callback=new_token_callback)
-		graph.setAppData('150505371652086',scope='user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags')
+		graph.setAppData('194599440576989',scope='user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags')
 		graph.setLogin(email,password,uid)
 		return graph
 		
@@ -116,9 +116,10 @@ class FacebookSession:
 			
 		mc.GetWindow(14001).GetList(125).SetItems(items)
 		
-	def openAddUserWindow(self):
+	def openAddUserWindow(self,email='',password=''):
 		params = mc.Parameters()
-		params['test'] = 'ATEST'
+		params['email'] = email
+		params['password'] = password
 		self.setSetting('auth_step_1','')
 		self.setSetting('auth_step_2','')
 		self.setSetting('auth_step_3','')
@@ -149,17 +150,21 @@ class FacebookSession:
 		return True
 	
 	def restoreState(self,state,onload=False):
+		if not state:
+			LOG('restoreState() - No State')
+			return
 		for set in self.stateSettings: self.setSetting(set, '')
 		for set in self.stateSettings: self.setSetting(set, state.settings.get(set,''))
 		ilist = mc.GetWindow(14001).GetList(120)
 		self.fillList(state.items)
 		ilist.SetFocusedItem(state.listIndex)
 			
-	def reInitState(self):
+	def reInitState(self,state=None):
+		if not state: state = self.current_state
 		params = mc.Parameters()
 		params['none'] = 'NONE'
 		mc.GetApp().ActivateWindow(14001,params)
-		self.restoreState(self.current_state)
+		self.restoreState(state)
 		self.setPathDisplay()
 
 	def getRealURL(self,url):
@@ -188,7 +193,7 @@ class FacebookSession:
 		if idx < 0: idx = 0
 		ilist.SetFocusedItem(idx)
 		
-	def getPagingItem(self,nextprev,url,itype,current_url=''):
+	def getPagingItem(self,nextprev,url,itype,current_url='',uid=''):
 		item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
 		item.SetThumbnail('facebook-media-icon-%s.png' % nextprev)
 		if nextprev == 'prev': caption = 'PREVIOUS %s' % itype.upper()
@@ -200,6 +205,7 @@ class FacebookSession:
 			item.SetProperty('hidetube','true')
 		
 		item.SetProperty('category','paging')
+		item.SetProperty('uid',uid)
 		item.SetProperty('paging',ENCODE(url))
 		item.SetProperty('nextprev',nextprev)
 		item.SetProperty('mediatype',itype)
@@ -293,7 +299,7 @@ class FacebookSession:
 			if cids: cover_objects = self.graph.getObjects(cids)
 			
 			if albums.previous:
-				item = self.getPagingItem('prev', albums.previous, 'albums')
+				item = self.getPagingItem('prev', albums.previous, 'albums',uid=uid)
 				items.append(item)	
 			
 			total = len(albums) or 1
@@ -335,7 +341,7 @@ class FacebookSession:
 				items.append(item)
 				
 			if albums.next:
-				item = self.getPagingItem('next', albums.next, 'albums', paging)
+				item = self.getPagingItem('next', albums.next, 'albums', paging,uid=uid)
 				items.append(item)
 				
 			self.saveImageURLCache()
@@ -447,14 +453,12 @@ class FacebookSession:
 			offset = 50
 			modifier = 50.0/tot
 			if photos.previous:
-				item = self.getPagingItem('prev', photos.previous, 'photos')
+				item = self.getPagingItem('prev', photos.previous, 'photos',uid=uid)
 				items.append(item)
 				
 			if uid == 'me': uid = self.currentUser.id
 			
 			for p in photos:
-				#comments = p.comments(as_json=True)
-				#tags = p.tags(as_json=True)
 				tn = p.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn) # this seems to get better results then using the random server
 				item = mc.ListItem( mc.ListItem.MEDIA_PICTURE )
@@ -469,11 +473,9 @@ class FacebookSession:
 				item.SetThumbnail(ENCODE(tn))
 				item.SetProperty('uid',uid)
 				item.SetProperty('id',ENCODE(p.id))
-				#item.SetProperty('next',ENCODE(photos.next))
-				#item.SetProperty('prev',ENCODE(photos.previous))
 				item.SetProperty('caption',caption)
-				#if comments: item.SetProperty('comments',str(comments))
-				#if tags: item.SetProperty('tags',str(tags))
+				if p.hasProperty('comments'): item.SetProperty('comments','true')
+				if p.hasProperty('tags'): item.SetProperty('tags','true')
 				item.SetProperty('data',p.toJSON())
 				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
@@ -481,7 +483,7 @@ class FacebookSession:
 				self.updateProgress(int(ct*modifier)+offset,100,message='Loading photo %s of %s' % (ct,tot))
 				
 			if photos.next:
-				item = self.getPagingItem('next', photos.next, 'photos', paging)
+				item = self.getPagingItem('next', photos.next, 'photos', paging,uid=uid)
 				items.append(item)
 				
 			self.endProgress()
@@ -525,7 +527,7 @@ class FacebookSession:
 			print videos.next
 			print videos.previous	
 			if videos.previous:
-				item = self.getPagingItem('prev', videos.previous, 'videos')
+				item = self.getPagingItem('prev', videos.previous, 'videos',uid=uid)
 				items.append(item)
 			
 			if uid == 'me': uid = self.currentUser.id
@@ -536,13 +538,9 @@ class FacebookSession:
 			modifier = 50.0/total
 			for v in videos:
 				item = mc.ListItem( mc.ListItem.MEDIA_VIDEO_OTHER )
-				#comments = v.comments(as_json=True)
-				#tags = v.tags(as_json=True)
 				tn = v.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn)
 				caption = self.makeCaption(v, uid)
-				#item.SetLabel(ENCODE(self.removeCRLF(v.get('name',v.get('id','None')))))
-				#item.SetLabel('')
 				item.SetPath(ENCODE(v.source('')))
 				item.SetProperty('uid',uid)
 				item.SetProperty('id',ENCODE(v.id))
@@ -550,11 +548,9 @@ class FacebookSession:
 				item.SetProperty('hidetube','true')
 				item.SetThumbnail(ENCODE(tn))
 				item.SetImage(0,ENCODE(tn))
-				#item.SetProperty('next',ENCODE(videos.next))
-				#item.SetProperty('prev',ENCODE(videos.previous))
 				item.SetProperty('caption',caption)
-				#if comments: item.SetProperty('comments',str(comments))
-				#if tags: item.SetProperty('tags',str(tags))
+				if v.hasProperty('comments'): item.SetProperty('comments','true')
+				if v.hasProperty('tags'): item.SetProperty('tags','true')
 				item.SetProperty('data',v.toJSON())
 				item.SetProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
@@ -562,14 +558,13 @@ class FacebookSession:
 				self.updateProgress(int(ct*modifier)+offset,100, 'Loading video %s of %s' % (ct,total))
 				
 			if videos.next:
-				item = self.getPagingItem('next', videos.next, 'videos', paging)
+				item = self.getPagingItem('next', videos.next, 'videos', paging,uid=uid)
 				items.append(item)
 
 		finally:
 			self.endProgress()
 		if items:
 			self.fillList(items)
-			#window.GetList(120).SetItems(items)
 			self.setListFocus(nextprev, videos)
 			self.setCurrentState(items)
 		else:
@@ -581,6 +576,7 @@ class FacebookSession:
 		name = ''
 		f_id = obj.from_({}).get('id','')
 		if f_id != uid:
+			print '%s  = %s' % (f_id,uid)
 			name = obj.from_({}).get('name','') or ''
 			if name: name = '[COLOR green]FROM: %s[/COLOR][CR]' % name
 		title = obj.name('')
@@ -686,6 +682,15 @@ class FacebookSession:
 			
 			self.setSetting('last_item_name',item.GetLabel())
 			self.setPathDisplay()
+		except GraphWrapAuthError,e:
+			if len(self.states) > state_len: self.popState()
+			if e.type == 'RENEW_TOKEN_FAILURE':
+				response = mc.ShowDialogConfirm("TOKEN ERROR", "Failed to renew authorization. Would you like to Re-Authorize?", "No", "Yes")
+				if response:
+					self.openAddUserWindow(self.currentUser.email, self.currentUser.password)
+			else:
+				message = ERROR('UNHANDLED ERROR')
+				mc.ShowDialogOk('ERROR',message)
 		except:
 			if len(self.states) > state_len: self.popState()
 			message = ERROR('UNHANDLED ERROR')
@@ -893,36 +898,45 @@ class FacebookSession:
 		return fn
 	
 	def addUser(self,email=None,password=None):
-		if self.newUserCache:
-			self.addUserPart2()
-			return
-		LOG("ADD USER PART 1")
-		self.setSetting('auth_step_1','pending')
-		if not email:
-			email = doKeyboard("Login Email")
-		if not email:
+		try:
+			if self.newUserCache:
+				self.addUserPart2()
+				return
+			LOG("ADD USER PART 1")
+			self.setSetting('auth_step_1','pending')
+			if not email:
+				email = doKeyboard("Login Email")
+			if not email:
+				mc.CloseWindow()
+				return
+			if not password:
+				password = doKeyboard("Login Password",hidden=True)
+			if not password:
+				mc.CloseWindow()
+				return
+			self.newUserCache = (email,password)
+			self.setSetting('auth_step_1','complete')
+			self.setSetting('auth_step_2','pending')
+			self.getAuth(email,password)
+		except:
+			message = ERROR('ERROR')
+			mc.HideDialogWait()
+			mc.ShowDialogOk('Authorization Error',message)
 			mc.CloseWindow()
-			return
-		if not password:
-			password = doKeyboard("Login Password",hidden=True)
-		if not password:
-			mc.CloseWindow()
-			return
-		self.newUserCache = (email,password)
-		self.getAuth()
+			self.newUserCache = None
 		
 	def addUserPart2(self):
 		LOG("ADD USER PART 2")
-		self.setSetting('auth_step_1','complete')
-		self.setSetting('auth_step_2','pending')
+		mc.ShowDialogWait()
+		self.setSetting('auth_step_2','complete')
+		self.setSetting('auth_step_3','pending')
 		email,password = self.newUserCache
 		self.newUserCache = None
 		graph = self.newGraph(email, password)
 		graph.getNewToken()
-		self.setSetting('auth_step_2','complete')
-		self.setSetting('auth_step_3','pending')
-		user = graph.getObject('me',fields='id,name,picture')
 		self.setSetting('auth_step_3','complete')
+		self.setSetting('auth_step_4','pending')
+		user = graph.getObject('me',fields='id,name,picture')
 		uid = user.id
 		username = user.name()
 		if not self.addUserToList(uid):
@@ -932,10 +946,10 @@ class FacebookSession:
 		self.setSetting('username_%s' % uid,username)
 		self.setSetting('token_%s' % uid,graph.access_token)
 		#if self.token: self.setSetting('token_%s' % uid,self.token)
-		self.setSetting('auth_step_4','pending')
 		self.setSetting('profile_pic_%s' % uid,user.picture('').replace('_q.','_n.'))
 		#self.getProfilePic(uid,force=True)
 		self.setSetting('auth_step_4','complete')
+		mc.HideDialogWait()
 		mc.ShowDialogOk("User Added",ENCODE(username))
 		mc.CloseWindow()
 		self.loadOptions()
@@ -1099,9 +1113,9 @@ pass
 	def getAuth(self,email='',password=''):
 		redirect = urllib.quote('http://2ndmind.com/facebookphotos/complete.html')
 		scope = urllib.quote('user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,user_videos,friends_videos')
-		url = 'https://graph.facebook.com/oauth/authorize?client_id=150505371652086&redirect_uri=%s&type=user_agent&scope=%s' % (redirect,scope)
-				
-		launchBoxeeBrowser(url,email=email,password=password)
+		url = urllib.quote('https://www.facebook.com/dialog/oauth?client_id=194599440576989&redirect_uri=%s&type=user_agent&scope=%s' % (redirect,scope))
+		url = 'http://www.facebook.com/login.php?api_key=194599440576989&next=%s' % url
+		launchBoxeeBrowser(url,email=email,password=password,debug='NONE')
 		#token = fb.graph.extractTokenFromURL(url)
 		#if fb.graph.tokenIsValid(token):
 		#	fb.graph.saveToken(token)

@@ -11,6 +11,7 @@ boxee.log('set to browser mode');
 requestedURL = boxee.getParam("src");
 userEmail = boxee.getParam("email");
 userPass = boxee.getParam("password");
+DEBUG = boxee.getParam("debug");
 boxee.log(requestedURL);
 boxee.log(userEmail);
 
@@ -34,9 +35,11 @@ checkForms = function(){
 						'element.value = "' + userPass + '";' +
 					'}' +
 				'}' +
-				'form.submit();' +
+				'if(' + DEBUG + ' != true){' +
+					'form.submit();' +
+				'}' +
 			'}' +
-			'if(action.indexOf("uiserver.php") != -1){' +
+			'if(action.indexOf("uiserver.php") != -1 && ' + DEBUG + ' != true){' +
 				'for (i=0; i < form.elements.length; i++){' +
 					'element = form.elements[i];' +
 					'if(element.name == "grant_clicked"){' +

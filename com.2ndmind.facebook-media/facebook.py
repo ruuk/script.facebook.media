@@ -52,6 +52,13 @@ except ImportError:
 		_parse_json = lambda s: simplejson.loads(s)
 		_dump_json = lambda s: simplejson.dumps(s)
 
+import locale
+loc = locale.getdefaultlocale()
+print loc
+ENCODING = loc[1] or 'utf-8'
+
+def ENCODE(string):
+	return string.encode(ENCODING,'replace')
 
 class GraphAPI(object):
 	"""A client for the Facebook Graph API.
@@ -269,6 +276,9 @@ class GraphObject:
 	def get(self,key,default=None,as_json=False):
 		return self._getData(key,default,as_json)
 		
+	def hasProperty(self,property):
+		return property in self._data
+	
 	def __getattr__(self, property):
 		if property.startswith('_'): return object.__getattr__(self,property)
 		if property.endswith('_'): property = property[:-1]
@@ -535,10 +545,10 @@ class GraphWrap(GraphAPI):
 			#we submitted the form, check the result url for the access token
 			import urlparse
 			token = parse_qs(urlparse.urlparse(url.replace('#','?',1))[4])['access_token'][0]
-			print "URL TOKEN: %s" % token
+			print ENCODE("URL TOKEN: %s" % token)
 			return token
 		except:
-			print "TOKEN URL: %s" % url
+			print ENCODE("TOKEN URL: %s" % url)
 			self.genericError()
 			return None
 		

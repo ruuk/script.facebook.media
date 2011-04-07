@@ -7,49 +7,17 @@
 			<posx>160</posx>
 			<posy>0</posy>
 			<control type="largeimage" id="101">
-				<width>960</width>
+				<width>959</width>
 				<height>720</height>
-				<texture>http://a6.sphotos.ak.fbcdn.net/hphotos-ak-ash2/40568_1334802701134_1563088107_30760844_6685408_n.jpg</texture>
+				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-snc1/6012_1200978028578_1352390960_30554326_5357735_n.jpg</texture>
 			</control>
 			<control type="image">
-				<posx>593</posx>
-				<posy>310</posy>
-				<width>200</width>
-				<height>200</height>
-				<texture border="3">facebook-media-outline-box.png</texture>
-				<visible>$INFO[StringCompare(Container(120).ListItem.Label,Carmen Phillips)]</visible>
-			</control>
-			<control type="image">
-				<posx>513</posx>
-				<posy>326</posy>
-				<width>200</width>
-				<height>200</height>
-				<texture border="3">facebook-media-outline-box.png</texture>
-				<visible>$INFO[StringCompare(Container(120).ListItem.Label,Aeryn Phillips)]</visible>
-			</control>
-			<control type="image">
-				<posx>390</posx>
-				<posy>396</posy>
+				<posx>262</posx>
+				<posy>193</posy>
 				<width>200</width>
 				<height>200</height>
 				<texture border="3">facebook-media-outline-box.png</texture>
 				<visible>$INFO[StringCompare(Container(120).ListItem.Label,Rick Phillips)]</visible>
-			</control>
-			<control type="image">
-				<posx>171</posx>
-				<posy>380</posy>
-				<width>200</width>
-				<height>200</height>
-				<texture border="3">facebook-media-outline-box.png</texture>
-				<visible>$INFO[StringCompare(Container(120).ListItem.Label,Celina Scorza)]</visible>
-			</control>
-			<control type="image">
-				<posx>528</posx>
-				<posy>363</posy>
-				<width>200</width>
-				<height>200</height>
-				<texture border="3">facebook-media-outline-box.png</texture>
-				<visible>$INFO[StringCompare(Container(120).ListItem.Label,Tailar Folden)]</visible>
 			</control>
 		</control>
 		<control type="image">
@@ -108,39 +76,7 @@
 			</focusedlayout>
 			<content type="action">
 				<item>
-					<label>Carmen Phillips</label>
-					<onclick lang="python">
-<![CDATA[
-pass
-]]>
-					</onclick>
-				</item>
-				<item>
-					<label>Aeryn Phillips</label>
-					<onclick lang="python">
-<![CDATA[
-pass
-]]>
-					</onclick>
-				</item>
-				<item>
 					<label>Rick Phillips</label>
-					<onclick lang="python">
-<![CDATA[
-pass
-]]>
-					</onclick>
-				</item>
-				<item>
-					<label>Celina Scorza</label>
-					<onclick lang="python">
-<![CDATA[
-pass
-]]>
-					</onclick>
-				</item>
-				<item>
-					<label>Tailar Folden</label>
 					<onclick lang="python">
 <![CDATA[
 pass

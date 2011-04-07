@@ -393,6 +393,42 @@ session.menuItemDeSelected()
 				<height>80</height>
 				<texture>facebook-media-tube-back.png</texture>
 			</control>
+			
+			<control type="image">
+				<posx>42r</posx>
+				<posy>4</posy>
+				<width>32</width>
+				<height>32</height>
+				<texture>facebook-media-icon-tags.png</texture>
+				<colordiffuse>80333333</colordiffuse>
+				<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:tags),true)]</visible>
+			</control>
+			<control type="image">
+				<posx>79r</posx>
+				<posy>4</posy>
+				<width>32</width>
+				<height>32</height>
+				<texture>facebook-media-icon-comments.png</texture>
+				<colordiffuse>80333333</colordiffuse>
+				<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:comments),true)]</visible>
+			</control>
+			<control type="image">
+				<posx>42r</posx>
+				<posy>4</posy>
+				<width>32</width>
+				<height>32</height>
+				<texture>facebook-media-icon-tags.png</texture>
+				<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:tags),true)]</visible>
+			</control>
+			<control type="image">
+				<posx>79r</posx>
+				<posy>4</posy>
+				<width>32</width>
+				<height>32</height>
+				<texture>facebook-media-icon-comments.png</texture>
+				<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:comments),true)]</visible>
+			</control>
+			
 			<control type="image">
 				<posy>-40</posy>
 				<width>800</width>
@@ -433,8 +469,8 @@ session.menuItemDeSelected()
 		</control>
 		
 		<control type="group" id="210">
-			<animation effect="slide" start="0,0" end="740,0" time="400">Visible</animation>
-			<animation effect="slide" start="740,0" end="0,0" time="400">Hidden</animation>
+			<animation effect="slide" end="740,0" time="400" condition="!$INFO[StringCompare(Container(120).ListItem.property(custom:caption),)]">Conditional</animation>
+			<animation effect="slide" end="0,0" time="400" condition="$INFO[StringCompare(Container(120).ListItem.property(custom:caption),)]">Conditional</animation>
 			<posx>-370</posx>
 			<posy>147r</posy>
 			<width>370</width>
@@ -460,7 +496,6 @@ session.menuItemDeSelected()
 				<height>130</height>
 				<texture border="20">facebook-media-tube-overlay-lr.png</texture>
 			</control>
-			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:caption),)]</visible>
 		</control>
 		
 		<control type="group" id="180">
