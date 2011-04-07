@@ -24,7 +24,7 @@ else:
 			<posy>0</posy>
 			<width>1280</width>
 			<height>720</height>
-			<texture>facebook-media-menu-background.png</texture>
+			<texture>facebook-media-menu-background.jpg</texture>
 		</control>
 	</controls>
 </window>

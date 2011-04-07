@@ -1041,12 +1041,13 @@ class FacebookSession:
 				<width>%s</width>
 				<height>%s</height>
 				<texture border="3">facebook-media-outline-box.png</texture>
-				<visible>$INFO[StringCompare(Container(120).ListItem.Label,%s)]</visible>
+				<visible>$INFO[StringCompare(Container(120).ListItem.Label2,%s)]</visible>
 			</control>'''
 			
 		tagitem = '''
 				<item>
 					<label>%s</label>
+					<label2>%s</label2>
 					<onclick lang="python">
 <![CDATA[
 pass
@@ -1089,10 +1090,12 @@ pass
 		items = ''
 		for tag in tags:
 			tag_name = tag.name('')
+			tag_id = tag.id or tag_name
+			tag_id = 'ID-' + tag_id.replace(' ','')
 			tag_x = int(wmod * (float(tag.x(0))/100)) - box_off
 			tag_y = int(hmod * (float(tag.y(0))/100)) - box_off
-			boxes += tagbox % (tag_x,tag_y,box_len,box_len,tag_name)
-			items += tagitem % tag_name 
+			boxes += tagbox % (tag_x,tag_y,box_len,box_len,tag_id)
+			items += tagitem % (tag_name,tag_id) 
 		
 		xml = xml.replace('<!-- TAGBOXES -->',boxes)
 		xml = xml.replace('<!-- TAGITEMS -->',items)

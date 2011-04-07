@@ -7,17 +7,33 @@
 			<posx>160</posx>
 			<posy>0</posy>
 			<control type="largeimage" id="101">
-				<width>959</width>
+				<width>960</width>
 				<height>720</height>
-				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-snc1/6012_1200978028578_1352390960_30554326_5357735_n.jpg</texture>
+				<texture>http://a7.sphotos.ak.fbcdn.net/hphotos-ak-snc4/44794_1578621149420_1352390960_31516611_2500118_n.jpg</texture>
 			</control>
 			<control type="image">
-				<posx>262</posx>
-				<posy>193</posy>
+				<posx>92</posx>
+				<posy>325</posy>
 				<width>200</width>
 				<height>200</height>
 				<texture border="3">facebook-media-outline-box.png</texture>
-				<visible>$INFO[StringCompare(Container(120).ListItem.Label,Rick Phillips)]</visible>
+				<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-1352390960)]</visible>
+			</control>
+			<control type="image">
+				<posx>102</posx>
+				<posy>406</posy>
+				<width>200</width>
+				<height>200</height>
+				<texture border="3">facebook-media-outline-box.png</texture>
+				<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-100001203012029)]</visible>
+			</control>
+			<control type="image">
+				<posx>8</posx>
+				<posy>424</posy>
+				<width>200</width>
+				<height>200</height>
+				<texture border="3">facebook-media-outline-box.png</texture>
+				<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-Tailar)]</visible>
 			</control>
 		</control>
 		<control type="image">
@@ -77,6 +93,25 @@
 			<content type="action">
 				<item>
 					<label>Rick Phillips</label>
+					<label2>ID-1352390960</label2>
+					<onclick lang="python">
+<![CDATA[
+pass
+]]>
+					</onclick>
+				</item>
+				<item>
+					<label>Aeryn Phillips</label>
+					<label2>ID-100001203012029</label2>
+					<onclick lang="python">
+<![CDATA[
+pass
+]]>
+					</onclick>
+				</item>
+				<item>
+					<label>Tailar</label>
+					<label2>ID-Tailar</label2>
 					<onclick lang="python">
 <![CDATA[
 pass
