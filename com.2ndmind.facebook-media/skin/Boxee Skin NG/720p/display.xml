@@ -383,7 +383,36 @@ session.menuItemDeSelected()
                 <texture background="true" diffuse="facebook-media-menu-mask.png">$INFO[Container(120).ListItem.property(image0)]</texture>
                 <visible>Control.IsVisible(190)</visible>
         </control>
-       
+
+		<control type="group">
+			<visible>!$INFO[StringCompare(Container(120).ListItem.Property(custom:friend_thumb),)]</visible>
+			<control type="image">
+				<description>Friend Image</description>
+				<posx>689</posx>
+				<posy>331</posy>
+				<width>275</width>
+				<height>207</height>
+				<texture>facebook-media-white.png</texture>
+				<colordiffuse>FF000000</colordiffuse>
+			</control>
+			<control type="largeimage">
+				<description>Friend Image</description>
+				<posx>689</posx>
+				<posy>331</posy>
+				<width>275</width>
+				<height>207</height>
+				<aspectratio>scale</aspectratio>
+				<texture>$INFO[Container(120).ListItem.Property(custom:friend_thumb)]</texture>
+			</control>
+			<control type="image">
+				<posx>689</posx>
+				<posy>331</posy>
+				<width>275</width>
+				<height>207</height>
+				<texture>facebook-media-camera-overlay.png</texture>
+			</control>
+		</control>
+			
 		<control type="group">
 			<posx>800r</posx>
 			<posy>0</posy>
@@ -455,35 +484,6 @@ session.menuItemDeSelected()
 			<height>100</height>
 			<texture>facebook-media-tube-overlay.png</texture>
 			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
-		</control>
-		
-		<control type="group">
-			<visible>!$INFO[StringCompare(Container(120).ListItem.Property(custom:friend_thumb),)]</visible>
-			<control type="image">
-				<description>Friend Image</description>
-				<posx>689</posx>
-				<posy>331</posy>
-				<width>275</width>
-				<height>207</height>
-				<texture>facebook-media-white.png</texture>
-				<colordiffuse>FF000000</colordiffuse>
-			</control>
-			<control type="largeimage">
-				<description>Friend Image</description>
-				<posx>689</posx>
-				<posy>331</posy>
-				<width>275</width>
-				<height>207</height>
-				<aspectratio>scale</aspectratio>
-				<texture>$INFO[Container(120).ListItem.Property(custom:friend_thumb)]</texture>
-			</control>
-			<control type="image">
-				<posx>689</posx>
-				<posy>331</posy>
-				<width>275</width>
-				<height>207</height>
-				<texture>facebook-media-camera-overlay.png</texture>
-			</control>
 		</control>
 		
 		<control type="group" id="210">
