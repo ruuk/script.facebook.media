@@ -4,6 +4,8 @@ import sys, traceback
 
 #import traceback
 import facebook
+reload(facebook)
+
 from facebook import GraphAPIError, GraphWrapAuthError
 
 import locale
@@ -49,6 +51,7 @@ class FacebookSession:
 		self.current_state = None
 		self.paging = []
 		self.cancel_progress = False
+		self.progressVisible = False
 		self.lastItemNumber = 0
 		self.CACHE_PATH = os.path.join(mc.GetTempDir(),'facebook-media')
 		if not os.path.exists(self.CACHE_PATH): os.makedirs(self.CACHE_PATH)
@@ -105,7 +108,8 @@ class FacebookSession:
 			item.SetProperty('uid',user.id)
 			items.append(item)
 		options = [	('add_user','facebook-media-icon-adduser.png','Add User','data'),
-					('remove_user','facebook-media-icon-removeuser.png','Remove User','data')]
+					('remove_user','facebook-media-icon-removeuser.png','Remove User','data'),
+					('reauth_user','facebook-media-icon-reauth-user.png','Re-Authorize Current User','data')]
 		for action,icon,label,data in options:
 			item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
 			item.SetThumbnail(icon)
@@ -158,6 +162,7 @@ class FacebookSession:
 		ilist = mc.GetWindow(14001).GetList(120)
 		self.fillList(state.items)
 		ilist.SetFocusedItem(state.listIndex)
+		self.current_state = state
 			
 	def reInitState(self,state=None):
 		if not state: state = self.current_state
@@ -714,6 +719,8 @@ class FacebookSession:
 				self.openAddUserWindow()
 			elif action == 'remove_user':
 				self.removeUserMenu()
+			elif action == 'reauth_user':
+				self.openAddUserWindow(self.currentUser.email, self.currentUser.password)
 		
 	def photovideoMenuSelected(self):
 		mc.GetWindow(14001).GetControl(120).SetFocus()
@@ -729,7 +736,43 @@ class FacebookSession:
 			params = mc.Parameters()
 			params['none'] = 'NONE'
 			mc.GetApp().ActivateWindow(14003,params)
+		elif name == 'comments':
+			self.doCommentDialog(itemNumber)
+		elif name == 'likes':
+			self.doLike(itemNumber)
 	
+	def doCommentDialog(self,itemNumber):
+		comment = mc.ShowDialogKeyboard("Enter Comment",'',False)
+		if not comment: return
+		item = mc.GetWindow(14001).GetList(120).GetItem(int(itemNumber))
+		pv_obj = self.graph.fromJSON(item.GetProperty('data'))
+		pv_obj.comment(comment)
+		self.updateMediaItem(item,pv_obj)
+		
+	def doLike(self,itemNumber):
+		item = mc.GetWindow(14001).GetList(120).GetItem(int(itemNumber))
+		pv_obj = self.graph.fromJSON(item.GetProperty('data'))
+		pv_obj.like()
+		self.updateMediaItem(item,pv_obj)
+		
+	def updateMediaItem(self,item,pv_obj=None):
+		if not pv_obj: pv_obj = self.graph.fromJSON(item.GetProperty('data'))
+		item.SetProperty('data',pv_obj.updateData().toJSON())
+		if pv_obj.hasProperty('comments'): item.SetProperty('comments','true')
+		if pv_obj.hasProperty('tags'): item.SetProperty('tags','true')
+		#items = mc.GetWindow(14001).GetList(120).GetItems()
+		#idx=0
+		#for i in items:
+		#	if i.GetProperty('id') == item.GetProperty('id'):
+		#		break
+		#	idx+=1
+		#else:
+		#	return
+		#items[idx] = item
+		#mc.GetWindow(14001).GetList(120).SetItems(items)
+		
+		
+		
 	def showPhotoMenu(self):
 		self.setCurrentState()
 		items = mc.ListItems()
@@ -738,6 +781,7 @@ class FacebookSession:
 		pv_obj = self.graph.fromJSON(item.GetProperty('data'))
 		comments_string = ''
 		tags_string = ''
+		likes_string = ''
 		comments = pv_obj.comments()
 		if comments:
 			for c in comments:
@@ -747,20 +791,26 @@ class FacebookSession:
 		if tags:
 			for t in tags:
 				tags_string += '[COLOR yellow]%s[/COLOR][CR]' % t.name('')
-		if comments:
-			items.append(self.createPhotoMenuItem('comments', 'COMMENTS', comments_string, itemNumber))
+		likes = pv_obj.connections.likes()
+		if likes:
+			for l in likes:
+				likes_string += '[COLOR yellow]%s[/COLOR][CR]' % l.name('')
+		#if comments:
+		items.append(self.createPhotoMenuItem('comments', 'COMMENTS','Click to add a comment', comments_string, itemNumber))
 		if tags:
-			items.append(self.createPhotoMenuItem('tags', 'TAGS', tags_string, itemNumber))
+			items.append(self.createPhotoMenuItem('tags', 'TAGS', 'Click to view tagged image', tags_string, itemNumber))
+		items.append(self.createPhotoMenuItem('likes', 'LIKES (%s)' % len(likes), 'Click to "like" this item', likes_string, itemNumber))
 		if self.itemType(item) == 'image':
-			items.append(self.createPhotoMenuItem('slideshow', 'SLIDESHOW', '', itemNumber))
+			items.append(self.createPhotoMenuItem('slideshow', 'SLIDESHOW', 'Click to view a slideshow', '', itemNumber))
 			if tags: self.createTagsWindow(pv_obj)
 		mc.GetWindow(14001).GetList(128).SetItems(items)
 		mc.GetWindow(14001).GetControl(128).SetFocus()
 		return True
 	
-	def createPhotoMenuItem(self,name,label,data,itemNumber):
+	def createPhotoMenuItem(self,name,label,sublabel,data,itemNumber):
 		item = mc.ListItem(mc.ListItem.MEDIA_UNKNOWN)
 		item.SetLabel(label)
+		item.SetProperty('sublabel',sublabel)
 		item.SetProperty('name',name)
 		item.SetProperty('item_number',str(itemNumber))
 		item.SetProperty('data',ENCODE(data))
@@ -809,9 +859,11 @@ class FacebookSession:
 		mc.GetWindow(14001).GetControl(160).SetFocus()
 		mc.ShowDialogWait()
 		mc.GetWindow(14001).GetLabel(152).SetLabel(message)
+		self.progressVisible = True
 		self.setSetting('progress','0')
 		
 	def updateProgress(self,ct,total,message=''):
+		if not self.progressVisible: return
 		if self.cancel_progress: return False
 		try:
 			if ct < 0 or ct > total:
@@ -826,6 +878,7 @@ class FacebookSession:
 		return True
 	
 	def endProgress(self):
+		self.progressVisible = False
 		self.setSetting('progress','')
 		mc.HideDialogWait()
 		mc.GetWindow(14001).GetControl(120).SetFocus()
@@ -1119,7 +1172,7 @@ pass
 	
 	def getAuth(self,email='',password=''):
 		redirect = urllib.quote('http://2ndmind.com/facebookphotos/complete.html')
-		scope = urllib.quote('user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,user_videos,friends_videos')
+		scope = urllib.quote('user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,user_videos,friends_videos,publish_stream')
 		url = urllib.quote('https://www.facebook.com/dialog/oauth?client_id=194599440576989&redirect_uri=%s&type=user_agent&scope=%s' % (redirect,scope))
 		url = 'http://www.facebook.com/login.php?api_key=194599440576989&next=%s' % url
 		launchBoxeeBrowser(url,email=email,password=password,debug='NONE')

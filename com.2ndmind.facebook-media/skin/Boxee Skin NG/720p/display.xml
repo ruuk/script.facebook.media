@@ -161,6 +161,17 @@ CLOSEREADY = True
 						<info>ListItem.Label</info>
 						<textcolor>white</textcolor>
 					</control>
+					<control type="label">
+						<posx>110</posx>
+						<posy>70</posy>
+						<width>220</width>
+						<height>20</height>
+						<font>font14b</font>
+						<align>center</align>
+						<aligny>center</aligny>
+						<info>ListItem.Property(custom:sublabel)</info>
+						<textcolor>white</textcolor>
+					</control>
 				</focusedlayout>
 				<content type="url">
 					<onclick lang="python">
@@ -804,6 +815,11 @@ session.menuItemDeSelected()
 						<aspectratio>scale</aspectratio>
 						<info>ListItem.Thumb</info>
 					</control>
+					<control type="image">
+						<width>395</width>
+						<height>100</height>
+						<texture border="3">facebook-media-tube-overlay-right.png</texture>
+					</control>
 					<control type="label">
 						<posx>112</posx>
 						<posy>0</posy>
@@ -814,11 +830,6 @@ session.menuItemDeSelected()
 						<aligny>center</aligny>
 						<info>ListItem.Label</info>
 						<textcolor>white</textcolor>
-					</control>
-					<control type="image">
-						<width>395</width>
-						<height>100</height>
-						<texture border="3">facebook-media-tube-overlay-right.png</texture>
 					</control>
 				</focusedlayout>
 				<content type="url">

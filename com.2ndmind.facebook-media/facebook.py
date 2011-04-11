@@ -176,7 +176,7 @@ class GraphAPI(object):
 			else:
 				args["access_token"] = self.access_token
 		if post_args is None: post_data = None
-		else: urllib.urlencode(post_args)
+		else: post_data = urllib.urlencode(post_args)
 		pre = "https://graph.facebook.com/"
 		args = "?" + urllib.urlencode(args)
 		if path.startswith('http'):
@@ -188,8 +188,8 @@ class GraphAPI(object):
 			response = _parse_json(fileob.read())
 		finally:
 			fileob.close()
-
-		if response.get("error"):
+		
+		if type(response) == type({}) and response.get("error"):
 			raise GraphAPIError(response["error"]["type"],
 								response["error"]["message"])
 		return response
@@ -258,8 +258,8 @@ class Connections(list):
 		
 class GraphObject:
 	def __init__(self,id=None,graph=None,data=None,**args):
-		if not id and data:
-			if id in data: id = data[id]
+		if (not id) and data:
+			if 'id' in data: id = data['id']
 		self.id = id
 		self.args = args
 		self.graph = graph
@@ -270,6 +270,10 @@ class GraphObject:
 			self._data = self._getObjectData(id,**args)
 			self.id = self._data.get('id') or 'me'
 		
+	def updateData(self):
+		self._data = self._getObjectData(self.id,**self.args)
+		return self
+		
 	def toJSON(self):
 		return self._toJSON(self._data)
 	
@@ -279,6 +283,12 @@ class GraphObject:
 	def hasProperty(self,property):
 		return property in self._data
 	
+	def comment(self,comment):
+		self.graph.put_comment(self.id,comment)
+	
+	def like(self):
+		self.graph.put_like(self.id)
+		
 	def __getattr__(self, property):
 		if property.startswith('_'): return object.__getattr__(self,property)
 		if property.endswith('_'): property = property[:-1]
