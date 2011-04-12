@@ -73,10 +73,33 @@ class WindowState:
 		self.items = None
 		self.listIndex = 0
 		self.settings = {}
+
+class BaseWindow(xbmcgui.WindowXML):
+	def __init__( self, *args, **kwargs):
+		self.session = kwargs.get('session')
+		self.name = kwargs.get('wfile')
+		xbmcgui.WindowXML.__init__( self, *args, **kwargs )
+	
+	def onClick( self, controlID ):
+		if self.name == 'main':
+			if controlID == 120:
+				self.session.menuItemSelected()
 			
+	def onAction(self,action):
+		if self.name == 'main':
+			if self.getFocusId() == 120:
+				if action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU:
+					self.session.menuItemDeSelected()
+				elif action == ACTION_MOVE_LEFT:
+					self.session.menuItemDeSelected()
+				elif action == ACTION_MOVE_RIGHT:
+					self.session.menuItemSelected()
+		xbmcgui.WindowXMLDialog.onAction(self,action)
+		
 class FacebookSession:
 	def __init__(self):
 		self.window = None
+		self.windowStack = []
 		self.graph = None
 		self.states = []
 		self.current_state = None
@@ -99,6 +122,7 @@ class FacebookSession:
 								'current_user_name',
 								'last_item_name',
 								'current_nav_path')
+		self.openWindow('main')
 		self.start()
 		
 	def start(self):
@@ -499,6 +523,7 @@ class FacebookSession:
 				caption = self.makeCaption(p, uid)
 				item.setPath(source)
 				item.setProperty('category','photovideo')
+				item.setProperty('media_type','image')
 				item.setProperty('hidetube','true')
 				item.setLabel('')
 				item.setProperty('image0',source)
@@ -577,6 +602,7 @@ class FacebookSession:
 				item.setProperty('uid',uid)
 				item.setProperty('id',ENCODE(v.id))
 				item.setProperty('category','photovideo')
+				item.setProperty('media_type','video')
 				item.setProperty('hidetube','true')
 				item.setThumbnailImage(ENCODE(tn))
 				item.setProperty('image0',ENCODE(tn))
@@ -887,9 +913,9 @@ class FacebookSession:
 			if ct < 0 or ct > total:
 				LOG('PROGRESS OUT OF BOUNDS')
 				return
-			pct = int((ct / float(total)) * 20) * 5
+			width = int((ct / float(total)) * 500)
 			window = self.window
-			self.setSetting('progress',str(pct))
+			window.getControl(153).setWidth(width)
 			window.getLabel(152).setLabel(message)
 		except:
 			return False
@@ -909,11 +935,8 @@ class FacebookSession:
 		self.window.getControl(120).setItems(blank)
 		
 	def showImages(self,items,number=0,options=(True,False,True)):
-		LOG('SHOW IMAGES')
-		new_items = []
-		for i in items:
-			if not self.itemType(i) == 'other': new_items.append(i) 
-		mc.getPlayer().PlaySlideshow(new_items, options[0], options[1], str(number), options[2])
+		#xbmc.executebuiltin('SlideShow(%s)' % base)
+		pass
 		
 	def showImage(self,item):
 		items = []
@@ -921,7 +944,7 @@ class FacebookSession:
 		self.showImages(items)
 		
 	def showVideo(self,item):
-		mc.getPlayer().Play(item)
+		pass
 		
 	def showMedia(self,item):
 		if self.itemType(item) == 'image':
@@ -930,19 +953,11 @@ class FacebookSession:
 			self.showVideo(item)
 		
 	def itemType(self,item):
-		mtype = item.getMediaType()
-		if mtype == mc.ListItem.MEDIA_PICTURE:
-			return 'image'
-		elif mtype == mc.ListItem.MEDIA_VIDEO_OTHER:
-			return 'video'
-		else:
-			return 'other'
+		return item.getProperty('media_type') or 'other'
 	
 	def getFocusedItem(self,list_id):
-		lc = self.window.getList(list_id)
-		itemNumber = lc.getFocusedItem()
-		self.lastItemNumber = itemNumber
-		return lc.getItem(itemNumber)
+		lc = self.window.getControl(list_id)
+		return lc.getSelectedItem()
 	
 	def removeCRLF(self,text):
 		return " ".join(text.split())
@@ -970,6 +985,19 @@ class FacebookSession:
 		fn = os.path.splitext(fn)[0] + '.' + ext
 		return fn
 	
+	def openWindow(self,window_name):
+		windowFile = 'facebook-media-%s.xml' % window_name
+		w = BaseWindow(windowFile , __addon__.getAddonInfo('path'), THEME,session=self,wfile=window_name)
+		self.window = w
+		self.windowStack.append(w)
+		w.doModal()
+		if self.windowStack:
+			self.window = self.windowStack.pop()
+		del w
+		
+	def closeWindow(self):
+		self.window.close()
+	
 	def addUser(self,email=None,password=None):
 		try:
 			if self.newUserCache:
@@ -980,12 +1008,12 @@ class FacebookSession:
 			if not email:
 				email = doKeyboard("Login Email")
 			if not email:
-				mc.CloseWindow()
+				self.closeWindow()
 				return
 			if not password:
 				password = doKeyboard("Login Password",hidden=True)
 			if not password:
-				mc.CloseWindow()
+				self.closeWindow()
 				return
 			self.newUserCache = (email,password)
 			self.setSetting('auth_step_1','complete')
@@ -993,14 +1021,12 @@ class FacebookSession:
 			self.getAuth(email,password)
 		except:
 			message = ERROR('ERROR')
-			mc.HideDialogWait()
 			xbmcgui.Dialog().ok('Authorization Error',message)
-			mc.CloseWindow()
+			self.closeWindow()
 			self.newUserCache = None
 		
 	def addUserPart2(self):
 		LOG("ADD USER PART 2")
-		mc.ShowDialogWait()
 		self.setSetting('auth_step_2','complete')
 		self.setSetting('auth_step_3','pending')
 		email,password = self.newUserCache
@@ -1022,9 +1048,8 @@ class FacebookSession:
 		self.setSetting('profile_pic_%s' % uid,user.picture('').replace('_q.','_n.'))
 		#self.getProfilePic(uid,force=True)
 		self.setSetting('auth_step_4','complete')
-		mc.HideDialogWait()
 		xbmcgui.Dialog().ok("User Added",ENCODE(username))
-		mc.CloseWindow()
+		self.closeWindow()
 		self.loadOptions()
 		if not self.getSetting('has_user'):
 			self.setSetting('has_user','true')
@@ -1131,8 +1156,8 @@ pass
 		box_len = 200
 		box_off = box_len/2
 		
-		template_file_path = os.path.join(mc.getApp().getAppDir(),'tags.xml')
-		tags_file_path = os.path.join(mc.getApp().getAppDir(),'skin','Boxee Skin NG','720p','tags.xml')
+		template_file_path = os.path.join(__addon__.getAddonInfo('path'),'tags.xml')
+		tags_file_path = os.path.join(__addon__.getAddonInfo('path'),'resources','skins','Default','720p','tags.xml')
 		
 		tags_file = open(template_file_path,'r')
 		xml = tags_file.read()
@@ -1163,13 +1188,13 @@ pass
 		tags_file.close()
 			
 	def clearSetting(self,key):
-		mc.getApp().getLocalConfig().Reset(str(key))
+		__addon__.setSetting('')
 		
 	def setSetting(self,key,value):
-		mc.getApp().getLocalConfig().setValue(str(key),str(value))
+		__addon__.setSetting(key,value)
 		
 	def getSetting(self,key):
-		return mc.getApp().getLocalConfig().getValue(key)
+		__addon__.getSetting(key)
 	
 	def getAuth(self,email='',password=''):
 		redirect = urllib.quote('http://2ndmind.com/facebookphotos/complete.html')
@@ -1184,38 +1209,7 @@ pass
 		#return None
 
 def launchBoxeeBrowser(url,**kwargs):
-	from urllib import quote
-	from urlparse import urlparse,urlunparse
-	
-	uri = urlparse(url)
-
-	if not uri[0]:
-		url = "http://"+urlunparse(uri)
-		uri = urlparse(url)
-
-	domain = uri[1]
-	domain = domain.split('.')
-
-	if len(domain) > 2:
-		domain = domain[-2:]
-
-	domain = ".".join(domain)
-
-	args = ''
-	for k in kwargs:
-		args += '&%s=%s' % (k,quote(kwargs[k]))
-		
-	#path = 'flash://%s/src=%s%s&bx-jsactions=%s' % (domain, quote(url),args,quote('http://dir.boxee.tv/apps/browser/browser.js'))
-	path = 'flash://%s/src=%s%s&bx-jsactions=%s' % (domain, quote(url),args,quote('http://2ndmind.com/boxee/facebook-media/fbauth.js'))
-	
-	item = xbmcgui.ListItem()
-	item.setLabel("Authorize")
-	item.setAddToHistory(False)
-	item.setReportToServer(False)
-	item.setContentType("application/x-shockwave-flash")
-	item.setPath(path)
-	player = mc.Player()
-	player.Play(item)
+	pass
 
 def doKeyboard(prompt,default='',hidden=False):
 	keyboard = xbmc.Keyboard(default,prompt)
@@ -1224,18 +1218,7 @@ def doKeyboard(prompt,default='',hidden=False):
 	if not keyboard.isConfirmed(): return None
 	return keyboard.getText()
 
-BOXEE_VERSION = mc.getInfoString('System.BuildVersion')
-LOG('Boxee Version: %s' % BOXEE_VERSION)
+XBMC_VERSION = xbmc.getInfoLabel('System.BuildVersion')
+LOG('XBMC Version: %s' % XBMC_VERSION)
 
-params = mc.Parameters()
-params['none'] = 'NONE'
-
-config = mc.getApp().getLocalConfig()
-config.setValue('current_user_pic','facebook-media-icon-generic-user.png')
-config.setValue('current_friend_name','')
-config.setValue('progress','')
-config.setValue('last_item_name','OPTIONS')
-config.setValue('current_nav_path','')
-
-CLOSEREADY = False
-mc.getApp().ActivateWindow(14000,params)
+FacebookSession()

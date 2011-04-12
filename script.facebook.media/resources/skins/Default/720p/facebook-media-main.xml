@@ -2,27 +2,6 @@
 <window type="window" id="14001">
 	<defaultcontrol always="true">120</defaultcontrol>
 	<allowoverlay>no</allowoverlay>
-	<onload lang="python"><![CDATA[
-print "LOAD"
-if CLOSEREADY:
-	try:
-		#mc.GetActiveWindow().ClearStateStack()
-		session.loadOptions()
-		session.restoreState(session.current_state,onload=True)
-		print "FACEBOOK MEDIA: STATE RESTORED"
-	except:
-		import traceback
-		traceback.print_exc()
-else:
-		session = FacebookSession()
-CLOSEREADY = True
-]]></onload>
-<onunload lang="python"><![CDATA[
-print "UNLOAD"
-#mc.GetActiveWindow().ClearStateStack()
-session.setFriend('')
-CLOSEREADY = True
-]]></onunload>
 	<controls>
 		<control type="image">
 			<posx>0</posx>
@@ -173,13 +152,6 @@ CLOSEREADY = True
 						<textcolor>white</textcolor>
 					</control>
 				</focusedlayout>
-				<content type="url">
-					<onclick lang="python">
-<![CDATA[
-session.photovideoMenuSelected()
-]]>
-					</onclick>
-				</content>
 				<onleft>120</onleft>
 				<onup>120</onup>
 				<ondown>120</ondown>
@@ -346,33 +318,6 @@ session.photovideoMenuSelected()
 						<textcolor>FFFFFFFF</textcolor>
 					</control>
 				</focusedlayout>
-				<content type="url">
-					<onclick lang="python">
-<![CDATA[
-session.menuItemSelected(select=True)
-]]>
-					</onclick>
-				</content>
-				<onright lang="python">
-<![CDATA[
-session.menuItemSelected()
-]]>
-				</onright>
-				<ondown lang="python">
-<![CDATA[
-session.mediaNext()	
-]]>
-				</ondown>
-				<onup lang="python">
-<![CDATA[
-session.mediaPrev()	
-]]>
-				</onup>
-				<onleft lang="python">
-<![CDATA[
-session.menuItemDeSelected()
-]]>
-				</onleft>
 			</control>
 		</control>
 		
@@ -588,125 +533,10 @@ session.menuItemDeSelected()
 				<height>60</height>
 				<texture border="1">facebook-media-tube-back.png</texture>
 			</control>
-			<control type="image">
+			<control type="image" id="153">
 				<width>25</width>
 				<height>60</height>
 				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),5)]</visible>
-			</control>
-			<control type="image">
-				<width>50</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),10)]</visible>
-			</control>
-			<control type="image">
-				<width>75</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),15)]</visible>
-			</control>
-			<control type="image">
-				<width>100</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),20)]</visible>
-			</control>
-			<control type="image">
-				<width>125</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),25)]</visible>
-			</control>
-			<control type="image">
-				<width>150</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),30)]</visible>
-			</control>
-			<control type="image">
-				<width>175</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),35)]</visible>
-			</control>
-			<control type="image">
-				<width>200</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),40)]</visible>
-			</control>
-			<control type="image">
-				<width>225</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),45)]</visible>
-			</control>
-			<control type="image">
-				<width>250</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),50)]</visible>
-			</control>
-			<control type="image">
-				<width>275</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),55)]</visible>
-			</control>
-			<control type="image">
-				<width>300</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),60)]</visible>
-			</control>
-			<control type="image">
-				<width>325</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),65)]</visible>
-			</control>
-			<control type="image">
-				<width>350</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),70)]</visible>
-			</control>
-			<control type="image">
-				<width>375</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),75)]</visible>
-			</control>
-			<control type="image">
-				<width>400</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),80)]</visible>
-			</control>
-			<control type="image">
-				<width>425</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),85)]</visible>
-			</control>
-			<control type="image">
-				<width>450</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),90)]</visible>
-			</control>
-			<control type="image">
-				<width>475</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),95)]</visible>
-			</control>
-			<control type="image">
-				<width>500</width>
-				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
-				<visible>$INFO[StringCompare(App.String(progress),100)]</visible>
 			</control>
 			<control type="label" id="152">
 				<posx>50</posx>
@@ -832,13 +662,6 @@ session.menuItemDeSelected()
 						<textcolor>white</textcolor>
 					</control>
 				</focusedlayout>
-				<content type="url">
-					<onclick lang="python">
-<![CDATA[
-session.optionMenuItemSelected()
-]]>
-					</onclick>
-				</content>
 				<onright>120</onright>
 				<onleft>120</onleft>
 			</control>
