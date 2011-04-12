@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<window type="window" id="14000">
+	<defaultcontrol always="true">120</defaultcontrol>
+	<allowoverlay>no</allowoverlay>
+	<onload lang="python"><![CDATA[
+import mc
+if CLOSEREADY:
+	state = session.states and session.states.pop() or None
+	if state:
+		session.current_state = state
+		session.reInitState()
+	else:
+		response = mc.ShowDialogConfirm("Really Exit", "Are you sure you want to exit Facebook Media?", "No", "Yes")
+		if response:
+			mc.CloseWindow()
+		else:
+			session.reInitState()
+else:
+	mc.GetApp().ActivateWindow(14001,params)
+]]></onload>
+	<controls>
+		<control type="image">
+			<posx>0</posx>
+			<posy>0</posy>
+			<width>1280</width>
+			<height>720</height>
+			<texture>facebook-media-menu-background.jpg</texture>
+		</control>
+	</controls>
+</window>
