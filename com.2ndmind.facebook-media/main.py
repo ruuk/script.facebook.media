@@ -93,7 +93,7 @@ class FacebookSession:
 		
 	def newGraph(self,email,password,uid=None,token=None,new_token_callback=None):
 		graph = facebook.GraphWrap(token,new_token_callback=new_token_callback)
-		graph.setAppData('194599440576989',scope='user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags')
+		graph.setAppData('194599440576989',scope='user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,publish_stream')
 		graph.setLogin(email,password,uid)
 		return graph
 		

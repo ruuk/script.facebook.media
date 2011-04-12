@@ -1,14 +1,43 @@
 #Facebook Media For Boxee
 
-import mc #@UnresolvedImport
-import os,binascii,urllib,urllib2,time
+import os,urllib,urllib2,time
 import sys, traceback
+
+import xbmc, xbmcaddon, xbmcgui #@UnresolvedImport
 
 #import traceback
 import facebook
-reload(facebook)
 
 from facebook import GraphAPIError, GraphWrapAuthError
+
+__author__ = 'ruuk (Rick Phillips)'
+__url__ = 'http://code.google.com/p/facebook-media/'
+__date__ = '04-12-2011'
+__version__ = '0.5.0'
+__addon__ = xbmcaddon.Addon(id='script.facebook.media')
+__language__ = __addon__.getLocalizedString
+
+THEME = 'Default'
+
+ACTION_MOVE_LEFT      = 1
+ACTION_MOVE_RIGHT     = 2
+ACTION_MOVE_UP        = 3
+ACTION_MOVE_DOWN      = 4
+ACTION_PAGE_UP        = 5
+ACTION_PAGE_DOWN      = 6
+ACTION_SELECT_ITEM    = 7
+ACTION_HIGHLIGHT_ITEM = 8
+ACTION_PARENT_DIR     = 9
+ACTION_PREVIOUS_MENU  = 10
+ACTION_SHOW_INFO      = 11
+ACTION_PAUSE          = 12
+ACTION_STOP           = 13
+ACTION_NEXT_ITEM      = 14
+ACTION_PREV_ITEM      = 15
+ACTION_SHOW_GUI       = 18
+ACTION_PLAYER_PLAY    = 79
+ACTION_MOUSE_LEFT_CLICK = 100
+ACTION_CONTEXT_MENU   = 117
 
 import locale
 loc = locale.getdefaultlocale()
@@ -29,16 +58,15 @@ def ERROR(message):
 class FacebookUser:
 	def __init__(self,uid):
 		self.id = uid
-		config = mc.GetApp().GetLocalConfig()
-		self.email = config.GetValue('login_email_%s' % uid)
-		self.password = config.GetValue('login_pass_%s' % uid)
-		self.token = config.GetValue('token_%s' % uid)
-		self.pic = config.GetValue('profile_pic_%s' % uid)
-		self.username = config.GetValue('username_%s' % uid)
+		self.email = __addon__.getSetting('login_email_%s' % uid)
+		self.password = __addon__.getSetting('login_pass_%s' % uid)
+		self.token = __addon__.getSetting('token_%s' % uid)
+		self.pic = __addon__.getSetting('profile_pic_%s' % uid)
+		self.username = __addon__.getSetting('username_%s' % uid)
 		
 	def updateToken(self,token):
 		self.token = token
-		mc.GetApp().GetLocalConfig().SetValue('token_%s' % self.id,str(token))
+		__addon__.setSetting('token_%s' % self.id,str(token))
 
 class WindowState:
 	def __init__(self):
@@ -48,14 +76,16 @@ class WindowState:
 			
 class FacebookSession:
 	def __init__(self):
+		self.window = None
 		self.graph = None
 		self.states = []
 		self.current_state = None
+		self.curr_state_settings = {}
 		self.paging = []
 		self.cancel_progress = False
 		self.progressVisible = False
 		self.lastItemNumber = 0
-		self.CACHE_PATH = os.path.join(mc.GetTempDir(),'facebook-media')
+		self.CACHE_PATH = os.path.join(__addon__.getAddonInfo('profile'),'cache')
 		if not os.path.exists(self.CACHE_PATH): os.makedirs(self.CACHE_PATH)
 		self.newUserCache = None
 		self.currentUser = None
@@ -93,7 +123,7 @@ class FacebookSession:
 		
 	def newGraph(self,email,password,uid=None,token=None,new_token_callback=None):
 		graph = facebook.GraphWrap(token,new_token_callback=new_token_callback)
-		graph.setAppData('194599440576989',scope='user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags')
+		graph.setAppData('150505371652086',scope='user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,publish_stream')
 		graph.setLogin(email,password,uid)
 		return graph
 		
@@ -102,48 +132,47 @@ class FacebookSession:
 		if self.currentUser: self.currentUser.updateToken(token)
 		
 	def loadOptions(self):
-		items = mc.ListItems()
+		items = []
 		for user in self.getUsers():
-			item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
-			item.SetLabel(user.username)
-			item.SetThumbnail(user.pic)
-			item.SetProperty('uid',user.id)
+			item = xbmcgui.ListItem()
+			item.setLabel(user.username)
+			item.setThumbnailImage(user.pic)
+			item.setProperty('uid',user.id)
 			items.append(item)
 		options = [	('add_user','facebook-media-icon-adduser.png','Add User','data'),
 					('remove_user','facebook-media-icon-removeuser.png','Remove User','data'),
 					('reauth_user','facebook-media-icon-reauth-user.png','Re-Authorize Current User','data')]
 		for action,icon,label,data in options:
-			item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
-			item.SetThumbnail(icon)
-			item.SetLabel(label)
-			item.SetProperty('action',action)
-			item.SetProperty('data',data)
+			item = xbmcgui.ListItem()
+			item.setThumbnailImage(icon)
+			item.setLabel(label)
+			item.setProperty('action',action)
+			item.setProperty('data',data)
 			items.append(item)
-			
-		mc.GetWindow(14001).GetList(125).SetItems(items)
+		
+		self.window.getControl(120).addItems(items)
 		
 	def openAddUserWindow(self,email='',password=''):
-		params = mc.Parameters()
-		params['email'] = email
-		params['password'] = password
-		self.setSetting('auth_step_1','')
-		self.setSetting('auth_step_2','')
-		self.setSetting('auth_step_3','')
-		self.setSetting('auth_step_4','')
-		mc.GetApp().ActivateWindow(14002,params)
+		pass
 			
 	def saveState(self):
 		state = self.createCurrentState()
 		self.states.append(state)
 		
+	def getListItems(self,alist):
+		items = []
+		for x in range(0,alist.size()):
+			items.append(alist.getListItem(x))
+		return items
+	
 	def createCurrentState(self,items=None):
-		ilist = mc.GetWindow(14001).GetList(120)
+		ilist = self.window.getControl(120)
 		state = WindowState()
 		if not items:
-			items = ilist.GetItems()
-			state.listIndex = ilist.GetFocusedItem()
+			items = self.getListItems(ilist)
+			state.listIndex = ilist.getSelectedItem()
 		state.items = items
-		for set in self.stateSettings: state.settings[set] = self.getSetting(set)
+		for set in self.stateSettings: state.settings[set] = self.curr_state_settings.get(set)
 		return state
 	
 	def setCurrentState(self,items=None):
@@ -159,18 +188,15 @@ class FacebookSession:
 		if not state:
 			LOG('restoreState() - No State')
 			return
-		for set in self.stateSettings: self.setSetting(set, '')
-		for set in self.stateSettings: self.setSetting(set, state.settings.get(set,''))
-		ilist = mc.GetWindow(14001).GetList(120)
+		for set in self.stateSettings: self.curr_state_settings[set] = ''
+		for set in self.stateSettings: self.curr_state_settings[set] = state.settings.get(set,'')
+		ilist = self.window.getControl(120)
 		self.fillList(state.items)
-		ilist.SetFocusedItem(state.listIndex)
+		ilist.selectItem(state.listIndex)
 		self.current_state = state
 			
 	def reInitState(self,state=None):
 		if not state: state = self.current_state
-		params = mc.Parameters()
-		params['none'] = 'NONE'
-		mc.GetApp().ActivateWindow(14001,params)
 		self.restoreState(state)
 		self.setPathDisplay()
 
@@ -187,63 +213,63 @@ class FacebookSession:
 		return req.geturl()
 	
 	def setListFocus(self,nextprev,conn_obj):
-		ilist = mc.GetWindow(14001).GetList(120)
+		ilist = self.window.getControl(120)
 		if nextprev == 'prev':
 			if conn_obj.next: self.jumpToListEnd(ilist,-1)
 			else: self.jumpToListEnd(ilist)
 		else:
-			if conn_obj.previous: ilist.SetFocusedItem(1)
+			if conn_obj.previous: ilist.selectItem(1)
 				
 	def jumpToListEnd(self,ilist,offset=0):
-		idx = len(ilist.GetItems()) - 1
+		idx = len(self.getListItems(ilist)) - 1
 		idx += offset
 		if idx < 0: idx = 0
-		ilist.SetFocusedItem(idx)
+		ilist.selectItem(idx)
 		
 	def getPagingItem(self,nextprev,url,itype,current_url='',uid=''):
-		item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
-		item.SetThumbnail('facebook-media-icon-%s.png' % nextprev)
+		item = xbmcgui.ListItem()
+		item.setThumbnailImage('facebook-media-icon-%s.png' % nextprev)
 		if nextprev == 'prev': caption = 'PREVIOUS %s' % itype.upper()
 		else: caption = 'NEXT %s' % itype.upper()
 		if itype == 'albums':
-			item.SetLabel(caption)
+			item.setLabel(caption)
 		else:
-			item.SetProperty('caption',caption)
-			item.SetProperty('hidetube','true')
+			item.setProperty('caption',caption)
+			item.setProperty('hidetube','true')
 		
-		item.SetProperty('category','paging')
-		item.SetProperty('uid',uid)
-		item.SetProperty('paging',ENCODE(url))
-		item.SetProperty('nextprev',nextprev)
-		item.SetProperty('mediatype',itype)
-		item.SetProperty('from_url',current_url)
-		item.SetProperty('previous',self.getSetting('last_item_name'))
+		item.setProperty('category','paging')
+		item.setProperty('uid',uid)
+		item.setProperty('paging',ENCODE(url))
+		item.setProperty('nextprev',nextprev)
+		item.setProperty('mediatype',itype)
+		item.setProperty('from_url',current_url)
+		item.setProperty('previous',self.getSetting('last_item_name'))
 		return item
 		
 	def fillList(self,items):
 		#Fix for unpredictable Boxee wraplist behavior
 		if len(items) < 6:
-			newitems = mc.ListItems()
+			newitems = []
 			for y in items: newitems.append(y)
 			mult = 6/len(items)
 			if mult < 2: mult = 2
 			for x in range(1,mult): #@UnusedVariable
 				for y in items: newitems.append(y)
-			mc.GetWindow(14001).GetList(120).SetItems(newitems)
+			self.window.getControl(120).addItems(newitems)
 		else:
-			mc.GetWindow(14001).GetList(120).SetItems(items)
+			self.window.getControl(120).addItems(items)
 		
 	def CATEGORIES(self,item=None):
 		LOG("CATEGORIES - STARTED")
-		window = mc.GetWindow(14001)
+		window = self.window
 		uid = 'me'
 		friend_thumb = None
 		if item:
 			self.saveState()
-			uid = item.GetProperty('fid')
-			friend_thumb = item.GetProperty('friend_thumb')
+			uid = item.getProperty('fid')
+			friend_thumb = item.getProperty('friend_thumb')
 		
-		items = mc.ListItems()
+		items = []
 		cids = ('albums','videos','friends','photosofme','videosofme')
 		if uid == 'me':
 			cats = ('ALBUMS','VIDEOS','FRIENDS','PHOTOS OF ME','VIDEOS OF ME')
@@ -251,38 +277,36 @@ class FacebookSession:
 			cats = ('ALBUMS','VIDEOS','FRIENDS','PHOTOS OF USER','VIDEOS OF USER')
 			
 		for cat,cid in zip(cats,cids):
-			item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
-			#item.SetContentType("")
-			item.SetLabel(cat)
-			item.SetProperty('category',cid)
-			item.SetProperty('uid',uid)
-			item.SetThumbnail('facebook-media-icon-%s.png' % cid)
-			if friend_thumb: item.SetProperty('friend_thumb',friend_thumb)
-			else: item.SetProperty('friend_thumb','facebook-media-icon-%s.png' % cid)
-			item.SetProperty('background','')
-			item.SetProperty('previous',self.getSetting('last_item_name'))
+			item = xbmcgui.ListItem()
+			#item.setContentType("")
+			item.setLabel(cat)
+			item.setProperty('category',cid)
+			item.setProperty('uid',uid)
+			item.setThumbnailImage('facebook-media-icon-%s.png' % cid)
+			if friend_thumb: item.setProperty('friend_thumb',friend_thumb)
+			else: item.setProperty('friend_thumb','facebook-media-icon-%s.png' % cid)
+			item.setProperty('background','')
+			item.setProperty('previous',self.getSetting('last_item_name'))
 			items.append(item)
-		
-		mc.HideDialogWait()
-		
+				
 		self.fillList(items)
-		window.GetControl(120).SetFocus()
+		window.setFocusId(120)
 		self.setCurrentState(items)
 		self.setSetting('last_item_name','CATEGORIES')
 		LOG("CATEGORIES - STOPPED")
 
 	def ALBUMS(self,item):
 		LOG('ALBUMS - STARTED')
-		uid = item.GetProperty('uid')
-		paging = item.GetProperty('paging')
-		nextprev = item.GetProperty('nextprev')
-		fromUrl = item.GetProperty('from_url')
+		uid = item.getProperty('uid')
+		paging = item.getProperty('paging')
+		nextprev = item.getProperty('nextprev')
+		fromUrl = item.getProperty('from_url')
 		
 		if not paging: self.saveState()
 		
 		self.startProgress('GETTING ALBUMS...')
 		
-		items = mc.ListItems()
+		items = []
 		try:
 			self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
 			if paging:
@@ -338,14 +362,14 @@ class FacebookSession:
 				#aname = a.get('name','').encode('ISO-8859-1','replace')
 				aname = ENCODE(a.name(''))
 				
-				item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
-				item.SetLabel(aname)
-				item.SetThumbnail(ENCODE(tn_url))
-				item.SetImage(0,ENCODE(src_url))
-				item.SetProperty('album',ENCODE(a.id))
-				item.SetProperty('uid',uid)
-				item.SetProperty('category','photos')
-				item.SetProperty('previous',self.getSetting('last_item_name'))
+				item = xbmcgui.ListItem()
+				item.setLabel(aname)
+				item.setThumbnailImage(ENCODE(tn_url))
+				item.setProperty('image0',ENCODE(src_url))
+				item.setProperty('album',ENCODE(a.id))
+				item.setProperty('uid',uid)
+				item.setProperty('category','photos')
+				item.setProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				
 			if albums.next:
@@ -372,7 +396,7 @@ class FacebookSession:
 		self.startProgress('GETTING FRIENDS...')
 		self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
 		
-		items = mc.ListItems()
+		items = []
 		try:
 			friends = self.graph.getObject(uid).connections.friends(fields="picture,name")
 			srt = []
@@ -400,14 +424,14 @@ class FacebookSession:
 				#	tn_url = self.getRealURL(tn)
 				#	self.imageURLCache[fid] = tn_url
 				name = show[s].name('')
-				item = mc.ListItem( mc.ListItem.MEDIA_UNKNOWN )
-				item.SetLabel(ENCODE(name))
-				item.SetThumbnail(ENCODE(tn_url))
-				item.SetProperty('friend_thumb',ENCODE(tn_url))
-				item.SetProperty('uid',uid)
-				item.SetProperty('fid',ENCODE(fid))
-				item.SetProperty('category','friend')
-				item.SetProperty('previous',self.getSetting('last_item_name'))
+				item = xbmcgui.ListItem()
+				item.setLabel(ENCODE(name))
+				item.setThumbnailImage(ENCODE(tn_url))
+				item.setProperty('friend_thumb',ENCODE(tn_url))
+				item.setProperty('uid',uid)
+				item.setProperty('fid',ENCODE(fid))
+				item.setProperty('category','friend')
+				item.setProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				
 			self.saveImageURLCache()
@@ -430,19 +454,19 @@ class FacebookSession:
 		
 	def PHOTOS(self,item):
 		LOG("PHOTOS - STARTED")
-		aid = item.GetProperty('album')
-		uid = item.GetProperty('uid')
-		paging = item.GetProperty('paging')
-		nextprev = item.GetProperty('nextprev')
-		fromUrl = item.GetProperty('from_url')
-		if item.GetProperty('category') == 'photosofme': aid = uid
+		aid = item.getProperty('album')
+		uid = item.getProperty('uid')
+		paging = item.getProperty('paging')
+		nextprev = item.getProperty('nextprev')
+		fromUrl = item.getProperty('from_url')
+		if item.getProperty('category') == 'photosofme': aid = uid
 				
 		if not paging: self.saveState()
 		
 		self.startProgress('GETTING PHOTOS...')
 		self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
 		
-		items = mc.ListItems()
+		items = []
 		try:
 			if paging:
 				if fromUrl:
@@ -469,23 +493,23 @@ class FacebookSession:
 			for p in photos:
 				tn = p.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn) # this seems to get better results then using the random server
-				item = mc.ListItem( mc.ListItem.MEDIA_PICTURE )
-				item.SetLabel(ENCODE(self.removeCRLF(p.name(p.id))))
+				item = xbmcgui.ListItem()
+				item.setLabel(ENCODE(self.removeCRLF(p.name(p.id))))
 				source = ENCODE(p.source())
 				caption = self.makeCaption(p, uid)
-				item.SetPath(source)
-				item.SetProperty('category','photovideo')
-				item.SetProperty('hidetube','true')
-				item.SetLabel('')
-				item.SetImage(0,source)
-				item.SetThumbnail(ENCODE(tn))
-				item.SetProperty('uid',uid)
-				item.SetProperty('id',ENCODE(p.id))
-				item.SetProperty('caption',caption)
-				if p.hasProperty('comments'): item.SetProperty('comments','true')
-				if p.hasProperty('tags'): item.SetProperty('tags','true')
-				item.SetProperty('data',p.toJSON())
-				item.SetProperty('previous',self.getSetting('last_item_name'))
+				item.setPath(source)
+				item.setProperty('category','photovideo')
+				item.setProperty('hidetube','true')
+				item.setLabel('')
+				item.setProperty('image0',source)
+				item.setThumbnailImage(ENCODE(tn))
+				item.setProperty('uid',uid)
+				item.setProperty('id',ENCODE(p.id))
+				item.setProperty('caption',caption)
+				if p.hasProperty('comments'): item.setProperty('comments','true')
+				if p.hasProperty('tags'): item.setProperty('tags','true')
+				item.setProperty('data',p.toJSON())
+				item.setProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct += 1
 				self.updateProgress(int(ct*modifier)+offset,100,message='Loading photo %s of %s' % (ct,tot))
@@ -509,18 +533,18 @@ class FacebookSession:
 		LOG("VIDEOS - STARTED")
 		
 		uploaded = False
-		uid = item.GetProperty('uid')
-		paging = item.GetProperty('paging')
-		nextprev = item.GetProperty('nextprev')
-		fromUrl = item.GetProperty('from_url')
-		if item.GetProperty('category') != 'videosofme': uploaded = True
+		uid = item.getProperty('uid')
+		paging = item.getProperty('paging')
+		nextprev = item.getProperty('nextprev')
+		fromUrl = item.getProperty('from_url')
+		if item.getProperty('category') != 'videosofme': uploaded = True
 		
 		if not paging: self.saveState()
 		
 		self.startProgress('GETTING VIDEOS...')
 		self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
 		
-		items = mc.ListItems()
+		items = []
 		try:
 			if paging:
 				if fromUrl:
@@ -545,22 +569,22 @@ class FacebookSession:
 			offset = 50
 			modifier = 50.0/total
 			for v in videos:
-				item = mc.ListItem( mc.ListItem.MEDIA_VIDEO_OTHER )
+				item = xbmcgui.ListItem()
 				tn = v.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn)
 				caption = self.makeCaption(v, uid)
-				item.SetPath(ENCODE(v.source('')))
-				item.SetProperty('uid',uid)
-				item.SetProperty('id',ENCODE(v.id))
-				item.SetProperty('category','photovideo')
-				item.SetProperty('hidetube','true')
-				item.SetThumbnail(ENCODE(tn))
-				item.SetImage(0,ENCODE(tn))
-				item.SetProperty('caption',caption)
-				if v.hasProperty('comments'): item.SetProperty('comments','true')
-				if v.hasProperty('tags'): item.SetProperty('tags','true')
-				item.SetProperty('data',v.toJSON())
-				item.SetProperty('previous',self.getSetting('last_item_name'))
+				item.setPath(ENCODE(v.source('')))
+				item.setProperty('uid',uid)
+				item.setProperty('id',ENCODE(v.id))
+				item.setProperty('category','photovideo')
+				item.setProperty('hidetube','true')
+				item.setThumbnailImage(ENCODE(tn))
+				item.setProperty('image0',ENCODE(tn))
+				item.setProperty('caption',caption)
+				if v.hasProperty('comments'): item.setProperty('comments','true')
+				if v.hasProperty('tags'): item.setProperty('tags','true')
+				item.setProperty('data',v.toJSON())
+				item.setProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct+=1
 				self.updateProgress(int(ct*modifier)+offset,100, 'Loading video %s of %s' % (ct,total))
@@ -596,7 +620,7 @@ class FacebookSession:
 		if not paging: self.popState(clear=True)
 		message = "No %s or not authorized." % itype
 		if paging: message = 'End of %s reached.' % itype
-		mc.ShowDialogOk("None Available", message)
+		xbmcgui.Dialog().ok("None Available", message)
 		
 	def saveImageURLCache(self):
 		out = ''
@@ -623,8 +647,8 @@ class FacebookSession:
 		
 	def mediaNextPrev(self,np):
 		LOG("PHOTOS - %s" % np.upper())
-		item = mc.GetActiveWindow().GetList(120).GetItem(0)
-		url = item.GetProperty(np)
+		item = self.window.getControl(120).getItem(0)
+		url = item.getProperty(np)
 		print "%s URL: %s" % (np.upper(),url)
 		if url:
 			if self.itemType(item) == 'image':
@@ -632,30 +656,24 @@ class FacebookSession:
 			else:
 				self.VIDEOS(url, isPaging=True)
 			if np == 'prev':
-				list = mc.GetWindow(14001).GetList(120)
-				idx = len(list.GetItems()) - 1
+				list = self.window.getControl(120)
+				idx = len(list.getItems()) - 1
 				if idx < 0: idx = 0
-				mc.GetWindow(14001).GetList(120).SetFocusedItem(idx)
-		
-	def mediaNext(self):
-		self.mediaNextPrev('next')
-	
-	def mediaPrev(self):
-		self.mediaNextPrev('prev')
+				self.window.getControl(120).setFocusedItem(idx)
 
 	def menuItemSelected(self,select=False):
 		state_len = len(self.states)
 		try:
-			item = self.getFocusedItem(120)
+			item = self.window.getFocusedItem(120)
 			
-			cat = item.GetProperty('category')
-			uid = item.GetProperty('uid') or 'me'
+			cat = item.getProperty('category')
+			uid = item.getProperty('uid') or 'me'
 			
 			if cat == 'friend':
-				name = item.GetLabel()
+				name = item.getLabel()
 				self.CATEGORIES(item)
 				self.setFriend(name)
-				self.setSetting('last_item_name',item.GetLabel())
+				self.setSetting('last_item_name',item.getLabel())
 				self.setPathDisplay()
 				return
 			else:
@@ -682,41 +700,41 @@ class FacebookSession:
 				self.preMediaSetup()
 				self.showMedia(item)
 			elif cat == 'paging':
-				self.setSetting('last_item_name',item.GetProperty('previous'))
-				if item.GetProperty('mediatype') == 'photos': 		self.PHOTOS(item)
-				elif item.GetProperty('mediatype') == 'videos': 	self.VIDEOS(item)
-				elif item.GetProperty('mediatype') == 'albums': 	self.ALBUMS(item)
+				self.setSetting('last_item_name',item.getProperty('previous'))
+				if item.getProperty('mediatype') == 'photos': 		self.PHOTOS(item)
+				elif item.getProperty('mediatype') == 'videos': 	self.VIDEOS(item)
+				elif item.getProperty('mediatype') == 'albums': 	self.ALBUMS(item)
 				return
 			
-			self.setSetting('last_item_name',item.GetLabel())
+			self.setSetting('last_item_name',item.getLabel())
 			self.setPathDisplay()
 		except GraphWrapAuthError,e:
 			if len(self.states) > state_len: self.popState()
 			if e.type == 'RENEW_TOKEN_FAILURE':
-				response = mc.ShowDialogConfirm("TOKEN ERROR", "Failed to renew authorization. Would you like to Re-Authorize?", "No", "Yes")
+				response = xbmcgui.Dialog().yesno("TOKEN ERROR", "Failed to renew authorization. Would you like to Re-Authorize?", "No", "Yes")
 				if response:
 					self.openAddUserWindow(self.currentUser.email, self.currentUser.password)
 			else:
 				message = ERROR('UNHANDLED ERROR')
-				mc.ShowDialogOk('ERROR',message)
+				xbmcgui.Dialog().ok('ERROR',message)
 		except:
 			if len(self.states) > state_len: self.popState()
 			message = ERROR('UNHANDLED ERROR')
-			mc.ShowDialogOk('ERROR',message)
+			xbmcgui.Dialog().ok('ERROR',message)
 		
 	def menuItemDeSelected(self):
 		if not self.popState():
-			mc.GetWindow(14001).GetControl(125).SetFocus()
+			self.window.setFocusId(125)
 	
 	def optionMenuItemSelected(self):
 		print "OPTION ITEM SELECTED"
-		item = self.getFocusedItem(125)
-		mc.GetWindow(14001).GetControl(120).SetFocus()
-		uid = item.GetProperty('uid')
+		item = self.window.getFocusedItem(125)
+		self.window.setFocusId(120)
+		uid = item.getProperty('uid')
 		if uid:
 			self.setCurrentUser(uid)
 		else:
-			action = item.GetProperty('action')
+			action = item.getProperty('action')
 			if action == 'add_user':
 				self.openAddUserWindow()
 			elif action == 'remove_user':
@@ -725,62 +743,63 @@ class FacebookSession:
 				self.openAddUserWindow(self.currentUser.email, self.currentUser.password)
 		
 	def photovideoMenuSelected(self):
-		mc.GetWindow(14001).GetControl(120).SetFocus()
-		item = self.getFocusedItem(128)
-		name = item.GetProperty('name')
-		itemNumber = int(item.GetProperty('item_number'))
+		self.window.setFocusId(120)
+		item = self.window.getFocusedItem(128)
+		name = item.getProperty('name')
+		itemNumber = int(item.getProperty('item_number'))
 		if name == 'slideshow':
 			self.setFriend()
-			items = mc.GetWindow(14001).GetList(120).GetItems()
+			items = self.window.getControl(120).getItems()
 			self.preMediaSetup()
 			self.showImages(items,itemNumber,options=(False,False,False))
 		elif name == 'tags':
-			params = mc.Parameters()
-			params['none'] = 'NONE'
-			mc.GetApp().ActivateWindow(14003,params)
+			self.openTagsWindow()
 		elif name == 'comments':
 			self.doCommentDialog(itemNumber)
 		elif name == 'likes':
 			self.doLike(itemNumber)
 	
+	def openTagsWindow(self):
+		pass
+	
 	def doCommentDialog(self,itemNumber):
-		comment = mc.ShowDialogKeyboard("Enter Comment",'',False)
+		comment = doKeyboard("Enter Comment",'',False)
 		if not comment: return
-		item = mc.GetWindow(14001).GetList(120).GetItem(int(itemNumber))
-		pv_obj = self.graph.fromJSON(item.GetProperty('data'))
+		item = self.window.getControl(120).getItem(int(itemNumber))
+		pv_obj = self.graph.fromJSON(item.getProperty('data'))
 		pv_obj.comment(comment)
 		self.updateMediaItem(item,pv_obj)
 		
 	def doLike(self,itemNumber):
-		item = mc.GetWindow(14001).GetList(120).GetItem(int(itemNumber))
-		pv_obj = self.graph.fromJSON(item.GetProperty('data'))
+		item = self.window.getControl(120).getItem(int(itemNumber))
+		pv_obj = self.graph.fromJSON(item.getProperty('data'))
 		pv_obj.like()
 		self.updateMediaItem(item,pv_obj)
 		
 	def updateMediaItem(self,item,pv_obj=None):
-		if not pv_obj: pv_obj = self.graph.fromJSON(item.GetProperty('data'))
-		item.SetProperty('data',pv_obj.updateData().toJSON())
-		if pv_obj.hasProperty('comments'): item.SetProperty('comments','true')
-		if pv_obj.hasProperty('tags'): item.SetProperty('tags','true')
-		#items = mc.GetWindow(14001).GetList(120).GetItems()
+		if not pv_obj: pv_obj = self.graph.fromJSON(item.getProperty('data'))
+		item.setProperty('data',pv_obj.updateData().toJSON())
+		if pv_obj.hasProperty('comments'): item.setProperty('comments','true')
+		if pv_obj.hasProperty('tags'): item.setProperty('tags','true')
+		#items = self.window.getControl(120).getItems()
 		#idx=0
 		#for i in items:
-		#	if i.GetProperty('id') == item.GetProperty('id'):
+		#	if i.getProperty('id') == item.getProperty('id'):
 		#		break
 		#	idx+=1
 		#else:
 		#	return
 		#items[idx] = item
-		#mc.GetWindow(14001).GetList(120).SetItems(items)
+		#self.window.getControl(120).setItems(items)
 		
 		
 		
 	def showPhotoMenu(self):
 		self.setCurrentState()
-		items = mc.ListItems()
-		itemNumber = mc.GetWindow(14001).GetList(120).GetFocusedItem()
-		item = self.getFocusedItem(120)
-		pv_obj = self.graph.fromJSON(item.GetProperty('data'))
+		items = []
+		itemNumber = self.window.getControl(120).getFocusedItem()
+		item = self.window.getFocusedItem(120)
+		pv_obj = self.graph.fromJSON(item.getProperty('data'))
 		comments_string = ''
 		tags_string = ''
 		likes_string = ''
@@ -805,22 +824,21 @@ class FacebookSession:
 		if self.itemType(item) == 'image':
 			items.append(self.createPhotoMenuItem('slideshow', 'SLIDESHOW', 'Click to view a slideshow', '', itemNumber))
 			if tags: self.createTagsWindow(pv_obj)
-		mc.GetWindow(14001).GetList(128).SetItems(items)
-		mc.GetWindow(14001).GetControl(128).SetFocus()
+		self.window.getControl(128).setItems(items)
+		self.window.setFocusId(128)
 		return True
 	
 	def createPhotoMenuItem(self,name,label,sublabel,data,itemNumber):
-		item = mc.ListItem(mc.ListItem.MEDIA_UNKNOWN)
-		item.SetLabel(label)
-		item.SetProperty('sublabel',sublabel)
-		item.SetProperty('name',name)
-		item.SetProperty('item_number',str(itemNumber))
-		item.SetProperty('data',ENCODE(data))
+		item = xbmcgui.ListItem()
+		item.setLabel(label)
+		item.setProperty('sublabel',sublabel)
+		item.setProperty('name',name)
+		item.setProperty('item_number',str(itemNumber))
+		item.setProperty('data',ENCODE(data))
 		return item
 		
 		
 	def removeUserMenu(self):
-		import xbmcgui #@UnresolvedImport
 		uids = self.getUserList()
 		options = []
 		for uid in uids: options.append(self.getSetting('username_%s' % uid))
@@ -850,19 +868,17 @@ class FacebookSession:
 			path.append(state.settings.get('last_item_name'))
 		path.append(self.getSetting('last_item_name'))
 		path = ' : '.join(path[1:])
-		self.setSetting('current_nav_path',path)
+		self.curr_state_settings['current_nav_path'] = path
 		LOG('PATH - %s' % path)
 		
 	def setFriend(self,name=''):
-		self.setSetting('current_friend_name',name)
+		self.curr_state_settings['current_friend_name'] = name
 		
 	def startProgress(self,message):
 		self.cancel_progress = False
-		mc.GetWindow(14001).GetControl(160).SetFocus()
-		mc.ShowDialogWait()
-		mc.GetWindow(14001).GetLabel(152).SetLabel(message)
+		self.window.setFocusId(160)
+		self.window.getLabel(152).setLabel(message)
 		self.progressVisible = True
-		self.setSetting('progress','0')
 		
 	def updateProgress(self,ct,total,message=''):
 		if not self.progressVisible: return
@@ -872,42 +888,40 @@ class FacebookSession:
 				LOG('PROGRESS OUT OF BOUNDS')
 				return
 			pct = int((ct / float(total)) * 20) * 5
-			window = mc.GetWindow(14001)
+			window = self.window
 			self.setSetting('progress',str(pct))
-			window.GetLabel(152).SetLabel(message)
+			window.getLabel(152).setLabel(message)
 		except:
 			return False
 		return True
 	
 	def endProgress(self):
 		self.progressVisible = False
-		self.setSetting('progress','')
-		mc.HideDialogWait()
-		mc.GetWindow(14001).GetControl(120).SetFocus()
+		self.window.setFocusId(120)
 	
 	def cancelProgress(self):
 		LOG('PROGRESS CANCEL ATTEMPT')
 		self.cancel_progress = True
 		
 	def preMediaSetup(self):
-		blank = mc.ListItems()
-		blank.append(mc.ListItem( mc.ListItem.MEDIA_UNKNOWN ))
-		mc.GetWindow(14001).GetList(120).SetItems(blank)
+		blank = []
+		blank.append(xbmcgui.ListItem())
+		self.window.getControl(120).setItems(blank)
 		
 	def showImages(self,items,number=0,options=(True,False,True)):
 		LOG('SHOW IMAGES')
-		new_items = mc.ListItems()
+		new_items = []
 		for i in items:
 			if not self.itemType(i) == 'other': new_items.append(i) 
-		mc.GetPlayer().PlaySlideshow(new_items, options[0], options[1], str(number), options[2])
+		mc.getPlayer().PlaySlideshow(new_items, options[0], options[1], str(number), options[2])
 		
 	def showImage(self,item):
-		items = mc.ListItems()
+		items = []
 		items.append(item)
 		self.showImages(items)
 		
 	def showVideo(self,item):
-		mc.GetPlayer().Play(item)
+		mc.getPlayer().Play(item)
 		
 	def showMedia(self,item):
 		if self.itemType(item) == 'image':
@@ -916,7 +930,7 @@ class FacebookSession:
 			self.showVideo(item)
 		
 	def itemType(self,item):
-		mtype = item.GetMediaType()
+		mtype = item.getMediaType()
 		if mtype == mc.ListItem.MEDIA_PICTURE:
 			return 'image'
 		elif mtype == mc.ListItem.MEDIA_VIDEO_OTHER:
@@ -925,10 +939,10 @@ class FacebookSession:
 			return 'other'
 	
 	def getFocusedItem(self,list_id):
-		lc = mc.GetActiveWindow().GetList(list_id)
-		itemNumber = lc.GetFocusedItem()
+		lc = self.window.getList(list_id)
+		itemNumber = lc.getFocusedItem()
 		self.lastItemNumber = itemNumber
-		return lc.GetItem(itemNumber)
+		return lc.getItem(itemNumber)
 	
 	def removeCRLF(self,text):
 		return " ".join(text.split())
@@ -980,7 +994,7 @@ class FacebookSession:
 		except:
 			message = ERROR('ERROR')
 			mc.HideDialogWait()
-			mc.ShowDialogOk('Authorization Error',message)
+			xbmcgui.Dialog().ok('Authorization Error',message)
 			mc.CloseWindow()
 			self.newUserCache = None
 		
@@ -1009,7 +1023,7 @@ class FacebookSession:
 		#self.getProfilePic(uid,force=True)
 		self.setSetting('auth_step_4','complete')
 		mc.HideDialogWait()
-		mc.ShowDialogOk("User Added",ENCODE(username))
+		xbmcgui.Dialog().ok("User Added",ENCODE(username))
 		mc.CloseWindow()
 		self.loadOptions()
 		if not self.getSetting('has_user'):
@@ -1072,21 +1086,6 @@ class FacebookSession:
 		outfile = os.path.join(self.CACHE_PATH,'current_user_pic')
 		self.setSetting('current_user_pic',self.getFile(self.currentUser.pic,outfile))
 		
-	def getProfilePic(self,uid,force=False):
-		url = "https://graph.facebook.com/%s/picture?type=large" % uid
-		fbase = binascii.hexlify(uid.encode('utf-8'))
-		fn = os.path.join(self.CACHE_PATH,fbase + '.jpg')
-		if not force:
-			current_pic = self.getSetting('profile_pic_%s' % uid)
-			if current_pic and os.path.exists(current_pic): return current_pic
-		try:
-			fn = self.getFile(url,fn)
-			self.setSetting('profile_pic_%s' % uid,fn)
-			return fn
-		except:
-			LOG('ERROR GETTING PROFILE PIC AT: ' % url)
-			return ''
-		
 	def createTagsWindow(self,photo):
 		width = int(photo.width(0))
 		height = int(photo.height(0))
@@ -1132,8 +1131,8 @@ pass
 		box_len = 200
 		box_off = box_len/2
 		
-		template_file_path = os.path.join(mc.GetApp().GetAppDir(),'tags.xml')
-		tags_file_path = os.path.join(mc.GetApp().GetAppDir(),'skin','Boxee Skin NG','720p','tags.xml')
+		template_file_path = os.path.join(mc.getApp().getAppDir(),'tags.xml')
+		tags_file_path = os.path.join(mc.getApp().getAppDir(),'skin','Boxee Skin NG','720p','tags.xml')
 		
 		tags_file = open(template_file_path,'r')
 		xml = tags_file.read()
@@ -1164,18 +1163,18 @@ pass
 		tags_file.close()
 			
 	def clearSetting(self,key):
-		mc.GetApp().GetLocalConfig().Reset(str(key))
+		mc.getApp().getLocalConfig().Reset(str(key))
 		
 	def setSetting(self,key,value):
-		mc.GetApp().GetLocalConfig().SetValue(str(key),str(value))
+		mc.getApp().getLocalConfig().setValue(str(key),str(value))
 		
 	def getSetting(self,key):
-		return mc.GetApp().GetLocalConfig().GetValue(key)
+		return mc.getApp().getLocalConfig().getValue(key)
 	
 	def getAuth(self,email='',password=''):
 		redirect = urllib.quote('http://2ndmind.com/facebookphotos/complete.html')
 		scope = urllib.quote('user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,user_videos,friends_videos,publish_stream')
-		url = urllib.quote('https://www.facebook.com/dialog/oauth?client_id=194599440576989&redirect_uri=%s&type=user_agent&scope=%s' % (redirect,scope))
+		url = urllib.quote('https://www.facebook.com/dialog/oauth?client_id=150505371652086&redirect_uri=%s&type=user_agent&scope=%s' % (redirect,scope))
 		url = 'http://www.facebook.com/login.php?api_key=194599440576989&next=%s' % url
 		launchBoxeeBrowser(url,email=email,password=password,debug='NONE')
 		#token = fb.graph.extractTokenFromURL(url)
@@ -1209,30 +1208,34 @@ def launchBoxeeBrowser(url,**kwargs):
 	#path = 'flash://%s/src=%s%s&bx-jsactions=%s' % (domain, quote(url),args,quote('http://dir.boxee.tv/apps/browser/browser.js'))
 	path = 'flash://%s/src=%s%s&bx-jsactions=%s' % (domain, quote(url),args,quote('http://2ndmind.com/boxee/facebook-media/fbauth.js'))
 	
-	item = mc.ListItem()
-	item.SetLabel("Authorize")
-	item.SetAddToHistory(False)
-	item.SetReportToServer(False)
-	item.SetContentType("application/x-shockwave-flash")
-	item.SetPath(path)
+	item = xbmcgui.ListItem()
+	item.setLabel("Authorize")
+	item.setAddToHistory(False)
+	item.setReportToServer(False)
+	item.setContentType("application/x-shockwave-flash")
+	item.setPath(path)
 	player = mc.Player()
 	player.Play(item)
-		
-def doKeyboard(prompt,default='',hidden=False):
-	return mc.ShowDialogKeyboard(prompt,default,hidden)
 
-BOXEE_VERSION = mc.GetInfoString('System.BuildVersion')
+def doKeyboard(prompt,default='',hidden=False):
+	keyboard = xbmc.Keyboard(default,prompt)
+	keyboard.setHiddenInput(hidden)
+	keyboard.doModal()
+	if not keyboard.isConfirmed(): return None
+	return keyboard.getText()
+
+BOXEE_VERSION = mc.getInfoString('System.BuildVersion')
 LOG('Boxee Version: %s' % BOXEE_VERSION)
 
 params = mc.Parameters()
 params['none'] = 'NONE'
 
-config = mc.GetApp().GetLocalConfig()
-config.SetValue('current_user_pic','facebook-media-icon-generic-user.png')
-config.SetValue('current_friend_name','')
-config.SetValue('progress','')
-config.SetValue('last_item_name','OPTIONS')
-config.SetValue('current_nav_path','')
+config = mc.getApp().getLocalConfig()
+config.setValue('current_user_pic','facebook-media-icon-generic-user.png')
+config.setValue('current_friend_name','')
+config.setValue('progress','')
+config.setValue('last_item_name','OPTIONS')
+config.setValue('current_nav_path','')
 
 CLOSEREADY = False
-mc.GetApp().ActivateWindow(14000,params)
+mc.getApp().ActivateWindow(14000,params)
