@@ -2,15 +2,6 @@
 <window type="window" id="14002">
 	<defaultcontrol always="true">160</defaultcontrol>
 	<allowoverlay>no</allowoverlay>
-	<onload lang="python"><![CDATA[
-print "FACEBOOK MEDIA - AUTH WINDOW LOADED"
-params = mc.GetApp().GetLaunchedWindowParameters()
-email = ''
-password = ''
-if 'email' in params: email = params['email']
-if 'password' in params: password = params['password']
-session.addUser(email,password)
-]]></onload>
 	<controls>
 		<control type="image">
 			<posx>0</posx>
@@ -20,23 +11,23 @@ session.addUser(email,password)
 			<colordiffuse>80FFFFFF</colordiffuse>
 			<texture>facebook-media-menu-background.png</texture>
 		</control>
-		<control type="image">
+		<control type="image" id="101">
 			<posx>63</posx>
 			<posy>124</posy>
 			<width>267</width>
 			<height>379</height>
 			<colordiffuse>FF888888</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_1),)]</visible>
+			<visible>true</visible>
 		</control>
-		<control type="image">
+		<control type="image" id="102">
 			<posx>63</posx>
 			<posy>124</posy>
 			<width>267</width>
 			<height>379</height>
 			<colordiffuse>FF9A9F1F</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_1),pending)]</visible>
+			<visible>!Control.IsVisible(101)</visible>
 		</control>
 		<control type="image">
 			<posx>63</posx>
@@ -45,7 +36,7 @@ session.addUser(email,password)
 			<height>379</height>
 			<colordiffuse>FF1F9F31</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_1),complete)]</visible>
+			<visible>!Control.IsVisible(101) + !Control.IsVisible(102)</visible>
 		</control>
 		<control type="label">
 			<posx>93</posx>
@@ -59,23 +50,23 @@ session.addUser(email,password)
 			<wrapmultiline>true</wrapmultiline>
 			<label>Enter Login Information</label>
 		</control>
-		<control type="image">
+		<control type="image" id="111">
 			<posx>359</posx>
 			<posy>124</posy>
 			<width>267</width>
 			<height>379</height>
 			<colordiffuse>FF888888</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_2),)]</visible>
+			<visible>true</visible>
 		</control>
-		<control type="image">
+		<control type="image" id="112">
 			<posx>359</posx>
 			<posy>124</posy>
 			<width>267</width>
 			<height>379</height>
 			<colordiffuse>FF9A9F1F</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_2),pending)]</visible>
+			<visible>!Control.IsVisible(111)</visible>
 		</control>
 		<control type="image">
 			<posx>359</posx>
@@ -84,7 +75,7 @@ session.addUser(email,password)
 			<height>379</height>
 			<colordiffuse>FF1F9F31</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_2),complete)]</visible>
+			<visible>!Control.IsVisible(111) + !Control.IsVisible(112)</visible>
 		</control>
 		<control type="label">
 			<posx>389</posx>
@@ -96,25 +87,25 @@ session.addUser(email,password)
 			<aligny>center</aligny>
 			<textcolor>white</textcolor>
 			<wrapmultiline>true</wrapmultiline>
-			<label>Authorize Via Boxee Browser</label>
+			<label>Authorize Via Web Viewer</label>
 		</control>
-		<control type="image">
+		<control type="image" id="121">
 			<posx>655</posx>
 			<posy>124</posy>
 			<width>267</width>
 			<height>379</height>
 			<colordiffuse>FF888888</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_3),)]</visible>
+			<visible>true</visible>
 		</control>
-		<control type="image">
+		<control type="image" id="122">
 			<posx>655</posx>
 			<posy>124</posy>
 			<width>267</width>
 			<height>379</height>
 			<colordiffuse>FF9A9F1F</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_3),pending)]</visible>
+			<visible>!Control.IsVisible(121)</visible>
 		</control>
 		<control type="image">
 			<posx>655</posx>
@@ -123,7 +114,7 @@ session.addUser(email,password)
 			<height>379</height>
 			<colordiffuse>FF1F9F31</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_3),complete)]</visible>
+			<visible>!Control.IsVisible(121) + !Control.IsVisible(122)</visible>
 		</control>
 		<control type="label">
 			<posx>685</posx>
@@ -137,23 +128,23 @@ session.addUser(email,password)
 			<wrapmultiline>true</wrapmultiline>
 			<label>Get Authorization Data</label>
 		</control>
-		<control type="image">
+		<control type="image" id="131">
 			<posx>951</posx>
 			<posy>124</posy>
 			<width>267</width>
 			<height>379</height>
 			<colordiffuse>FF888888</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_4),)]</visible>
+			<visible>true</visible>
 		</control>
-		<control type="image">
+		<control type="image" id="132">
 			<posx>951</posx>
 			<posy>124</posy>
 			<width>267</width>
 			<height>379</height>
 			<colordiffuse>FF9A9F1F</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_4),pending)]</visible>
+			<visible>!Control.IsVisible(131)</visible>
 		</control>
 		<control type="image">
 			<posx>951</posx>
@@ -162,7 +153,7 @@ session.addUser(email,password)
 			<height>379</height>
 			<colordiffuse>FF1F9F31</colordiffuse>
 			<texture>facebook-media-adduser-stepbackground.png</texture>
-			<visible>$INFO[StringCompare(App.String(auth_step_4),complete)]</visible>
+			<visible>!Control.IsVisible(131) + !Control.IsVisible(132)</visible>
 		</control>
 		<control type="label">
 			<posx>981</posx>

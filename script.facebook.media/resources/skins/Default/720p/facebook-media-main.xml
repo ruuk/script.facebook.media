@@ -25,7 +25,7 @@
 			<width>1280</width>
 			<height>100</height>
 			<texture>facebook-media-tube-back.png</texture>
-			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
+			<visible>$INFO[StringCompare(Container(120).ListItem.property(hidetube),)]</visible>
 		</control>
 		<control type="image">
 			<animation effect="slide" start="0,0" end="905,0" time="200" condition="Control.HasFocus(128)">Conditional</animation>
@@ -34,7 +34,7 @@
 			<width>1280</width>
 			<height>100</height>
 			<texture>facebook-media-tube-back.png</texture>
-			<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
+			<visible>!$INFO[StringCompare(Container(120).ListItem.property(hidetube),)]</visible>
 		</control>
 		
 		<control type="label">
@@ -42,10 +42,10 @@
 			<posy>145</posy>
 			<width>100</width>
 			<height>100</height>
-			<font>font14b</font>
+			<font>font10_title</font>
 			<align>center</align>
 			<aligny>center</aligny>
-			<info>Container(120).ListItem.property(custom:previous)</info>
+			<info>Container(120).ListItem.property(previous)</info>
 			<wrapmultiline>true</wrapmultiline>
 			<textcolor>FFFFFFFF</textcolor>
 		</control>
@@ -56,7 +56,7 @@
 			<height>80</height>
 			<colordiffuse>66FFFFFF</colordiffuse>
 			<texture>facebook-media-left-arrow.png</texture>
-			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:previous),)]</visible>
+			<visible>!$INFO[StringCompare(Container(120).ListItem.property(previous),)]</visible>
 		</control>
 		<control type="image">
 			<posx>353</posx>
@@ -84,7 +84,7 @@
 						<posy>0</posy>
 						<width>220</width>
 						<height>100</height>
-						<font>font32b</font>
+						<font>font32_title</font>
 						<align>center</align>
 						<aligny>center</aligny>
 						<info>ListItem.Label</info>
@@ -107,7 +107,7 @@
 						<texture border="3">facebook-media-tube-overlay-lr.png</texture>
 					</control>
 					<control type="group">
-						<visible>!$INFO[StringCompare(Container(128).ListItem.Property(custom:data),)]</visible>
+						<visible>!$INFO[StringCompare(Container(128).ListItem.Property(data),)]</visible>
 						<control type="image">
 							<posx>0</posx>
 							<posy>100</posy>
@@ -134,7 +134,7 @@
 						<posy>0</posy>
 						<width>220</width>
 						<height>100</height>
-						<font>font32b</font>
+						<font>font32_title</font>
 						<align>center</align>
 						<aligny>center</aligny>
 						<info>ListItem.Label</info>
@@ -145,10 +145,10 @@
 						<posy>70</posy>
 						<width>220</width>
 						<height>20</height>
-						<font>font14b</font>
+						<font>font14_title</font>
 						<align>center</align>
 						<aligny>center</aligny>
-						<info>ListItem.Property(custom:sublabel)</info>
+						<info>ListItem.Property(sublabel)</info>
 						<textcolor>white</textcolor>
 					</control>
 				</focusedlayout>
@@ -158,7 +158,7 @@
 			</control>
 			<control type="group" id="129">
 				<posy>110</posy>
-				<visible>!$INFO[StringCompare(Container(128).ListItem.Property(custom:data),)]</visible>
+				<visible>!$INFO[StringCompare(Container(128).ListItem.Property(data),)]</visible>
 				<control type="image">
 					<width>800</width>
 					<height>300</height>
@@ -174,8 +174,8 @@
 					<posy>10</posy>
 					<width>780</width>
 					<height>280</height>
-					<font>font20b</font>
-					<info>Container(128).ListItem.Property(custom:data)</info>
+					<font>font20_title</font>
+					<info>Container(128).ListItem.Property(data)</info>
 					<textcolor>white</textcolor>
 					<shadowcolor>black</shadowcolor>
 					<autoscroll delay="5000" time="1000" repeat="2000">Control.IsVisible(129)</autoscroll>
@@ -194,7 +194,7 @@
 			<width>350</width>
 			<height>100</height>
 			<texture>facebook-media-tube-overlay.png</texture>
-			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
+			<visible>$INFO[StringCompare(Container(120).ListItem.property(hidetube),)]</visible>
 		</control>
 		<control type="image">
 			<animation effect="slide" start="0,0" end="905,0" time="200" condition="Control.HasFocus(128)">Conditional</animation>
@@ -203,13 +203,13 @@
 			<width>1280</width>
 			<height>100</height>
 			<texture border="3">facebook-media-tube-overlay-right.png</texture>
-			<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
+			<visible>!$INFO[StringCompare(Container(120).ListItem.property(hidetube),)]</visible>
 		</control>
 		
 		<control type="group">
 			<posx>150</posx>
 			<posy>0</posy>
-			<control type="wraplist" id="120">
+			<control type="fixedlist" id="120">
 				<width>1252</width>
 				<height>720</height>
 				<orientation>vertical</orientation>
@@ -248,7 +248,7 @@
 						<width>120</width>
 						<height>12</height>
 <!--						<angle>90</angle>-->
-						<font>font12b</font>
+						<font>font10_title</font>
 						<align>left</align>
 						<aligny>center</aligny>
 						<label>$INFO[ListItem.Label]</label>
@@ -259,7 +259,7 @@
 						<posy>16</posy>
 						<width>1040</width>
 						<height>110</height>
-						<font>font80b</font>
+						<font>WeatherTemp</font>
 						<align>left</align>
 						<aligny>center</aligny>
 						<label>$INFO[ListItem.Label]</label>
@@ -300,7 +300,7 @@
 						<width>120</width>
 						<height>12</height>
 <!--						<angle>90</angle>-->
-						<font>font12b</font>
+						<font>font10_title</font>
 						<align>left</align>
 						<aligny>center</aligny>
 						<label>$INFO[ListItem.Label]</label>
@@ -311,7 +311,7 @@
 						<posy>8</posy>
 						<width>910</width>
 						<height>110</height>
-						<font>font80b</font>
+						<font>WeatherTemp</font>
 						<align>left</align>
 						<aligny>center</aligny>
 						<label>$INFO[ListItem.Label]</label>
@@ -341,7 +341,7 @@
         </control>
 
 		<control type="group">
-			<visible>!$INFO[StringCompare(Container(120).ListItem.Property(custom:friend_thumb),)]</visible>
+			<visible>!$INFO[StringCompare(Container(120).ListItem.Property(friend_thumb),)]</visible>
 			<control type="image">
 				<description>Friend Image</description>
 				<posx>689</posx>
@@ -358,7 +358,7 @@
 				<width>275</width>
 				<height>207</height>
 				<aspectratio>scale</aspectratio>
-				<texture>$INFO[Container(120).ListItem.Property(custom:friend_thumb)]</texture>
+				<texture>$INFO[Container(120).ListItem.Property(friend_thumb)]</texture>
 			</control>
 			<control type="image">
 				<posx>689</posx>
@@ -386,7 +386,7 @@
 				<height>32</height>
 				<texture>facebook-media-icon-tags.png</texture>
 				<colordiffuse>80333333</colordiffuse>
-				<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:tags),true)]</visible>
+				<visible>$INFO[StringCompare(Container(120).ListItem.property(tags),)]</visible>
 			</control>
 			<control type="image">
 				<posx>79r</posx>
@@ -395,7 +395,7 @@
 				<height>32</height>
 				<texture>facebook-media-icon-comments.png</texture>
 				<colordiffuse>80333333</colordiffuse>
-				<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:comments),true)]</visible>
+				<visible>$INFO[StringCompare(Container(120).ListItem.property(comments),)]</visible>
 			</control>
 			<control type="image">
 				<posx>42r</posx>
@@ -403,7 +403,7 @@
 				<width>32</width>
 				<height>32</height>
 				<texture>facebook-media-icon-tags.png</texture>
-				<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:tags),true)]</visible>
+				<visible>!$INFO[StringCompare(Container(120).ListItem.property(tags),)]</visible>
 			</control>
 			<control type="image">
 				<posx>79r</posx>
@@ -411,7 +411,7 @@
 				<width>32</width>
 				<height>32</height>
 				<texture>facebook-media-icon-comments.png</texture>
-				<visible>$INFO[StringCompare(Container(120).ListItem.property(custom:comments),true)]</visible>
+				<visible>!$INFO[StringCompare(Container(120).ListItem.property(comments),)]</visible>
 			</control>
 			
 			<control type="image">
@@ -425,7 +425,7 @@
 				<posy>0</posy>
 				<width>760</width>
 				<height>40</height>
-				<font>font16b</font>
+				<font>font16_title</font>
 				<align>left</align>
 				<aligny>center</aligny>
 				<info>App.String(current_nav_path)</info>
@@ -439,12 +439,12 @@
 			<width>1060</width>
 			<height>100</height>
 			<texture>facebook-media-tube-overlay.png</texture>
-			<visible>!$INFO[StringCompare(Container(120).ListItem.property(custom:hidetube),true)]</visible>
+			<visible>$INFO[StringCompare(Container(120).ListItem.Property(hidetube),)]</visible>
 		</control>
 		
 		<control type="group" id="210">
-			<animation effect="slide" end="740,0" time="400" condition="!$INFO[StringCompare(Container(120).ListItem.property(custom:caption),)]">Conditional</animation>
-			<animation effect="slide" end="0,0" time="400" condition="$INFO[StringCompare(Container(120).ListItem.property(custom:caption),)]">Conditional</animation>
+			<animation effect="slide" end="740,0" time="400" condition="!$INFO[StringCompare(Container(120).ListItem.property(caption),)]">Conditional</animation>
+			<animation effect="slide" end="0,0" time="400" condition="$INFO[StringCompare(Container(120).ListItem.property(caption),)]">Conditional</animation>
 			<posx>-370</posx>
 			<posy>147r</posy>
 			<width>370</width>
@@ -459,9 +459,9 @@
 				<posy>10</posy>
 				<width>330</width>
 				<height>110</height>
-				<font>font20b</font>
+				<font>font20_title</font>
 				<textcolor>white</textcolor>
-				<info>Container(120).ListItem.property(custom:caption)</info>
+				<info>Container(120).ListItem.property(caption)</info>
 				<shadowcolor>ff000000</shadowcolor>
 				<autoscroll delay="5000" time="1000" repeat="2000">Control.IsVisible(210)</autoscroll>
 			</control>
@@ -488,7 +488,7 @@
 				<posx>20</posx>
 				<width>430</width>
 				<height>60</height>
-				<font>font20b</font>
+				<font>font20_title</font>
 				<align>left</align>
 				<aligny>center</aligny>
 				<textcolor>white</textcolor>
@@ -521,11 +521,11 @@
 		<control type="group" id="150">
 			<animation effect="slide" start="0,0" end="-500,0" time="400">Visible</animation>
 			<animation effect="slide" start="-500,0" end="0,0" time="400">Hidden</animation>
+			<visible>false</visible>
 			<posx>1280</posx>
 			<posy>63</posy>
 			<width>500</width>
 			<height>60</height>
-			<visible>!$INFO[StringCompare(App.String(progress),)]</visible>
 			<control type="image">
 				<posx>0</posx>
 				<posy>0</posy>
@@ -543,7 +543,7 @@
 				<posy>0</posy>
 				<width>400</width>
 				<height>60</height>
-				<font>font20b</font>
+				<font>font20_title</font>
 				<align>center</align>
 				<aligny>center</aligny>
 				<textcolor>white</textcolor>
@@ -578,7 +578,7 @@
 			<posy>603</posy>
 			<width>320</width>
 			<height>100</height>
-			<font>font30b</font>
+			<font>font30_title</font>
 			<align>left</align>
 			<aligny>center</aligny>
 			<textcolor>white</textcolor>
@@ -629,7 +629,7 @@
 						<posy>0</posy>
 						<width>288</width>
 						<height>100</height>
-						<font>font20b</font>
+						<font>font20_title</font>
 						<align>left</align>
 						<aligny>center</aligny>
 						<info>ListItem.Label</info>
@@ -655,7 +655,7 @@
 						<posy>0</posy>
 						<width>288</width>
 						<height>100</height>
-						<font>font20b</font>
+						<font>font20_title</font>
 						<align>left</align>
 						<aligny>center</aligny>
 						<info>ListItem.Label</info>

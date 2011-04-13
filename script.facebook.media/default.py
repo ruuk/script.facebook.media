@@ -78,8 +78,19 @@ class BaseWindow(xbmcgui.WindowXML):
 	def __init__( self, *args, **kwargs):
 		self.session = kwargs.get('session')
 		self.name = kwargs.get('wfile')
+		self.email = kwargs.get('email')
+		self.password = kwargs.get('password')
 		xbmcgui.WindowXML.__init__( self, *args, **kwargs )
+		
+	def onInit(self):
+		if not self.session:
+			self.session = FacebookSession(self)
+		if self.name == 'auth':
+			self.session.addUser(self.email, self.password)
 	
+	def onFocus( self, controlId ):
+		self.controlId = controlId
+		
 	def onClick( self, controlID ):
 		if self.name == 'main':
 			if controlID == 120:
@@ -97,9 +108,9 @@ class BaseWindow(xbmcgui.WindowXML):
 		xbmcgui.WindowXMLDialog.onAction(self,action)
 		
 class FacebookSession:
-	def __init__(self):
-		self.window = None
-		self.windowStack = []
+	def __init__(self,window=None):
+		self.window = window
+		self.windowStack = [window]
 		self.graph = None
 		self.states = []
 		self.current_state = None
@@ -122,15 +133,13 @@ class FacebookSession:
 								'current_user_name',
 								'last_item_name',
 								'current_nav_path')
-		self.openWindow('main')
 		self.start()
 		
 	def start(self):
 		user = self.getCurrentUser()
-		
+		print user
 		if not user:
-			self.openAddUserWindow()
-			return
+			if not self.openAddUserWindow(): return
 		
 		self.graph = self.newGraph(	user.email,
 									user.password,
@@ -174,10 +183,11 @@ class FacebookSession:
 			item.setProperty('data',data)
 			items.append(item)
 		
-		self.window.getControl(120).addItems(items)
+		self.window.getControl(125).addItems(items)
 		
 	def openAddUserWindow(self,email='',password=''):
-		pass
+		openWindow('auth',session=self,email=email,password=password)
+		return self.getSetting('has_user') == 'true'
 			
 	def saveState(self):
 		state = self.createCurrentState()
@@ -194,7 +204,7 @@ class FacebookSession:
 		state = WindowState()
 		if not items:
 			items = self.getListItems(ilist)
-			state.listIndex = ilist.getSelectedItem()
+			state.listIndex = ilist.getSelectedPosition()
 		state.items = items
 		for set in self.stateSettings: state.settings[set] = self.curr_state_settings.get(set)
 		return state
@@ -690,7 +700,7 @@ class FacebookSession:
 	def menuItemSelected(self,select=False):
 		state_len = len(self.states)
 		try:
-			item = self.window.getFocusedItem(120)
+			item = self.getFocusedItem(120)
 			
 			cat = item.getProperty('category')
 			uid = item.getProperty('uid') or 'me'
@@ -754,7 +764,7 @@ class FacebookSession:
 	
 	def optionMenuItemSelected(self):
 		print "OPTION ITEM SELECTED"
-		item = self.window.getFocusedItem(125)
+		item = self.getFocusedItem(125)
 		self.window.setFocusId(120)
 		uid = item.getProperty('uid')
 		if uid:
@@ -770,7 +780,7 @@ class FacebookSession:
 		
 	def photovideoMenuSelected(self):
 		self.window.setFocusId(120)
-		item = self.window.getFocusedItem(128)
+		item = self.getFocusedItem(128)
 		name = item.getProperty('name')
 		itemNumber = int(item.getProperty('item_number'))
 		if name == 'slideshow':
@@ -824,7 +834,7 @@ class FacebookSession:
 		self.setCurrentState()
 		items = []
 		itemNumber = self.window.getControl(120).getFocusedItem()
-		item = self.window.getFocusedItem(120)
+		item = self.getFocusedItem(120)
 		pv_obj = self.graph.fromJSON(item.getProperty('data'))
 		comments_string = ''
 		tags_string = ''
@@ -891,7 +901,7 @@ class FacebookSession:
 	def setPathDisplay(self):
 		path = []
 		for state in self.states:
-			path.append(state.settings.get('last_item_name'))
+			path.append(state.settings.get('last_item_name') or '')
 		path.append(self.getSetting('last_item_name'))
 		path = ' : '.join(path[1:])
 		self.curr_state_settings['current_nav_path'] = path
@@ -902,8 +912,9 @@ class FacebookSession:
 		
 	def startProgress(self,message):
 		self.cancel_progress = False
+		self.window.getControl(150).setVisible(True)
 		self.window.setFocusId(160)
-		self.window.getLabel(152).setLabel(message)
+		self.window.getControl(152).setLabel(message)
 		self.progressVisible = True
 		
 	def updateProgress(self,ct,total,message=''):
@@ -916,7 +927,7 @@ class FacebookSession:
 			width = int((ct / float(total)) * 500)
 			window = self.window
 			window.getControl(153).setWidth(width)
-			window.getLabel(152).setLabel(message)
+			window.getControl(152).setLabel(message)
 		except:
 			return False
 		return True
@@ -924,6 +935,7 @@ class FacebookSession:
 	def endProgress(self):
 		self.progressVisible = False
 		self.window.setFocusId(120)
+		self.window.getControl(150).setVisible(False)
 	
 	def cancelProgress(self):
 		LOG('PROGRESS CANCEL ATTEMPT')
@@ -984,19 +996,11 @@ class FacebookSession:
 		if ext == 'jpeg': ext = 'jpg'
 		fn = os.path.splitext(fn)[0] + '.' + ext
 		return fn
-	
-	def openWindow(self,window_name):
-		windowFile = 'facebook-media-%s.xml' % window_name
-		w = BaseWindow(windowFile , __addon__.getAddonInfo('path'), THEME,session=self,wfile=window_name)
-		self.window = w
-		self.windowStack.append(w)
-		w.doModal()
-		if self.windowStack:
-			self.window = self.windowStack.pop()
-		del w
 		
 	def closeWindow(self):
 		self.window.close()
+		if self.windowStack:
+			self.window = self.windowStack.pop()
 	
 	def addUser(self,email=None,password=None):
 		try:
@@ -1004,7 +1008,7 @@ class FacebookSession:
 				self.addUserPart2()
 				return
 			LOG("ADD USER PART 1")
-			self.setSetting('auth_step_1','pending')
+			self.window.getControl(101).setVisible(False)
 			if not email:
 				email = doKeyboard("Login Email")
 			if not email:
@@ -1016,8 +1020,8 @@ class FacebookSession:
 				self.closeWindow()
 				return
 			self.newUserCache = (email,password)
-			self.setSetting('auth_step_1','complete')
-			self.setSetting('auth_step_2','pending')
+			self.window.getControl(102).setVisible(False)
+			self.window.getControl(111).setVisible(False)
 			self.getAuth(email,password)
 		except:
 			message = ERROR('ERROR')
@@ -1027,14 +1031,14 @@ class FacebookSession:
 		
 	def addUserPart2(self):
 		LOG("ADD USER PART 2")
-		self.setSetting('auth_step_2','complete')
-		self.setSetting('auth_step_3','pending')
+		self.window.getControl(112).setVisible(False)
+		self.window.getControl(121).setVisible(False)
 		email,password = self.newUserCache
 		self.newUserCache = None
 		graph = self.newGraph(email, password)
 		graph.getNewToken()
-		self.setSetting('auth_step_3','complete')
-		self.setSetting('auth_step_4','pending')
+		self.window.getControl(122).setVisible(False)
+		self.window.getControl(131).setVisible(False)
 		user = graph.getObject('me',fields='id,name,picture')
 		uid = user.id
 		username = user.name()
@@ -1047,13 +1051,10 @@ class FacebookSession:
 		#if self.token: self.setSetting('token_%s' % uid,self.token)
 		self.setSetting('profile_pic_%s' % uid,user.picture('').replace('_q.','_n.'))
 		#self.getProfilePic(uid,force=True)
-		self.setSetting('auth_step_4','complete')
+		self.window.getControl(132).setVisible(False)
 		xbmcgui.Dialog().ok("User Added",ENCODE(username))
 		self.closeWindow()
-		self.loadOptions()
-		if not self.getSetting('has_user'):
-			self.setSetting('has_user','true')
-			self.start()
+		self.setSetting('has_user','true')
 		#self.setCurrentUser(uid)
 		return uid
 	
@@ -1194,22 +1195,27 @@ pass
 		__addon__.setSetting(key,value)
 		
 	def getSetting(self,key):
-		__addon__.getSetting(key)
-	
+		return __addon__.getSetting(key)
+		
 	def getAuth(self,email='',password=''):
 		redirect = urllib.quote('http://2ndmind.com/facebookphotos/complete.html')
 		scope = urllib.quote('user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,user_videos,friends_videos,publish_stream')
-		url = urllib.quote('https://www.facebook.com/dialog/oauth?client_id=150505371652086&redirect_uri=%s&type=user_agent&scope=%s' % (redirect,scope))
-		url = 'http://www.facebook.com/login.php?api_key=194599440576989&next=%s' % url
-		launchBoxeeBrowser(url,email=email,password=password,debug='NONE')
-		#token = fb.graph.extractTokenFromURL(url)
-		#if fb.graph.tokenIsValid(token):
-		#	fb.graph.saveToken(token)
-		#	return token
-		#return None
-
-def launchBoxeeBrowser(url,**kwargs):
-	pass
+		url = 'https://graph.facebook.com/oauth/authorize?client_id=150505371652086&redirect_uri=%s&type=user_agent&scope=%s' % (redirect,scope)
+		from webviewer import webviewer #@UnresolvedImport
+		login = {'action':'login.php'}
+		if email and password:
+			login['autofill'] = 'email=%s,pass=%s' % (email,password)
+			login['autosubmit'] = 'true'
+		autoForms = [login,{'action':'uiserver.php'}]
+		autoClose = {'url':'.*access_token=.*','heading':'Finished','message':'Authorization Complete'}
+		
+		url,html = webviewer.getWebResult(url,autoForms=autoForms,autoClose=autoClose) #@UnusedVariable
+			
+		token = self.graph.extractTokenFromURL(url)
+		if self.graph.tokenIsValid(token):
+			self.graph.saveToken(token)
+			return token
+		return None
 
 def doKeyboard(prompt,default='',hidden=False):
 	keyboard = xbmc.Keyboard(default,prompt)
@@ -1218,7 +1224,13 @@ def doKeyboard(prompt,default='',hidden=False):
 	if not keyboard.isConfirmed(): return None
 	return keyboard.getText()
 
+def openWindow(window_name,session=None,**kwargs):
+		windowFile = 'facebook-media-%s.xml' % window_name
+		w = BaseWindow(windowFile , __addon__.getAddonInfo('path'), THEME,session=session,wfile=window_name,**kwargs)
+		w.doModal()			
+		del w
+		
 XBMC_VERSION = xbmc.getInfoLabel('System.BuildVersion')
 LOG('XBMC Version: %s' % XBMC_VERSION)
 
-FacebookSession()
+openWindow('main')
