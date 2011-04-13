@@ -11,6 +11,8 @@
   <extension point="xbmc.python.script"
              library="default.py">
     <provides>executable</provides>
+    <provides>image</provides>
+    <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>

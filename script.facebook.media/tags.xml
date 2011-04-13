@@ -4,30 +4,14 @@
 	<allowoverlay>no</allowoverlay>
 	<controls>
 		<control type="group" id="100">
-			<posx>160</posx>
-			<posy>0</posy>
+			<posx>G_X</posx>
+			<posy>G_Y</posy>
 			<control type="largeimage" id="101">
-				<width>960</width>
-				<height>720</height>
-				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-ash2/40427_1335767005241_1563088107_30762890_8174811_n.jpg</texture>
+				<width>I_WIDTH</width>
+				<height>I_HEIGHT</height>
+				<texture>TAGGED_IMAGE</texture>
 			</control>
-			<control type="group" id="150">
-				<control type="image">
-					<posx>363</posx>
-					<posy>188</posy>
-					<width>200</width>
-					<height>200</height>
-					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-1352390960)]</visible>
-				</control>
-				<control type="image">
-					<posx>358</posx>
-					<posy>310</posy>
-					<width>200</width>
-					<height>200</height>
-					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-100001203012029)]</visible>
-				</control>
+			<control type="group" id="150"><!-- TAGBOXES -->
 			</control>
 		</control>
 		<control type="group" id="200">			
@@ -85,17 +69,7 @@
 						<textcolor>white</textcolor>
 					</control>
 				</focusedlayout>
-				<content>
-				<item>
-					<label>Rick Phillips</label>
-					<label2>ID-1352390960</label2>
-					<onclick>-</onclick>
-				</item>
-				<item>
-					<label>Aeryn Phillips</label>
-					<label2>ID-100001203012029</label2>
-					<onclick>-</onclick>
-				</item>
+				<content><!-- TAGITEMS -->
 				</content>
 			</control>
 			<control type="image">

@@ -284,7 +284,7 @@ session.photovideoMenuSelected()
 					</control>
 					<control type="label">
 						<posx>230</posx>
-						<posy>16</posy>
+						<posy>8</posy>
 						<width>1040</width>
 						<height>110</height>
 						<font>font80b</font>
