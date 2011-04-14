@@ -3,6 +3,8 @@
 import os,urllib,urllib2,time
 import sys, traceback
 
+from xml.sax.saxutils import unescape as xml_unescape
+
 import xbmc, xbmcaddon, xbmcgui #@UnresolvedImport
 
 #import traceback
@@ -721,6 +723,9 @@ class FacebookSession:
 			
 		LOG("VIDEOS - STOPPED")
 		
+	def convertJSONText(self,text):
+		return xml_unescape(urllib.unquote(text),{"&apos;": "'", "&quot;": '"'})
+	
 	def makeCaption(self,obj,uid):
 		name = ''
 		f_id = obj.from_({}).get('id','')
@@ -730,8 +735,8 @@ class FacebookSession:
 			if name: name = '[COLOR FF55FF55]FROM: %s[/COLOR][CR]' % name
 		title = obj.name('')
 		if title: title = '[COLOR yellow]%s[/COLOR][CR]' % title
-		caption = name + title + obj.description('')
-		return ENCODE(urllib.unquote(caption))
+		caption = name + title + obj.description('') + '[CR] '
+		return ENCODE(self.convertJSONText(caption))
 		
 	def noItems(self,itype='items',paging=None):
 		if not paging: self.popState(clear=True)
@@ -836,6 +841,7 @@ class FacebookSession:
 	def menuItemDeSelected(self):
 		if not self.popState():
 			self.window.setFocusId(125)
+		self.setPathDisplay()
 	
 	def optionMenuItemSelected(self):
 		print "OPTION ITEM SELECTED"
@@ -987,7 +993,7 @@ class FacebookSession:
 			path.append(state.settings.get('last_item_name') or '')
 		path.append(self.getSetting('last_item_name'))
 		path = ' : '.join(path[1:])
-		self.setSetting('current_nav_path',path)
+		self.window.getControl(195).setLabel(path)
 		LOG('PATH - %s' % path)
 		
 	def setFriend(self,name='',restore=False):

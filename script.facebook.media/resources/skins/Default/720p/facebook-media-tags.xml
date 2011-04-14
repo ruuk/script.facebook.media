@@ -7,26 +7,18 @@
 			<posx>160</posx>
 			<posy>0</posy>
 			<control type="largeimage" id="101">
-				<width>960</width>
+				<width>959</width>
 				<height>720</height>
-				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-ash2/40427_1335767005241_1563088107_30762890_8174811_n.jpg</texture>
+				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-snc1/10218_1231979243589_1352390960_30652643_73907_n.jpg</texture>
 			</control>
 			<control type="group" id="150">
 				<control type="image">
-					<posx>363</posx>
-					<posy>188</posy>
+					<posx>11</posx>
+					<posy>102</posy>
 					<width>200</width>
 					<height>200</height>
 					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-1352390960)]</visible>
-				</control>
-				<control type="image">
-					<posx>358</posx>
-					<posy>310</posy>
-					<width>200</width>
-					<height>200</height>
-					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-100001203012029)]</visible>
+					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-1180367923)]</visible>
 				</control>
 			</control>
 		</control>
@@ -87,13 +79,8 @@
 				</focusedlayout>
 				<content>
 				<item>
-					<label>Rick Phillips</label>
-					<label2>ID-1352390960</label2>
-					<onclick>-</onclick>
-				</item>
-				<item>
-					<label>Aeryn Phillips</label>
-					<label2>ID-100001203012029</label2>
+					<label>Mark Moskal</label>
+					<label2>ID-1180367923</label2>
 					<onclick>-</onclick>
 				</item>
 				</content>

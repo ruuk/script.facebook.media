@@ -33,7 +33,7 @@ usage of this module might look like this:
 
 """
 
-import urllib
+import urllib, urllib2
 import sys, re
 from cgi import parse_qs
 # Find a JSON parser
@@ -182,7 +182,7 @@ class GraphAPI(object):
 		if path.startswith('http'):
 			pre = ''
 			args = ''
-		fileob = urllib.urlopen(pre + path + args, post_data)
+		fileob = urllib2.urlopen(pre + path + args, post_data)
 		if update_prog: self.updateProgress(30)
 		try:
 			response = _parse_json(fileob.read())
@@ -387,9 +387,7 @@ class GraphConnections:
 		def handler(**args):
 			fail = False
 			try:
-				connections = self.graph.get_connections(self.graphObject.id, method.replace('__','/'), **args)
-				self.graph.updateProgress(70)
-				return Connections(self.graph,connections)
+				return self._getConnections(method)
 			except GraphAPIError,e:
 				print e.type
 				if not e.type == 'OAuthException': raise
@@ -400,14 +398,16 @@ class GraphConnections:
 				if not self.graph.getNewToken():
 					if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 					else: return None
-				connections =  self.graph.get_connections(self.graphObject.id, method.replace('__','/'), **args)
-				self.graph.updateProgress(70)
-				return Connections(self.graph,connections)
-			
+				return self._getConnections(method)
 		handler.method = method
 		
 		self.cache[method] = handler
 		return handler
+	
+	def _getConnections(self,method,**args):
+		connections = self.graph.get_connections(self.graphObject.id, method.replace('__','/'), **args)
+		self.graph.updateProgress(70)
+		return Connections(self.graph,connections)
 	
 	def _processConnections(self,connections,paging):
 		return self.graph._processConnections(connections,paging)
@@ -471,7 +471,7 @@ class GraphWrap(GraphAPI):
 		
 	def checkHasPermission(self,permission):
 		url = 'https://api.facebook.com/method/users.hasAppPermission?format=json&ext_perm='+permission+'&access_token='+self.access_token
-		fobj = urllib.urlopen(url)
+		fobj = urllib2.urlopen(url)
 		try:
 			response = _parse_json(fobj.read())
 		finally:
@@ -480,7 +480,7 @@ class GraphWrap(GraphAPI):
 		
 	def checkIsAppUser(self):
 		url = 'https://api.facebook.com/method/users.isAppUser?format=json&access_token='+self.access_token
-		fobj = urllib.urlopen(url)
+		fobj = urllib2.urlopen(url)
 		try:
 			response = _parse_json(fobj.read())
 		finally:
