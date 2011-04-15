@@ -15,7 +15,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '04-12-2011'
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __language__ = __addon__.getLocalizedString
 
@@ -1322,7 +1322,7 @@ NumberOfEntries=1
 	def getSetting(self,key):
 		return __addon__.getSetting(key)
 		
-	def getAuth(self,email='',password=''):
+	def getAuth(self,email='',password='',graph=None):
 		redirect = urllib.quote('http://2ndmind.com/facebookphotos/complete.html')
 		scope = urllib.quote('user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,user_videos,friends_videos,publish_stream')
 		url = 'https://graph.facebook.com/oauth/authorize?client_id=150505371652086&redirect_uri=%s&type=user_agent&scope=%s' % (redirect,scope)
@@ -1335,9 +1335,11 @@ NumberOfEntries=1
 		autoClose = {'url':'.*access_token=.*','heading':'Finished','message':'Authorization Complete'}
 		webviewer.WR.browser._ua_handlers["_cookies"].cookiejar.clear()
 		url,html = webviewer.getWebResult(url,autoForms=autoForms,autoClose=autoClose) #@UnusedVariable
-			
-		token = self.graph.extractTokenFromURL(url)
-		if self.graph.tokenIsValid(token):
+		
+		if not graph: graph = self.graph
+		if not graph: self.newGraph(email, password)
+		token = graph.extractTokenFromURL(url)
+		if graph.tokenIsValid(token):
 			return token
 		return None
 
