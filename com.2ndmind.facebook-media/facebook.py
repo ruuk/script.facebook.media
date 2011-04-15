@@ -33,7 +33,7 @@ usage of this module might look like this:
 
 """
 
-import urllib, urllib2
+import urllib
 import sys, re
 from cgi import parse_qs
 # Find a JSON parser
@@ -182,7 +182,7 @@ class GraphAPI(object):
 		if path.startswith('http'):
 			pre = ''
 			args = ''
-		fileob = urllib2.urlopen(pre + path + args, post_data)
+		fileob = urllib.urlopen(pre + path + args, post_data)
 		if update_prog: self.updateProgress(30)
 		try:
 			response = _parse_json(fileob.read())
@@ -471,7 +471,7 @@ class GraphWrap(GraphAPI):
 		
 	def checkHasPermission(self,permission):
 		url = 'https://api.facebook.com/method/users.hasAppPermission?format=json&ext_perm='+permission+'&access_token='+self.access_token
-		fobj = urllib2.urlopen(url)
+		fobj = urllib.urlopen(url)
 		try:
 			response = _parse_json(fobj.read())
 		finally:
@@ -480,7 +480,7 @@ class GraphWrap(GraphAPI):
 		
 	def checkIsAppUser(self):
 		url = 'https://api.facebook.com/method/users.isAppUser?format=json&access_token='+self.access_token
-		fobj = urllib2.urlopen(url)
+		fobj = urllib.urlopen(url)
 		try:
 			response = _parse_json(fobj.read())
 		finally:

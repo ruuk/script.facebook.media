@@ -182,7 +182,7 @@ class GraphAPI(object):
 		if path.startswith('http'):
 			pre = ''
 			args = ''
-		fileob = urllib2.urlopen(pre + path + args, post_data)
+		fileob = urllib.urlopen(pre + path + args, post_data)
 		if update_prog: self.updateProgress(30)
 		try:
 			response = _parse_json(fileob.read())
@@ -208,6 +208,7 @@ class GraphWrapAuthError(Exception):
 
 class Connections(list):
 	def __init__(self,graph,connections=None,first=True,progress=True):
+		print connections
 		list.__init__(self)
 		self.first = first
 		self.graph = graph
@@ -387,7 +388,7 @@ class GraphConnections:
 		def handler(**args):
 			fail = False
 			try:
-				return self._getConnections(method)
+				return self._getConnections(method,**args)
 			except GraphAPIError,e:
 				print e.type
 				if not e.type == 'OAuthException': raise
@@ -398,7 +399,7 @@ class GraphConnections:
 				if not self.graph.getNewToken():
 					if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 					else: return None
-				return self._getConnections(method)
+				return self._getConnections(method,**args)
 		handler.method = method
 		
 		self.cache[method] = handler
@@ -490,6 +491,7 @@ class GraphWrap(GraphAPI):
 	def getNewToken(self):
 		import mechanize #@UnresolvedImport
 		br = mechanize.Browser()
+		br._ua_handlers["_cookies"].cookiejar.clear()
 		br.set_handle_robots(False)
 		scope = ''
 		if self.scope: scope = '&scope=' + self.scope

@@ -257,7 +257,7 @@
 					<control type="label">
 						<posx>230</posx>
 						<posy>4</posy>
-						<width>1040</width>
+						<width>890</width>
 						<height>110</height>
 						<font>WeatherTemp</font>
 						<align>left</align>
@@ -311,7 +311,7 @@
 					<control type="label">
 						<posx>230</posx>
 						<posy>4</posy>
-						<width>910</width>
+						<width>890</width>
 						<height>110</height>
 						<font>WeatherTemp</font>
 						<align>left</align>
@@ -532,12 +532,13 @@
 				<posy>0</posy>
 				<width>500</width>
 				<height>60</height>
-				<texture border="1">facebook-media-tube-back.png</texture>
+				<texture>facebook-media-tube-back.png</texture>
 			</control>
 			<control type="image" id="153">
+				<posy>0</posy>
 				<width>1</width>
 				<height>60</height>
-				<texture border="1">facebook-media-progress-bar.png</texture>
+				<texture>facebook-media-progress-bar.png</texture>
 			</control>
 			<control type="label" id="152">
 				<posx>50</posx>
@@ -550,6 +551,7 @@
 				<textcolor>white</textcolor>
 			</control>
 			<control type="image">
+				<posy>0</posy>
 				<width>500</width>
 				<height>60</height>
 				<texture border="3">facebook-media-tube-overlay-left.png</texture>
@@ -627,16 +629,23 @@
 					<control type="label">
 						<posx>112</posx>
 						<posy>0</posy>
-						<width>288</width>
+						<width>280</width>
 						<height>100</height>
-						<font>font20_title</font>
+						<font>font12_title</font>
 						<align>left</align>
 						<aligny>center</aligny>
+						<scroll>false</scroll>
+						<wrapmultiline>true</wrapmultiline>
 						<info>ListItem.Label</info>
 						<textcolor>white</textcolor>
 					</control>
 				</itemlayout>
 				<focusedlayout width="400" height="100">
+					<control type="image">
+						<width>395</width>
+						<height>100</height>
+						<texture>facebook-media-progress-bar.png</texture>
+					</control>
 					<control type="image">
 						<posx>10</posx>
 						<posy>4</posy>
@@ -653,11 +662,13 @@
 					<control type="label">
 						<posx>112</posx>
 						<posy>0</posy>
-						<width>288</width>
+						<width>280</width>
 						<height>100</height>
-						<font>font20_title</font>
+						<font>font12_title</font>
 						<align>left</align>
 						<aligny>center</aligny>
+						<scroll>false</scroll>
+						<wrapmultiline>true</wrapmultiline>
 						<info>ListItem.Label</info>
 						<textcolor>white</textcolor>
 					</control>

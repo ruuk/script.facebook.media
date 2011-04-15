@@ -108,7 +108,10 @@ class MainWindow(BaseWindow):
 		BaseWindow.__init__( self, *args, **kwargs )
 		
 	def onInit(self):
-		if not self.session: self.session = FacebookSession(self)
+		if self.session:
+			self.session.window = self
+		else:
+			self.session = FacebookSession(self)
 		
 	def onClick( self, controlID ):
 		if controlID == 120:
@@ -123,7 +126,7 @@ class MainWindow(BaseWindow):
 			if action == ACTION_PARENT_DIR:
 				self.session.menuItemDeSelected()
 			elif action == ACTION_PREVIOUS_MENU:
-				self.doClose()
+				self.session.menuItemDeSelected(prev_menu=True)
 			elif action == ACTION_MOVE_LEFT:
 				self.session.menuItemDeSelected()
 			elif action == ACTION_MOVE_RIGHT:
@@ -135,8 +138,10 @@ class MainWindow(BaseWindow):
 		elif self.getFocusId() == 125:
 			if action == ACTION_MOVE_LEFT or action == ACTION_MOVE_RIGHT:
 				self.setFocusId(120)
+			elif action == ACTION_PREVIOUS_MENU:
+				self.doClose()
 		elif self.getFocusId() == 128:
-			if action == ACTION_MOVE_UP or action == ACTION_MOVE_DOWN:
+			if action == ACTION_MOVE_UP or action == ACTION_MOVE_DOWN or action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU:
 				self.setFocusId(120)
 		
 class AuthWindow(BaseWindow):
@@ -144,11 +149,15 @@ class AuthWindow(BaseWindow):
 		self.session = kwargs.get('session')
 		self.email = kwargs.get('email')
 		self.password = kwargs.get('password')
+		self.initialized = False
 		BaseWindow.__init__( self, *args, **kwargs )
 		
 	def onInit(self):
 		BaseWindow.onInit(self)
+		if self.initialized: return
+		self.initialized = True
 		self.session.addUser(self.email, self.password)
+		
 	
 	def onFocus( self, controlId ):
 		self.controlId = controlId
@@ -735,7 +744,9 @@ class FacebookSession:
 			if name: name = '[COLOR FF55FF55]FROM: %s[/COLOR][CR]' % name
 		title = obj.name('')
 		if title: title = '[COLOR yellow]%s[/COLOR][CR]' % title
-		caption = name + title + obj.description('') + '[CR] '
+		caption = name + title + obj.description('')
+		if not caption: return ''
+		caption += '[CR] '
 		return ENCODE(self.convertJSONText(caption))
 		
 	def noItems(self,itype='items',paging=None):
@@ -838,9 +849,10 @@ class FacebookSession:
 			message = ERROR('UNHANDLED ERROR')
 			xbmcgui.Dialog().ok('ERROR',message)
 		
-	def menuItemDeSelected(self):
+	def menuItemDeSelected(self,prev_menu=False):
 		if not self.popState():
-			self.window.setFocusId(125)
+			if prev_menu: self.closeWindow()
+			else: self.window.setFocusId(125)
 		self.setPathDisplay()
 	
 	def optionMenuItemSelected(self):
@@ -854,6 +866,7 @@ class FacebookSession:
 			action = item.getProperty('action')
 			if action == 'add_user':
 				self.openAddUserWindow()
+				self.loadOptions()
 			elif action == 'remove_user':
 				self.removeUserMenu()
 			elif action == 'reauth_user':
@@ -892,13 +905,13 @@ class FacebookSession:
 	def doCommentDialog(self,itemNumber):
 		comment = doKeyboard("Enter Comment",'',False)
 		if not comment: return
-		item = self.window.getControl(120).getItem(int(itemNumber))
+		item = self.window.getControl(120).getListItem(int(itemNumber))
 		pv_obj = self.graph.fromJSON(item.getProperty('data'))
 		pv_obj.comment(comment)
 		self.updateMediaItem(item,pv_obj)
 		
 	def doLike(self,itemNumber):
-		item = self.window.getControl(120).getItem(int(itemNumber))
+		item = self.window.getControl(120).getListItem(int(itemNumber))
 		pv_obj = self.graph.fromJSON(item.getProperty('data'))
 		pv_obj.like()
 		self.updateMediaItem(item,pv_obj)
@@ -1121,9 +1134,6 @@ NumberOfEntries=1
 	
 	def addUser(self,email=None,password=None):
 		try:
-			if self.newUserCache:
-				self.addUserPart2()
-				return
 			LOG("ADD USER PART 1")
 			self.window.getControl(101).setVisible(False)
 			if not email:
@@ -1139,21 +1149,21 @@ NumberOfEntries=1
 			self.newUserCache = (email,password)
 			self.window.getControl(102).setVisible(False)
 			self.window.getControl(111).setVisible(False)
-			self.getAuth(email,password)
+			token = self.getAuth(email,password)
 		except:
 			message = ERROR('ERROR')
 			xbmcgui.Dialog().ok('Authorization Error',message)
 			self.closeWindow()
 			self.newUserCache = None
+			return
 		
-	def addUserPart2(self):
 		LOG("ADD USER PART 2")
 		self.window.getControl(112).setVisible(False)
 		self.window.getControl(121).setVisible(False)
-		email,password = self.newUserCache
+		#email,password = self.newUserCache
 		self.newUserCache = None
-		graph = self.newGraph(email, password)
-		graph.getNewToken()
+		graph = self.newGraph(email, password,token=token)
+		#graph.getNewToken()
 		self.window.getControl(122).setVisible(False)
 		self.window.getControl(131).setVisible(False)
 		user = graph.getObject('me',fields='id,name,picture')
@@ -1226,9 +1236,10 @@ NumberOfEntries=1
 		return self.currentUser
 	
 	def updateUserPic(self):
-		self.setSetting('current_user_pic','')
-		outfile = os.path.join(self.CACHE_PATH,'current_user_pic')
-		self.setSetting('current_user_pic',self.getFile(self.currentUser.pic,outfile))
+		self.setSetting('current_user_pic',self.currentUser.pic)
+#		self.setSetting('current_user_pic','')
+#		outfile = os.path.join(self.CACHE_PATH,'current_user_pic')
+#		self.setSetting('current_user_pic',self.getFile(self.currentUser.pic,outfile))
 		
 	def createTagsWindow(self,photo):
 		width = int(photo.width(0))
@@ -1257,14 +1268,14 @@ NumberOfEntries=1
 		y=0
 		if aspect < (16/9.0):
 			mod = (720.0/height)
-			wmod = int(mod * width)
+			wmod = int(round(mod * width))
 			hmod = 720
 			x = (1280 - wmod)/2
 			y = 0
 		else:
 			mod = (1280.0/width) 
 			wmod = 1280
-			hmod = int(mod * height)
+			hmod = int(round(mod * height))
 			x = 0
 			y = (720 - hmod) / 2
 			
@@ -1322,12 +1333,11 @@ NumberOfEntries=1
 			login['autosubmit'] = 'true'
 		autoForms = [login,{'action':'uiserver.php'}]
 		autoClose = {'url':'.*access_token=.*','heading':'Finished','message':'Authorization Complete'}
-		
+		webviewer.WR.browser._ua_handlers["_cookies"].cookiejar.clear()
 		url,html = webviewer.getWebResult(url,autoForms=autoForms,autoClose=autoClose) #@UnusedVariable
 			
 		token = self.graph.extractTokenFromURL(url)
 		if self.graph.tokenIsValid(token):
-			self.graph.saveToken(token)
 			return token
 		return None
 
