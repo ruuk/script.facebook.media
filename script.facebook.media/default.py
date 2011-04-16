@@ -4,6 +4,7 @@ import os,urllib,urllib2,time
 import sys, traceback
 
 from xml.sax.saxutils import unescape as xml_unescape
+import threadpool
 
 import xbmc, xbmcaddon, xbmcgui #@UnresolvedImport
 
@@ -84,6 +85,8 @@ class BaseWindow(xbmcgui.WindowXML):
 	def doClose(self):
 		self.session.window = self.oldWindow
 		self.close()
+		#import threading
+		#for t in threading.enumerate(): print t
 		
 	def onInit(self):
 		self.setSessionWindow()
@@ -141,8 +144,17 @@ class MainWindow(BaseWindow):
 			elif action == ACTION_PREVIOUS_MENU:
 				self.doClose()
 		elif self.getFocusId() == 128:
-			if action == ACTION_MOVE_UP or action == ACTION_MOVE_DOWN or action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU:
+			if action == ACTION_MOVE_UP or action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU:
 				self.setFocusId(120)
+			if action == ACTION_MOVE_LEFT:
+				pvlist = self.getControl(128)
+				print "TEST: %s %s" % (pvlist.getSelectedPosition(),pvlist.size())
+				if pvlist.getSelectedPosition() >= (pvlist.size() - 1): self.setFocusId(120)
+			elif action == ACTION_MOVE_DOWN:
+				if self.getControl(138).isVisible(): self.setFocusId(138)
+		elif self.getFocusId() == 138:
+			if action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU or action == ACTION_MOVE_LEFT or action == ACTION_MOVE_RIGHT:
+				self.setFocusId(128)
 		
 class AuthWindow(BaseWindow):
 	def __init__( self, *args, **kwargs):
@@ -202,6 +214,9 @@ class FacebookSession:
 		self.paging = []
 		self.cancel_progress = False
 		self.progressVisible = False
+		self.progAutoCt = 0
+		self.progAutoTotal = 0
+		self.progAutoMessage = ''
 		self.lastItemNumber = 0
 		self.CACHE_PATH = os.path.join(__addon__.getAddonInfo('profile'),'cache')
 		if not os.path.exists(self.CACHE_PATH): os.makedirs(self.CACHE_PATH)
@@ -421,6 +436,11 @@ class FacebookSession:
 		self.setSetting('last_item_name','CATEGORIES')
 		LOG("CATEGORIES - STOPPED")
 
+	def updateImageCache(self,id):
+		tn = "https://graph.facebook.com/"+id+"/picture?access_token=" + self.graph.access_token
+		tn_url = self.getRealURL(tn)
+		self.imageURLCache[id] = tn_url
+		
 	def ALBUMS(self,item):
 		LOG('ALBUMS - STARTED')
 		uid = item.getProperty('uid')
@@ -460,30 +480,39 @@ class FacebookSession:
 				item = self.getPagingItem('prev', albums.previous, 'albums',uid=uid)
 				items.append(item)	
 			
-			total = len(albums) or 1
-			ct = 0
-			offset = 50
-			modifier = 50.0 / total
+			updates = []
 			for a in albums:
-				ct += 1
+				cover = None
+				acp = a.cover_photo()
+				if acp: cover = cover_objects[acp]
+				if cover:
+					tn_url = cover.picture('')
+					self.imageURLCache[a.id] = tn_url
+				else:
+					if not a.id in self.imageURLCache:
+						updates.append(a.id)
+			if updates:
+				self.startProgress(auto_ct_start=len(updates),auto_total=len(updates)*2,auto_message='Getting Albums...')
+				self.doThreadedOperations(self.updateImageCache, updates, self.updateProgress)
+					
+#			total = len(albums) or 1
+#			ct = 0
+#			offset = 50
+#			modifier = 50.0 / total
+			for a in albums:
+#				ct += 1
 				cover = None
 				acp = a.cover_photo()
 				if acp: cover = cover_objects[acp]
 				if cover:
 					tn_url = cover.picture('')
 					src_url = cover.source('')
-					self.imageURLCache[a.id] = tn_url
 				else:
-					if a.id in self.imageURLCache:
-						tn_url = self.imageURLCache[a.id]
-					else:
-						tn = "https://graph.facebook.com/"+a.id+"/picture?access_token=" + self.graph.access_token
-						tn_url = self.getRealURL(tn)
-						self.imageURLCache[a.id] = tn_url
+					tn_url = self.imageURLCache[a.id]
 					src_url = tn_url.replace('_a.','_n.')
 					
-				if not self.updateProgress(int(ct*modifier)+offset,100,'ALBUM %s OF %s' % (ct,total)):
-					return
+#				if not self.updateProgress(int(ct*modifier)+offset,100,'ALBUM %s OF %s' % (ct,total)):
+#					return
 
 				#aname = a.get('name','').encode('ISO-8859-1','replace')
 				aname = ENCODE(a.name(''))
@@ -851,8 +880,11 @@ class FacebookSession:
 		
 	def menuItemDeSelected(self,prev_menu=False):
 		if not self.popState():
-			if prev_menu: self.closeWindow()
-			else: self.window.setFocusId(125)
+			if prev_menu:
+				self.closeWindow()
+				return
+			else:
+				self.window.setFocusId(125)
 		self.setPathDisplay()
 	
 	def optionMenuItemSelected(self):
@@ -879,9 +911,9 @@ class FacebookSession:
 		itemNumber = int(item.getProperty('item_number'))
 		if name == 'slideshow':
 			self.setFriend()
-			items = self.window.getControl(120).getItems()
+			items = self.getListItems(self.window.getControl(120))
 			self.preMediaSetup()
-			self.showImages(items,itemNumber,options=(False,False,False))
+			self.showImages(items)
 		elif name == 'tags':
 			self.openTagsWindow()
 		elif name == 'comments':
@@ -962,6 +994,7 @@ class FacebookSession:
 		if self.itemType(item) == 'image':
 			items.append(self.createPhotoMenuItem('slideshow', 'SLIDESHOW', 'Click to view a slideshow', '', itemNumber))
 #			if tags: self.createTagsWindow(pv_obj)
+		self.window.getControl(128).reset()
 		self.window.getControl(128).addItems(items)
 		self.window.setFocusId(128)
 		return True
@@ -1024,15 +1057,25 @@ class FacebookSession:
 		self.window.getControl(140).setImage(self.getSetting('current_user_pic'))
 		self.window.getControl(141).setLabel(self.getSetting('current_user_name'))
 			
-	def startProgress(self,message):
+	def startProgress(self,message='',auto_ct_start=0,auto_total=0,auto_message=''):
 		self.cancel_progress = False
-		self.window.getControl(153).setWidth(1)
+		if not auto_ct_start:
+			self.window.getControl(153).setWidth(1)
+			self.window.getControl(152).setLabel(message)
 		self.window.getControl(150).setVisible(True)
 		self.window.setFocusId(160)
-		self.window.getControl(152).setLabel(message)
 		self.progressVisible = True
+		self.progAutoCt = auto_ct_start
+		self.progAutoTotal = auto_total
+		self.progAutoMessage = auto_message
+		if auto_ct_start: self.updateProgress(auto_ct_start, auto_total, auto_message)
 		
-	def updateProgress(self,ct,total,message=''):
+	def updateProgress(self,ct=0,total=0,message=''):
+		if self.progAutoTotal:
+			total = self.progAutoTotal
+			self.progAutoCt+=1
+			ct = self.progAutoCt
+			message=self.progAutoMessage.replace('@CT',str(ct)).replace('@TOT',str(total))
 		if not self.progressVisible: return
 		if self.cancel_progress: return False
 		try:
@@ -1062,26 +1105,56 @@ class FacebookSession:
 #		blank.append(xbmcgui.ListItem())
 #		self.window.getControl(120).addItems(blank)
 		
-	def showImages(self,items,number=0,options=(True,False,True)):
-		#xbmc.executebuiltin('SlideShow(%s)' % base)		
-		playlist = '''[playlist]
-
-File1=%s
-Title1=Test
-Length1=-1
-
-NumberOfEntries=1
-''' % items[0].getProperty('source')
-		playlist_path = os.path.join(self.CACHE_PATH,'slideshow')
-		if not os.path.exists(playlist_path): os.makedirs(playlist_path)
-		playlist_file = os.path.join(playlist_path,'playlist.pls')
-		print playlist_file
-		f = open(playlist_file,'w')
-		f.write(playlist)
-		f.close()
+	def showImages(self,items):
+		target_path = os.path.join(self.CACHE_PATH,'slideshow')
+		if not os.path.exists(target_path): os.makedirs(target_path)
+		self.clearDirFiles(target_path)
+		self.downloadImagesThreaded(items,target_path)
+		xbmc.executebuiltin('SlideShow(%s)' % target_path)
+		return
+		total=len(items)
+		self.startProgress('Getting Images...')
+		try:
+			ct=0
+			for i in items:
+				self.updateProgress(ct, total, 'Downloading Image %s of %s' % (str(ct + 1),str(total)))
+				url = i.getProperty('source')
+				target_file = os.path.join(target_path,str(ct) + str(time.time()) + '.jpg')
+				self.getFile(url, target_file)
+				ct+=1
+		finally:
+			self.endProgress()
 		
-		xbmc.executebuiltin('RecursiveSlideShow(%s)' % playlist_path)
-
+		xbmc.executebuiltin('SlideShow(%s)' % target_path)
+		
+	def downloadImagesThreaded(self,items,target_path):
+		total=len(items)
+		self.startProgress('Getting Images...',auto_total=total,auto_message='Getting Image @CT of @TOT')
+		try:
+			ct=0
+			args = []
+			for i in items:
+				url = i.getProperty('source')
+				target_file = os.path.join(target_path,str(ct) + str(time.time()) + '.jpg')
+				args.append(([url,target_file],{}))
+				ct+=1
+			self.doThreadedOperations(self.getFile, args, self.updateProgress)
+		finally:
+			self.endProgress()
+			
+	def doThreadedOperations(self,function,args,callback=None):
+		pool = threadpool.ThreadPool(3,poll_timeout=0.5)
+		requests = threadpool.makeRequests(function, args, callback)
+		[pool.putRequest(req) for req in requests]
+		pool.wait()
+		pool.dismissWorkers(3, True)
+			
+	def clearDirFiles(self,filepath):
+		if not os.path.exists(filepath): return
+		for f in os.listdir(filepath):
+			f = os.path.join(filepath,f)
+			if os.path.isfile(f): os.remove(f)
+		
 	def showImage(self,item):
 		photo = self.graph.fromJSON(item.getProperty('data'))
 		self.createTagsWindow(photo)
@@ -1337,7 +1410,7 @@ NumberOfEntries=1
 		url,html = webviewer.getWebResult(url,autoForms=autoForms,autoClose=autoClose) #@UnusedVariable
 		
 		if not graph: graph = self.graph
-		if not graph: self.newGraph(email, password)
+		if not graph: graph = self.newGraph(email, password)
 		token = graph.extractTokenFromURL(url)
 		if graph.tokenIsValid(token):
 			return token
