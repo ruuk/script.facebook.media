@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '04-12-2011'
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __language__ = __addon__.getLocalizedString
 
