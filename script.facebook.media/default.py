@@ -15,12 +15,13 @@ from facebook import GraphAPIError, GraphWrapAuthError
 
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
-__date__ = '04-12-2011'
-__version__ = '0.5.2'
+__date__ = '04-18-2011'
+__version__ = '0.5.3'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __language__ = __addon__.getLocalizedString
 
 THEME = 'Default'
+CURRENT_SKIN = 'skin.confluence'
 
 ACTION_MOVE_LEFT      = 1
 ACTION_MOVE_RIGHT     = 2
@@ -1423,9 +1424,60 @@ def doKeyboard(prompt,default='',hidden=False):
 	if not keyboard.isConfirmed(): return None
 	return keyboard.getText()
 
+def createWindowFile(skin_name):
+	from elementtree import ElementTree as etree #@UnresolvedImport
+	fonts_xml = open(os.path.join(SKIN_PATH,'720p','Font.xml')).read()
+	fonts_dom = etree.fromstring(fonts_xml)
+	curr_fonts = {	'font10_title':12,
+					'font12_title':16,
+					'font12_title':20,
+					'font24_title':24,
+					'font28_title':28,
+					'font30_title':30,
+					'WeatherTemp':80}
+	
+	new_fonts = {}
+	
+	for fn in curr_fonts:
+		csize = curr_fonts[fn]
+		cmp = 0
+		smallest_size = 200
+		smallest_name = ''
+		for set in fonts_dom.findall('fontset'):
+			for font in set.findall('font'):
+				name = font.find('name').text
+				size = int(font.find('size').text)
+				if size <= csize and size >= cmp:
+					new_fonts[fn] = name
+				elif fn == name:
+					new_fonts[fn] = name
+					break
+					break
+				else:
+					if size < smallest_size:
+						smallest_size = size
+						smallest_name = name
+			if not fn in new_fonts:
+				new_fonts[fn] = smallest_name
+				
+	win_def_file = os.path.join(__addon__.getAddonInfo('path'),'resources','skins',THEME,'720p','facebook-media-main-skin.confluence.xml')
+	f = open(win_def_file,'r')
+	win_def_xml = f.read()
+	f.close()
+	for fn in new_fonts:
+		win_def_xml = win_def_xml.replace(fn,new_fonts[fn])
+	win_new_file = os.path.join(__addon__.getAddonInfo('path'),'resources','skins',THEME,'720p','facebook-media-main-%s.xml' % skin_name)
+	f = open(win_new_file,'w')
+	f.write(win_def_xml)
+	f.close()
+	
 def openWindow(window_name,session=None,**kwargs):
 		windowFile = 'facebook-media-%s.xml' % window_name
 		if window_name == 'main':
+			windowFile = 'facebook-media-main-%s.xml' % CURRENT_SKIN
+			windowFilePath = os.path.join(__addon__.getAddonInfo('path'),'resources','skins',THEME,'720p',windowFile)
+			if not os.path.exists(windowFilePath):
+				createWindowFile(CURRENT_SKIN)
 			w = MainWindow(windowFile , __addon__.getAddonInfo('path'), THEME)
 		elif window_name == 'auth':
 			w = AuthWindow(windowFile , __addon__.getAddonInfo('path'), THEME,session=session,**kwargs)
@@ -1437,6 +1489,10 @@ def openWindow(window_name,session=None,**kwargs):
 		del w
 		
 XBMC_VERSION = xbmc.getInfoLabel('System.BuildVersion')
+SKIN_PATH = xbmc.translatePath('special://skin')
+if SKIN_PATH.endswith('/'): SKIN_PATH = SKIN_PATH[:-1]
+CURRENT_SKIN = os.path.basename(SKIN_PATH)
 LOG('XBMC Version: %s' % XBMC_VERSION)
+LOG('XBMC Skin: %s' % CURRENT_SKIN)
 
 openWindow('main')

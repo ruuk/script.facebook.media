@@ -178,7 +178,7 @@
 					<posy>10</posy>
 					<width>780</width>
 					<height>240</height>
-					<font>font12_title</font>
+					<font>font13_title</font>
 					<pagecontrol>138</pagecontrol>
 					<info>Container(128).ListItem.Property(data)</info>
 					<textcolor>white</textcolor>
@@ -448,7 +448,7 @@
 				<posy>0</posy>
 				<width>760</width>
 				<height>40</height>
-				<font>font12_title</font>
+				<font>font13_title</font>
 				<align>left</align>
 				<aligny>center</aligny>
 				<textcolor>FFFFFFFF</textcolor>
@@ -481,7 +481,7 @@
 				<posy>10</posy>
 				<width>330</width>
 				<height>110</height>
-				<font>font12_title</font>
+				<font>font13_title</font>
 				<textcolor>white</textcolor>
 				<info>Container(120).ListItem.property(caption)</info>
 				<shadowcolor>ff000000</shadowcolor>
@@ -651,7 +651,7 @@
 						<posy>0</posy>
 						<width>280</width>
 						<height>100</height>
-						<font>font12_title</font>
+						<font>font13_title</font>
 						<align>left</align>
 						<aligny>center</aligny>
 						<scroll>false</scroll>
@@ -684,7 +684,7 @@
 						<posy>0</posy>
 						<width>280</width>
 						<height>100</height>
-						<font>font12_title</font>
+						<font>font13_title</font>
 						<align>left</align>
 						<aligny>center</aligny>
 						<scroll>false</scroll>

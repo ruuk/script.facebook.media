@@ -1,6 +1,10 @@
 Facebook Media Changelog
 
-Current Version : 0.5.2
+Current Version : 0.5.3
+
+*** 0.5.3 ***
+
+Added dynamic font genertation for different XBMC skins
 
 *** 0.5.2 ***
 

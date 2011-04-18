@@ -4,21 +4,29 @@
 	<allowoverlay>no</allowoverlay>
 	<controls>
 		<control type="group" id="100">
-			<posx>370</posx>
+			<posx>334</posx>
 			<posy>0</posy>
 			<control type="largeimage" id="101">
-				<width>540</width>
+				<width>612</width>
 				<height>720</height>
-				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-snc1/10218_1231978963582_1352390960_30652636_6458660_n.jpg</texture>
+				<texture>http://a5.sphotos.ak.fbcdn.net/hphotos-ak-snc4/72769_1609595115323_1099583485_31766054_468087_n.jpg</texture>
 			</control>
 			<control type="group" id="150">
 				<control type="image">
-					<posx>220</posx>
-					<posy>40</posy>
+					<posx>134</posx>
+					<posy>76</posy>
 					<width>200</width>
 					<height>200</height>
 					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-1180367923)]</visible>
+					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-1099583485)]</visible>
+				</control>
+				<control type="image">
+					<posx>335</posx>
+					<posy>127</posy>
+					<width>200</width>
+					<height>200</height>
+					<texture border="3">facebook-media-outline-box.png</texture>
+					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-687329570)]</visible>
 				</control>
 			</control>
 		</control>
@@ -79,8 +87,13 @@
 				</focusedlayout>
 				<content>
 				<item>
-					<label>Mark Moskal</label>
-					<label2>ID-1180367923</label2>
+					<label>Bill Blackwell</label>
+					<label2>ID-1099583485</label2>
+					<onclick>-</onclick>
+				</item>
+				<item>
+					<label>Audrey Sachi Shannon</label>
+					<label2>ID-687329570</label2>
 					<onclick>-</onclick>
 				</item>
 				</content>
