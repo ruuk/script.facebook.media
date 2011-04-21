@@ -1428,6 +1428,7 @@ def doKeyboard(prompt,default='',hidden=False):
 	return keyboard.getText()
 
 def createWindowFile(skin_name):
+	if not skin_name: raise Exception
 	from elementtree import ElementTree as etree #@UnresolvedImport
 	fonts_xml = open(os.path.join(SKIN_PATH,'720p','Font.xml')).read()
 	fonts_dom = etree.fromstring(fonts_xml)
@@ -1451,6 +1452,7 @@ def createWindowFile(skin_name):
 				name = font.find('name').text
 				size = int(font.find('size').text)
 				if size <= csize and size >= cmp:
+					cmp = size
 					new_fonts[fn] = name
 				elif fn == name:
 					new_fonts[fn] = name
@@ -1497,7 +1499,7 @@ def openWindow(window_name,session=None,**kwargs):
 		
 XBMC_VERSION = xbmc.getInfoLabel('System.BuildVersion')
 SKIN_PATH = xbmc.translatePath('special://skin')
-if SKIN_PATH.endswith('/'): SKIN_PATH = SKIN_PATH[:-1]
+if SKIN_PATH.endswith(os.path.sep): SKIN_PATH = SKIN_PATH[:-1]
 CURRENT_SKIN = os.path.basename(SKIN_PATH)
 LOG('XBMC Version: %s' % XBMC_VERSION)
 LOG('XBMC Skin: %s' % CURRENT_SKIN)
