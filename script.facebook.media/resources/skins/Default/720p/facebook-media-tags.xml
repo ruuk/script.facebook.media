@@ -4,29 +4,29 @@
 	<allowoverlay>no</allowoverlay>
 	<controls>
 		<control type="group" id="100">
-			<posx>334</posx>
+			<posx>160</posx>
 			<posy>0</posy>
 			<control type="largeimage" id="101">
-				<width>612</width>
+				<width>960</width>
 				<height>720</height>
-				<texture>http://a5.sphotos.ak.fbcdn.net/hphotos-ak-snc4/72769_1609595115323_1099583485_31766054_468087_n.jpg</texture>
+				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-ash2/35956_1334798781036_1563088107_30760808_3637379_n.jpg</texture>
 			</control>
 			<control type="group" id="150">
 				<control type="image">
-					<posx>134</posx>
-					<posy>76</posy>
+					<posx>411</posx>
+					<posy>97</posy>
 					<width>200</width>
 					<height>200</height>
 					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-1099583485)]</visible>
+					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-1352390960)]</visible>
 				</control>
 				<control type="image">
-					<posx>335</posx>
-					<posy>127</posy>
+					<posx>54</posx>
+					<posy>188</posy>
 					<width>200</width>
 					<height>200</height>
 					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-687329570)]</visible>
+					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,ID-100001203012029)]</visible>
 				</control>
 			</control>
 		</control>
@@ -87,13 +87,13 @@
 				</focusedlayout>
 				<content>
 				<item>
-					<label>Bill Blackwell</label>
-					<label2>ID-1099583485</label2>
+					<label>Rick Phillips</label>
+					<label2>ID-1352390960</label2>
 					<onclick>-</onclick>
 				</item>
 				<item>
-					<label>Audrey Sachi Shannon</label>
-					<label2>ID-687329570</label2>
+					<label>Aeryn Phillips</label>
+					<label2>ID-100001203012029</label2>
 					<onclick>-</onclick>
 				</item>
 				</content>

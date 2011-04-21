@@ -273,6 +273,7 @@
 						<aligny>center</aligny>
 						<label>$INFO[ListItem.Label]</label>
 						<textcolor>FFFFFFFF</textcolor>
+						<shadowcolor>black</shadowcolor>
 					</control>
 					<control type="label">
 						<posx>230</posx>
@@ -327,6 +328,7 @@
 						<aligny>center</aligny>
 						<label>$INFO[ListItem.Label]</label>
 						<textcolor>FFFFFFFF</textcolor>
+						<shadowcolor>black</shadowcolor>
 					</control>
 					<control type="label">
 						<posx>230</posx>
@@ -448,7 +450,7 @@
 				<posy>0</posy>
 				<width>760</width>
 				<height>40</height>
-				<font>font13_title</font>
+				<font>font12_title</font>
 				<align>left</align>
 				<aligny>center</aligny>
 				<textcolor>FFFFFFFF</textcolor>
@@ -481,7 +483,7 @@
 				<posy>10</posy>
 				<width>330</width>
 				<height>110</height>
-				<font>font13_title</font>
+				<font>font12_title</font>
 				<textcolor>white</textcolor>
 				<info>Container(120).ListItem.property(caption)</info>
 				<shadowcolor>ff000000</shadowcolor>
@@ -501,6 +503,7 @@
 			<posy>523</posy>
 			<width>450</width>
 			<height>60</height>
+			<visible>!$INFO[StringCompare(Control.GetLabel(181),)]</visible>
 			<control type="image">
 				<width>450</width>
 				<height>60</height>
@@ -515,7 +518,7 @@
 				<align>left</align>
 				<aligny>center</aligny>
 				<textcolor>white</textcolor>
-				<label>Friend</label>
+				<label></label>
 			</control>
 			<control type="image">
 				<width>450</width>
@@ -525,9 +528,11 @@
 		</control>
 		
 		<control type="button" id="160">
+			<animation effect="slide" start="0,0" end="0,720" time="0">Visible</animation>
+			<animation effect="slide" start="0,720" end="0,0" time="0">Hidden</animation>
 			<description>Box Focus</description>
 			<posx>0</posx>
-			<posy>0</posy>
+			<posy>-720</posy>
 			<width>1280</width>
 			<height>720</height>
 			<onleft>160</onleft>
@@ -536,17 +541,16 @@
 			<ondown>160</ondown>
 			<texturefocus>facebook-media-progress-overlay.png</texturefocus>
 			<texturenofocus>facebook-media-progress-overlay.png</texturenofocus>
-			<visible allowhiddenfocus="true">Control.IsVisible(150) | Control.HasFocus(160)</visible>
-			<enable>Control.HasFocus(160)</enable>
+			<visible>!$INFO[StringCompare(Control.GetLabel(152),)]</visible>
 		</control>
-		
 		<control type="group" id="150">
-			<animation effect="slide" end="-500,0" time="400">Visible</animation>
-			<animation effect="slide" end="0,0" time="400">Hidden</animation>
-			<posx>780</posx>
+			<animation effect="slide" start="0,0" end="-500,0" time="400">Visible</animation>
+			<animation effect="slide" start="-500,0" end="0,0" time="400">Hidden</animation>
+			<posx>1280</posx>
 			<posy>63</posy>
 			<width>500</width>
 			<height>60</height>
+			<visible>!$INFO[StringCompare(Control.GetLabel(152),)]</visible>
 			<control type="image">
 				<posx>0</posx>
 				<posy>0</posy>

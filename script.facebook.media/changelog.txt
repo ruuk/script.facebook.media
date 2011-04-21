@@ -5,6 +5,11 @@ Current Version : 0.5.3
 *** 0.5.3 ***
 
 Added dynamic font genertation for different XBMC skins
+Fixed paging for previous items
+Made animation work finally on progress bar and friend displays
+Changed to smaller fonts on caption and navigation path
+Threaded downloading for album and slideshow images for better speed
+Fixed problem with XBMC crashing on https image urls (happend when displaying some friends albums)
 
 *** 0.5.2 ***
 

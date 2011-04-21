@@ -208,7 +208,6 @@ class GraphWrapAuthError(Exception):
 
 class Connections(list):
 	def __init__(self,graph,connections=None,first=True,progress=True):
-		print connections
 		list.__init__(self)
 		self.first = first
 		self.graph = graph
@@ -299,7 +298,6 @@ class GraphObject:
 		if not self._data:
 			self._data = self._getObjectData(self.id,**self.args)
 			if self.id == 'me': self.id = self._data.get('id') or 'me'
-			print self.id
 		
 		def handler(default=None,as_json=False):
 			return self._getData(property,default,as_json)

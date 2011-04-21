@@ -127,6 +127,7 @@ class MainWindow(BaseWindow):
 			
 	def onAction(self,action):
 		if self.getFocusId() == 120:
+			if self.session.progressVisible: return
 			if action == ACTION_PARENT_DIR:
 				self.session.menuItemDeSelected()
 			elif action == ACTION_PREVIOUS_MENU:
@@ -135,10 +136,13 @@ class MainWindow(BaseWindow):
 				self.session.menuItemDeSelected()
 			elif action == ACTION_MOVE_RIGHT:
 				self.session.menuItemSelected()
-			elif action == ACTION_MOVE_UP:
+#			elif action == ACTION_MOVE_UP:
+#				self.session.doNextPrev()
+#			elif action == ACTION_MOVE_DOWN:
+#				self.session.doNextPrev()
+			else:
 				self.session.doNextPrev()
-			elif action == ACTION_MOVE_DOWN:
-				self.session.doNextPrev()
+				
 		elif self.getFocusId() == 125:
 			if action == ACTION_MOVE_LEFT or action == ACTION_MOVE_RIGHT:
 				self.setFocusId(120)
@@ -149,7 +153,6 @@ class MainWindow(BaseWindow):
 				self.setFocusId(120)
 			if action == ACTION_MOVE_LEFT:
 				pvlist = self.getControl(128)
-				print "TEST: %s %s" % (pvlist.getSelectedPosition(),pvlist.size())
 				if pvlist.getSelectedPosition() >= (pvlist.size() - 1): self.setFocusId(120)
 			elif action == ACTION_MOVE_DOWN:
 				if self.getControl(138).isVisible(): self.setFocusId(138)
@@ -245,7 +248,6 @@ class FacebookSession:
 		
 	def start(self):
 		user = self.getCurrentUser()
-		print user
 		if not user:
 			if not self.openAddUserWindow(): return
 		
@@ -255,7 +257,7 @@ class FacebookSession:
 									user.token,
 									self.newTokenCallback )
 		
-		print user.username
+		#print user.username
 		#print user.email
 		
 		self.loadOptions()
@@ -380,7 +382,7 @@ class FacebookSession:
 		item.setProperty('paging',ENCODE(url))
 		item.setProperty('nextprev',nextprev)
 		item.setProperty('media_type',itype)
-		item.setProperty('from_url',current_url)
+		if nextprev == 'next': item.setProperty('from_url',current_url)
 		item.setProperty('previous',self.getSetting('last_item_name'))
 		return item
 		
@@ -439,8 +441,9 @@ class FacebookSession:
 
 	def updateImageCache(self,id):
 		tn = "https://graph.facebook.com/"+id+"/picture?access_token=" + self.graph.access_token
-		tn_url = self.getRealURL(tn)
+		tn_url = self.getRealURL(tn).replace('https://','http://')
 		self.imageURLCache[id] = tn_url
+		return tn_url
 		
 	def ALBUMS(self,item):
 		LOG('ALBUMS - STARTED')
@@ -465,9 +468,6 @@ class FacebookSession:
 			else:
 				self.paging = []
 				albums = self.graph.getObject(uid).connections.albums()
-				
-			print albums.next
-			print albums.previous
 			
 			cids = []
 			for a in albums:
@@ -479,7 +479,7 @@ class FacebookSession:
 			
 			if albums.previous:
 				item = self.getPagingItem('prev', albums.previous, 'albums',uid=uid)
-				items.append(item)	
+				items.append(item)
 			
 			updates = []
 			for a in albums:
@@ -511,7 +511,6 @@ class FacebookSession:
 				else:
 					tn_url = self.imageURLCache[a.id]
 					src_url = tn_url.replace('_a.','_n.')
-					
 #				if not self.updateProgress(int(ct*modifier)+offset,100,'ALBUM %s OF %s' % (ct,total)):
 #					return
 
@@ -520,9 +519,9 @@ class FacebookSession:
 				
 				item = xbmcgui.ListItem()
 				item.setLabel(aname)
-				item.setThumbnailImage(ENCODE(tn_url))
-				item.setProperty('image0',ENCODE(src_url))
-				item.setProperty('album',ENCODE(a.id))
+				item.setThumbnailImage(tn_url)
+				item.setProperty('image0',src_url)
+				item.setProperty('album',a.id)
 				item.setProperty('uid',uid)
 				item.setProperty('category','photos')
 				item.setProperty('previous',self.getSetting('last_item_name'))
@@ -533,16 +532,16 @@ class FacebookSession:
 				items.append(item)
 				
 			self.saveImageURLCache()
+			
+			if items:
+				self.fillList(items)
+				self.setListFocus(nextprev, albums)
+				self.setCurrentState(items)
 		finally:
 			self.endProgress()
-	
-		if items:
-			self.fillList(items)
-			self.setListFocus(nextprev, albums)
-			self.setCurrentState(items)
-		else:
-			self.noItems('Albums')
 		
+		if not items: self.noItems('Albums')
+				
 		LOG('ALBUMS - STOPPED')
 			
 	def FRIENDS(self,uid='me'):
@@ -673,16 +672,15 @@ class FacebookSession:
 				
 			if photos.next:
 				items.append(self.getPagingItem('next', photos.next, 'photos', paging,uid=uid))
-				
-			self.endProgress()
+			if items:
+				self.fillList(items)
+				self.setListFocus(nextprev, photos)
+				self.setCurrentState(items)
 		finally:
 			self.endProgress()
-		if items:
-			self.fillList(items)
-			self.setListFocus(nextprev, photos)
-			self.setCurrentState(items)
-		else:
-			self.noItems('Photos',paging)
+		
+		if not items: self.noItems('Photos',paging)
+		
 		LOG("PHOTOS - STOPPED")
 	
 	def VIDEOS(self,item):
@@ -712,8 +710,6 @@ class FacebookSession:
 				self.paging = []
 				if uploaded: videos = self.graph.getObject(uid).connections.videos__uploaded()
 				else: videos = self.graph.getObject(uid).connections.videos()
-			print videos.next
-			print videos.previous	
 			if videos.previous:
 				item = self.getPagingItem('prev', videos.previous, 'videos',uid=uid)
 				items.append(item)
@@ -750,15 +746,15 @@ class FacebookSession:
 			if videos.next:
 				item = self.getPagingItem('next', videos.next, 'videos', paging,uid=uid)
 				items.append(item)
-
+				
+			if items:
+				self.fillList(items)
+				self.setListFocus(nextprev, videos)
+				self.setCurrentState(items)
 		finally:
 			self.endProgress()
-		if items:
-			self.fillList(items)
-			self.setListFocus(nextprev, videos)
-			self.setCurrentState(items)
-		else:
-			self.noItems('Videos',paging)
+			
+		if not items: self.noItems('Videos',paging)
 			
 		LOG("VIDEOS - STOPPED")
 		
@@ -769,7 +765,6 @@ class FacebookSession:
 		name = ''
 		f_id = obj.from_({}).get('id','')
 		if f_id != uid:
-			print '%s  = %s' % (f_id,uid)
 			name = obj.from_({}).get('name','') or ''
 			if name: name = '[COLOR FF55FF55]FROM: %s[/COLOR][CR]' % name
 		title = obj.name('')
@@ -862,6 +857,9 @@ class FacebookSession:
 				self.setFriend('')
 				self.preMediaSetup()
 				self.showMedia(item)
+			elif cat == 'paging':
+				self.doNextPrev()
+				return
 			
 			self.setSetting('last_item_name',item.getLabel())
 			self.setPathDisplay()
@@ -889,7 +887,7 @@ class FacebookSession:
 		self.setPathDisplay()
 	
 	def optionMenuItemSelected(self):
-		print "OPTION ITEM SELECTED"
+		LOG("OPTION ITEM SELECTED")
 		item = self.getFocusedItem(125)
 		self.window.setFocusId(120)
 		uid = item.getProperty('uid')
@@ -1049,23 +1047,22 @@ class FacebookSession:
 		else:
 			self.setSetting('current_friend_name',name)
 		if name:
-			self.window.getControl(180).setVisible(True)
+			self.window.getControl(181).setLabel('Friend: ' + name)
 		else:
-			self.window.getControl(180).setVisible(False)
-		self.window.getControl(181).setLabel('Friend: ' + name)
+			self.window.getControl(181).setLabel('')
 		
 	def setUserDisplay(self):
 		self.window.getControl(140).setImage(self.getSetting('current_user_pic'))
 		self.window.getControl(141).setLabel(self.getSetting('current_user_name'))
 			
 	def startProgress(self,message='',auto_ct_start=0,auto_total=0,auto_message=''):
+		self.progressVisible = True
 		self.cancel_progress = False
 		if not auto_ct_start:
 			self.window.getControl(153).setWidth(1)
 			self.window.getControl(152).setLabel(message)
-		self.window.getControl(150).setVisible(True)
+		#self.window.getControl(150).setVisible(True)
 		self.window.setFocusId(160)
-		self.progressVisible = True
 		self.progAutoCt = auto_ct_start
 		self.progAutoTotal = auto_total
 		self.progAutoMessage = auto_message
@@ -1082,7 +1079,7 @@ class FacebookSession:
 		try:
 			if ct < 0 or ct > total:
 				LOG('PROGRESS OUT OF BOUNDS')
-				return
+				return True
 			width = int((ct / float(total)) * 500)
 			window = self.window
 			window.getControl(153).setWidth(width)
@@ -1092,9 +1089,10 @@ class FacebookSession:
 		return True
 	
 	def endProgress(self):
-		self.progressVisible = False
 		self.window.setFocusId(120)
-		self.window.getControl(150).setVisible(False)
+		self.window.getControl(152).setLabel('')
+		self.progressVisible = False
+		#self.window.getControl(150).setVisible(False)
 	
 	def cancelProgress(self):
 		LOG('PROGRESS CANCEL ATTEMPT')
@@ -1110,41 +1108,46 @@ class FacebookSession:
 		target_path = os.path.join(self.CACHE_PATH,'slideshow')
 		if not os.path.exists(target_path): os.makedirs(target_path)
 		self.clearDirFiles(target_path)
-		self.downloadImagesThreaded(items,target_path)
+		urls = []
+		for i in items:
+			url = i.getProperty('source')
+			if url: urls.append(url)
+		self.downloadImagesThreaded(urls,target_path)
 		xbmc.executebuiltin('SlideShow(%s)' % target_path)
 		return
-		total=len(items)
+	
+	def downloadImages(self,urls,target_path):
+		total=len(urls)
 		self.startProgress('Getting Images...')
 		try:
 			ct=0
-			for i in items:
+			for url in urls:
 				self.updateProgress(ct, total, 'Downloading Image %s of %s' % (str(ct + 1),str(total)))
-				url = i.getProperty('source')
 				target_file = os.path.join(target_path,str(ct) + str(time.time()) + '.jpg')
 				self.getFile(url, target_file)
 				ct+=1
-		finally:
+		except:
+			ERROR("downloadImages()")
 			self.endProgress()
-		
-		xbmc.executebuiltin('SlideShow(%s)' % target_path)
-		
-	def downloadImagesThreaded(self,items,target_path):
-		total=len(items)
+				
+	def downloadImagesThreaded(self,urls,target_path):
+		total=len(urls)
 		self.startProgress('Getting Images...',auto_total=total,auto_message='Getting Image @CT of @TOT')
 		try:
 			ct=0
 			args = []
-			for i in items:
-				url = i.getProperty('source')
+			for url in urls:
 				target_file = os.path.join(target_path,str(ct) + str(time.time()) + '.jpg')
 				args.append(([url,target_file],{}))
 				ct+=1
 			self.doThreadedOperations(self.getFile, args, self.updateProgress)
-		finally:
+			self.endProgress()
+		except:
+			ERROR("downloadImagesThreaded()")
 			self.endProgress()
 			
 	def doThreadedOperations(self,function,args,callback=None):
-		pool = threadpool.ThreadPool(3,poll_timeout=0.5)
+		pool = threadpool.ThreadPool(3,poll_timeout=0)
 		requests = threadpool.makeRequests(function, args, callback)
 		[pool.putRequest(req) for req in requests]
 		pool.wait()
@@ -1184,11 +1187,12 @@ class FacebookSession:
 		return name.encode('ascii','replace')
 	
 	def getFile(self,url,target_file):
+		if not url: return
 		try:
 			request = urllib2.urlopen(url)
 			target_file = self.fixExtension(request.info().get('content-type',''),target_file)
 		except:
-			print 'ERROR: urlopen() in getFile()'
+			ERROR('ERROR: urlopen() in getFile() - URL: %s' % ENCODE(url))
 			return ''
 		f = open(target_file,"wb")
 		f.write(request.read())
@@ -1302,7 +1306,6 @@ class FacebookSession:
 			if ulist:
 				uid = ulist[0]
 				if uid: self.setCurrentUser(uid)
-		print uid
 		if not uid: return None
 		self.currentUser = FacebookUser(uid)
 		self.setSetting('current_user_name', self.currentUser.username)
