@@ -18,7 +18,7 @@ __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '04-18-2011'
 __version__ = '0.5.4'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
-__language__ = __addon__.getLocalizedString
+__lang__ = __addon__.getLocalizedString
 
 THEME = 'Default'
 CURRENT_SKIN = 'skin.confluence'
@@ -240,7 +240,7 @@ class FacebookSession:
 		self.setSetting('current_user_pic','facebook-media-icon-generic-user.png')
 		self.setSetting('current_friend_name','')
 		self.setSetting('progress','')
-		self.setSetting('last_item_name','OPTIONS')
+		self.setSetting('last_item_name',__lang__(30009))
 		self.setSetting('current_nav_path','')
 
 		self.endProgress()
@@ -283,9 +283,9 @@ class FacebookSession:
 			item.setThumbnailImage(user.pic)
 			item.setProperty('uid',user.id)
 			items.append(item)
-		options = [	('add_user','facebook-media-icon-adduser.png','Add User','data'),
-					('remove_user','facebook-media-icon-removeuser.png','Remove User','data'),
-					('reauth_user','facebook-media-icon-reauth-user.png','Re-Authorize Current User','data')]
+		options = [	('add_user','facebook-media-icon-adduser.png',__lang__(30038),'data'),
+					('remove_user','facebook-media-icon-removeuser.png',__lang__(30039),'data'),
+					('reauth_user','facebook-media-icon-reauth-user.png',__lang__(30040),'data')]
 		for action,icon,label,data in options:
 			item = xbmcgui.ListItem()
 			item.setThumbnailImage(icon)
@@ -417,9 +417,9 @@ class FacebookSession:
 		items = []
 		cids = ('albums','videos','friends','photosofme','videosofme')
 		if uid == 'me':
-			cats = ('ALBUMS','VIDEOS','FRIENDS','PHOTOS OF ME','VIDEOS OF ME')
+			cats = (__lang__(30001),__lang__(30002),__lang__(30003),__lang__(30004),__lang__(30005))
 		else:
-			cats = ('ALBUMS','VIDEOS','FRIENDS','PHOTOS OF USER','VIDEOS OF USER')
+			cats = (__lang__(30001),__lang__(30002),__lang__(30003),__lang__(30006),__lang__(30007))
 			
 		for cat,cid in zip(cats,cids):
 			item = xbmcgui.ListItem()
@@ -437,7 +437,7 @@ class FacebookSession:
 		self.fillList(items)
 		window.setFocusId(120)
 		self.setCurrentState(items)
-		self.setSetting('last_item_name','CATEGORIES')
+		self.setSetting('last_item_name',__lang__(30008))
 		LOG("CATEGORIES - STOPPED")
 
 	def updateImageCache(self,id):
@@ -455,11 +455,11 @@ class FacebookSession:
 		
 		if not paging: self.saveState()
 		
-		self.startProgress('GETTING ALBUMS...')
+		self.startProgress(__lang__(30016))
 		
 		items = []
 		try:
-			self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
+			self.graph.withProgress(self.updateProgress,0.5,100,__lang__(30010))
 			if paging:
 				if fromUrl:
 					self.paging.append(fromUrl)
@@ -494,7 +494,7 @@ class FacebookSession:
 					if not a.id in self.imageURLCache:
 						updates.append(a.id)
 			if updates:
-				self.startProgress(auto_ct_start=len(updates),auto_total=len(updates)*2,auto_message='Getting Albums...')
+				self.startProgress(auto_ct_start=len(updates),auto_total=len(updates)*2,auto_message=__lang__(30011))
 				self.doThreadedOperations(self.updateImageCache, updates, self.updateProgress)
 					
 #			total = len(albums) or 1
@@ -541,7 +541,7 @@ class FacebookSession:
 		finally:
 			self.endProgress()
 		
-		if not items: self.noItems('Albums')
+		if not items: self.noItems(__lang__(30028))
 				
 		LOG('ALBUMS - STOPPED')
 			
@@ -549,8 +549,8 @@ class FacebookSession:
 		LOG('FRIENDS - STARTED')
 		self.saveState()
 		
-		self.startProgress('GETTING FRIENDS...')
-		self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
+		self.startProgress(__lang__(30017))
+		self.graph.withProgress(self.updateProgress,0.5,100,__lang__(30010))
 		
 		items = []
 		try:
@@ -571,7 +571,7 @@ class FacebookSession:
 				fid = show[s].id
 				tn_url = show[s].picture('').replace('_q.','_n.')
 				ct+=1
-				self.updateProgress(int(ct*modifier)+offset, 100, 'FRIEND %s of %s' % (ct,total))
+				self.updateProgress(int(ct*modifier)+offset, 100, __lang__(30012) % (ct,total))
 				
 				#if fid in self.imageURLCache:
 				#	tn_url = self.imageURLCache[fid]
@@ -604,7 +604,7 @@ class FacebookSession:
 			self.fillList(items)
 			self.setCurrentState(items)
 		else:
-			self.noItems('Friends')
+			self.noItems(__lang__(30029))
 			
 		LOG("FRIENDS - STOPPED")
 		
@@ -619,8 +619,8 @@ class FacebookSession:
 				
 		if not paging: self.saveState()
 		
-		self.startProgress('GETTING PHOTOS...')
-		self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
+		self.startProgress(__lang__(30018))
+		self.graph.withProgress(self.updateProgress,0.5,100,__lang__(30010))
 		
 		items = []
 		try:
@@ -669,7 +669,7 @@ class FacebookSession:
 				item.setProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct += 1
-				self.updateProgress(int(ct*modifier)+offset,100,message='Loading photo %s of %s' % (ct,tot))
+				self.updateProgress(int(ct*modifier)+offset,100,message=__lang__(30013) % (ct,tot))
 				
 			if photos.next:
 				items.append(self.getPagingItem('next', photos.next, 'photos', paging,uid=uid))
@@ -680,7 +680,7 @@ class FacebookSession:
 		finally:
 			self.endProgress()
 		
-		if not items: self.noItems('Photos',paging)
+		if not items: self.noItems(__lang__(30026),paging)
 		
 		LOG("PHOTOS - STOPPED")
 	
@@ -696,8 +696,8 @@ class FacebookSession:
 		
 		if not paging: self.saveState()
 		
-		self.startProgress('GETTING VIDEOS...')
-		self.graph.withProgress(self.updateProgress,0.5,100,'QUERYING FACEBOOK')
+		self.startProgress(__lang__(30019))
+		self.graph.withProgress(self.updateProgress,0.5,100,__lang__(30010))
 		
 		items = []
 		try:
@@ -743,7 +743,7 @@ class FacebookSession:
 				item.setProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
 				ct+=1
-				self.updateProgress(int(ct*modifier)+offset,100, 'Loading video %s of %s' % (ct,total))
+				self.updateProgress(int(ct*modifier)+offset,100, __lang__(30014) % (ct,total))
 				
 			if videos.next:
 				item = self.getPagingItem('next', videos.next, 'videos', paging,uid=uid)
@@ -756,7 +756,7 @@ class FacebookSession:
 		finally:
 			self.endProgress()
 			
-		if not items: self.noItems('Videos',paging)
+		if not items: self.noItems(__lang__(30027),paging)
 			
 		LOG("VIDEOS - STOPPED")
 		
@@ -768,7 +768,7 @@ class FacebookSession:
 		f_id = obj.from_({}).get('id','')
 		if f_id != uid:
 			name = obj.from_({}).get('name','') or ''
-			if name: name = '[COLOR FF55FF55]FROM: %s[/COLOR][CR]' % name
+			if name: name = '[COLOR FF55FF55]'+__lang__(30022) % name +'[/COLOR][CR]'
 		title = obj.name('')
 		if title: title = '[COLOR yellow]%s[/COLOR][CR]' % title
 		caption = name + title + obj.description('')
@@ -778,9 +778,9 @@ class FacebookSession:
 		
 	def noItems(self,itype='items',paging=None):
 		if not paging: self.popState(clear=True)
-		message = "No %s or not authorized." % itype
-		if paging: message = 'End of %s reached.' % itype
-		xbmcgui.Dialog().ok("None Available", message)
+		message = __lang__(30023) % itype
+		if paging: message = __lang__(30024) % itype
+		xbmcgui.Dialog().ok(__lang__(30025), message)
 		
 	def saveImageURLCache(self):
 		out = ''
@@ -868,16 +868,16 @@ class FacebookSession:
 		except GraphWrapAuthError,e:
 			if len(self.states) > state_len: self.popState()
 			if e.type == 'RENEW_TOKEN_FAILURE':
-				response = xbmcgui.Dialog().yesno("TOKEN ERROR", "Failed to renew authorization. Would you like to Re-Authorize?", "No", "Yes")
+				response = xbmcgui.Dialog().yesno(__lang__(30030), __lang__(30031), __lang__(30032), __lang__(30033))
 				if response:
 					self.openAddUserWindow(self.currentUser.email, self.currentUser.password)
 			else:
 				message = ERROR('UNHANDLED ERROR')
-				xbmcgui.Dialog().ok('ERROR',message)
+				xbmcgui.Dialog().ok(__lang__(30034),message)
 		except:
 			if len(self.states) > state_len: self.popState()
 			message = ERROR('UNHANDLED ERROR')
-			xbmcgui.Dialog().ok('ERROR',message)
+			xbmcgui.Dialog().ok(__lang__(30034),message)
 		
 	def menuItemDeSelected(self,prev_menu=False):
 		if not self.popState():
@@ -988,12 +988,12 @@ class FacebookSession:
 			for l in likes:
 				likes_string += '[COLOR yellow]%s[/COLOR][CR]' % l.name('')
 		#if comments:
-		items.append(self.createPhotoMenuItem('comments', 'COMMENTS','Click to add a comment', comments_string, itemNumber))
+		items.append(self.createPhotoMenuItem('comments', __lang__(30041),__lang__(30042), comments_string, itemNumber))
 #		if tags:
 #			items.append(self.createPhotoMenuItem('tags', 'TAGS', 'Click to view tagged image', tags_string, itemNumber))
-		items.append(self.createPhotoMenuItem('likes', 'LIKES (%s)' % len(likes), 'Click to "like" this item', likes_string, itemNumber))
+		items.append(self.createPhotoMenuItem('likes', __lang__(30043) % len(likes), __lang__(30044), likes_string, itemNumber))
 		if self.itemType(item) == 'image':
-			items.append(self.createPhotoMenuItem('slideshow', 'SLIDESHOW', 'Click to view a slideshow', '', itemNumber))
+			items.append(self.createPhotoMenuItem('slideshow', __lang__(30045), __lang__(30046), '', itemNumber))
 #			if tags: self.createTagsWindow(pv_obj)
 		self.window.getControl(128).reset()
 		self.window.getControl(128).addItems(items)
@@ -1015,7 +1015,7 @@ class FacebookSession:
 		options = []
 		for uid in uids: options.append(self.getSetting('username_%s' % uid))
 
-		idx = xbmcgui.Dialog().select('Choose User To Remove',options)
+		idx = xbmcgui.Dialog().select(__lang__(30037),options)
 		if idx < 0:
 			return
 		else:
@@ -1120,11 +1120,11 @@ class FacebookSession:
 	
 	def downloadImages(self,urls,target_path):
 		total=len(urls)
-		self.startProgress('Getting Images...')
+		self.startProgress()
 		try:
 			ct=0
 			for url in urls:
-				self.updateProgress(ct, total, 'Downloading Image %s of %s' % (str(ct + 1),str(total)))
+				self.updateProgress(ct, total, __lang__(30015) % (str(ct + 1),str(total)))
 				target_file = os.path.join(target_path,str(ct) + str(time.time()) + '.jpg')
 				self.getFile(url, target_file)
 				ct+=1
@@ -1134,7 +1134,7 @@ class FacebookSession:
 				
 	def downloadImagesThreaded(self,urls,target_path):
 		total=len(urls)
-		self.startProgress('Getting Images...',auto_total=total,auto_message='Getting Image @CT of @TOT')
+		self.startProgress(__lang__(30020),auto_total=total,auto_message=__lang__(30021))
 		try:
 			ct=0
 			args = []
@@ -1217,12 +1217,12 @@ class FacebookSession:
 			LOG("ADD USER PART 1")
 			self.window.getControl(101).setVisible(False)
 			if not email:
-				email = doKeyboard("Login Email")
+				email = doKeyboard(__lang__(30047))
 			if not email:
 				self.closeWindow()
 				return
 			if not password:
-				password = doKeyboard("Login Password",hidden=True)
+				password = doKeyboard(__lang__(30048),hidden=True)
 			if not password:
 				self.closeWindow()
 				return
@@ -1232,7 +1232,7 @@ class FacebookSession:
 			token = self.getAuth(email,password)
 		except:
 			message = ERROR('ERROR')
-			xbmcgui.Dialog().ok('Authorization Error',message)
+			xbmcgui.Dialog().ok(__lang__(30035),message)
 			self.closeWindow()
 			self.newUserCache = None
 			return
@@ -1259,7 +1259,7 @@ class FacebookSession:
 		self.setSetting('profile_pic_%s' % uid,user.picture('').replace('_q.','_n.'))
 		#self.getProfilePic(uid,force=True)
 		self.window.getControl(132).setVisible(False)
-		xbmcgui.Dialog().ok("User Added",ENCODE(username))
+		xbmcgui.Dialog().ok(__lang__(30036),ENCODE(username))
 		self.closeWindow()
 		self.setSetting('has_user','true')
 		#self.setCurrentUser(uid)
@@ -1376,14 +1376,19 @@ class FacebookSession:
 		
 		boxes = ''
 		items = ''
-		for tag in tags:
-			tag_name = tag.name('')
-			tag_id = tag.id or tag_name
-			tag_id = 'ID-' + tag_id.replace(' ','')
-			tag_x = int(wmod * (float(tag.x(0))/100)) - box_off
-			tag_y = int(hmod * (float(tag.y(0))/100)) - box_off
-			boxes += tagbox % (tag_x,tag_y,box_len,box_len,tag_id)
-			items += tagitem % (tag_name,tag_id) 
+		if tags:
+			for tag in tags:
+				tag_name = tag.name('')
+				tag_id = tag.id or tag_name
+				tag_id = 'ID-' + tag_id.replace(' ','')
+				tag_x = int(wmod * (float(tag.x(0))/100)) - box_off
+				tag_y = int(hmod * (float(tag.y(0))/100)) - box_off
+				boxes += tagbox % (tag_x,tag_y,box_len,box_len,tag_id)
+				items += tagitem % (tag_name,tag_id)
+		else:
+			#If not tags this is the easy way to make the tag list fade :)
+			boxes = tagbox % (-8,-8,2,2,'no_id')
+			items = tagitem % (__lang__(3001),'no_id')
 		
 		xml = xml.replace('<!-- TAGBOXES -->',boxes)
 		xml = xml.replace('<!-- TAGITEMS -->',items)
@@ -1411,7 +1416,7 @@ class FacebookSession:
 			login['autofill'] = 'email=%s,pass=%s' % (email,password)
 			login['autosubmit'] = 'true'
 		autoForms = [login,{'action':'uiserver.php'}]
-		autoClose = {'url':'.*access_token=.*','heading':'Finished','message':'Authorization Complete'}
+		autoClose = {'url':'.*access_token=.*','heading':__lang__(30049),'message':__lang__(30050)}
 		webviewer.WR.browser._ua_handlers["_cookies"].cookiejar.clear()
 		url,html = webviewer.getWebResult(url,autoForms=autoForms,autoClose=autoClose) #@UnusedVariable
 		

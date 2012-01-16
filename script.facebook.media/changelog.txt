@@ -1,6 +1,16 @@
 Facebook Media Changelog
 
-Current Version : 0.5.3
+Current Version : 0.5.4
+
+Known Issues/TODO:
+	-When going back in the hierarchy the top display loses the last item in the hierarchy 
+
+*** 0.5.4 ***
+
+Updated for eden
+Re-worked/simplified the skin
+Localized the strings - anyone want to do some translating :)
+Fixed a bug where empty tag list wouldn't fade out
 
 *** 0.5.3 ***
 

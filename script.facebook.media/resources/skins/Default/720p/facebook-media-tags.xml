@@ -4,37 +4,53 @@
 	<allowoverlay>no</allowoverlay>
 	<controls>
 		<control type="group" id="100">
-			<posx>187</posx>
+			<posx>160</posx>
 			<posy>0</posy>
 			<control type="largeimage" id="101">
-				<width>905</width>
+				<width>960</width>
 				<height>720</height>
-				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-ash4/389582_2598129117146_1372305673_3506687_901128967_n.jpg</texture>
+				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-ash4/254311_1955129991905_1052348714_2226983_7446991_n.jpg</texture>
 			</control>
 			<control type="group" id="150">
 				<control type="image">
-					<posx>119</posx>
-					<posy>48</posy>
+					<posx>818</posx>
+					<posy>146</posy>
+					<width>200</width>
+					<height>200</height>
+					<texture border="3">facebook-media-outline-box.png</texture>
+					<visible>StringCompare(Container(120).ListItem.Label2,ID-608569653)</visible>
+				</control>
+				<control type="image">
+					<posx>172</posx>
+					<posy>69</posy>
+					<width>200</width>
+					<height>200</height>
+					<texture border="3">facebook-media-outline-box.png</texture>
+					<visible>StringCompare(Container(120).ListItem.Label2,ID-1052348714)</visible>
+				</control>
+				<control type="image">
+					<posx>524</posx>
+					<posy>73</posy>
 					<width>200</width>
 					<height>200</height>
 					<texture border="3">facebook-media-outline-box.png</texture>
 					<visible>StringCompare(Container(120).ListItem.Label2,ID-1352390960)</visible>
 				</control>
 				<control type="image">
-					<posx>252</posx>
-					<posy>132</posy>
+					<posx>401</posx>
+					<posy>188</posy>
 					<width>200</width>
 					<height>200</height>
 					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,ID-1372305673)</visible>
+					<visible>StringCompare(Container(120).ListItem.Label2,ID-100001203012029)</visible>
 				</control>
 				<control type="image">
-					<posx>413</posx>
-					<posy>117</posy>
+					<posx>629</posx>
+					<posy>249</posy>
 					<width>200</width>
 					<height>200</height>
 					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,ID-100000547802204)</visible>
+					<visible>StringCompare(Container(120).ListItem.Label2,ID-100001245376608)</visible>
 				</control>
 			</control>
 		</control>
@@ -95,18 +111,28 @@
 				</focusedlayout>
 				<content>
 				<item>
+					<label>Samantha Jean Folden</label>
+					<label2>ID-608569653</label2>
+					<onclick>-</onclick>
+				</item>
+				<item>
+					<label>Carmen Phillips</label>
+					<label2>ID-1052348714</label2>
+					<onclick>-</onclick>
+				</item>
+				<item>
 					<label>Rick Phillips</label>
 					<label2>ID-1352390960</label2>
 					<onclick>-</onclick>
 				</item>
 				<item>
-					<label>Jannica Moskal</label>
-					<label2>ID-1372305673</label2>
+					<label>Aeryn Phillips</label>
+					<label2>ID-100001203012029</label2>
 					<onclick>-</onclick>
 				</item>
 				<item>
-					<label>Nana Krause</label>
-					<label2>ID-100000547802204</label2>
+					<label>Tailar Folden</label>
+					<label2>ID-100001245376608</label2>
 					<onclick>-</onclick>
 				</item>
 				</content>
