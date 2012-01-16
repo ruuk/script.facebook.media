@@ -8,7 +8,7 @@
 			<posy>0</posy>
 			<width>1280</width>
 			<height>720</height>
-			<texture>facebook-media-background.jpg</texture>
+			<texture>facebook-media-background.png</texture>
 		</control>
 		<control type="image" id="100">
 			<posx>0</posx>
@@ -21,33 +21,16 @@
 		</control>
 		
 		<control type="label">
-			<posx>20</posx>
-			<posy>145</posy>
+			<posx>590</posx>
+			<posy>690</posy>
 			<width>100</width>
-			<height>100</height>
+			<height>20</height>
 			<font>font10_title</font>
 			<align>center</align>
 			<aligny>center</aligny>
 			<info>Container(120).ListItem.property(previous)</info>
 			<wrapmultiline>true</wrapmultiline>
 			<textcolor>FFFFFFFF</textcolor>
-		</control>
-		<control type="image">
-			<posx>130</posx>
-			<posy>155</posy>
-			<width>17</width>
-			<height>80</height>
-			<colordiffuse>66FFFFFF</colordiffuse>
-			<texture>facebook-media-left-arrow.png</texture>
-			<visible>!$INFO[StringCompare(Container(120).ListItem.property(previous),)]</visible>
-		</control>
-		<control type="image">
-			<posx>353</posx>
-			<posy>155</posy>
-			<width>17</width>
-			<height>80</height>
-			<colordiffuse>66FFFFFF</colordiffuse>
-			<texture flipx="true">facebook-media-left-arrow.png</texture>
 		</control>
 		
 		<!-- PHOTOVIDEO MENU - - - - - - - - - - - - - - - - - - - - - - - - - - PHOTOVIDEO MENU  -->
@@ -90,7 +73,7 @@
 						<texture border="3">facebook-media-tube-overlay-lr.png</texture>
 					</control>
 					<control type="group">
-						<visible>!$INFO[StringCompare(Container(128).ListItem.Property(data),)]</visible>
+						<visible>!StringCompare(Container(128).ListItem.Property(data),)</visible>
 						<control type="image">
 							<posx>0</posx>
 							<posy>100</posy>
@@ -138,7 +121,7 @@
 			</control>
 			<control type="group" id="129">
 				<posy>110</posy>
-				<visible>!$INFO[StringCompare(Container(128).ListItem.Property(data),)]</visible>
+				<visible>!StringCompare(Container(128).ListItem.Property(data),)</visible>
 				<control type="image">
 					<width>800</width>
 					<height>260</height>
@@ -190,29 +173,28 @@
 		
 		
 		<control type="group">
-			<posx>0</posx>
+			<posx>-150</posx>
 			<posy>512</posy>
-			<control type="list" id="120">
-				<width>1280</width>
+			<control type="fixedlist" id="120">
+				<width>1450</width>
 				<height>175</height>
-				<orientation>vertical</orientation>
-				<focusposition>1</focusposition>
+				<focusposition>3</focusposition>
 				<scrolltime>400</scrolltime>
-				<orientation>vertical</orientation>
-				<hitrect x="0" y="0" w="1280" h="120" />
+				<orientation>horizontal</orientation>
+<!--				<hitrect x="0" y="0" w="1280" h="120" /> -->
 				<itemlayout width="226" height="175">
 					<control type="image">
-						<posx>4</posx>
-						<posy>28</posy>
+						<posx>5</posx>
+						<posy>27</posy>
 						<width>216</width>
 						<height>120</height>
 						<texture>facebook-media-filmstrip-mask.png</texture>
 						<colordiffuse>66000000</colordiffuse>
-						<visible>$INFO[StringCompare(ListItem.Property(paging),)]</visible>
+						<visible>StringCompare(ListItem.Property(paging),)</visible>
 					</control>
 					<control type="image">
-						<posx>4</posx>
-						<posy>28</posy>
+						<posx>5</posx>
+						<posy>27</posy>
 						<width>216</width>
 						<height>120</height>
 						<aspectratio scalediffuse="false">scale</aspectratio>
@@ -225,11 +207,11 @@
 						<width>226</width>
 						<height>175</height>
 						<texture>facebook-media-filmstrip.png</texture>
-						<visible>$INFO[StringCompare(ListItem.Property(paging),)]</visible>
+						<visible>StringCompare(ListItem.Property(paging),)</visible>
 					</control>
 					<control type="label">
-						<posx>40</posx>
-						<posy>105</posy>
+						<posx>14</posx>
+						<posy>130</posy>
 						<width>120</width>
 						<height>12</height>
 						<font>font10_title</font>
@@ -239,35 +221,23 @@
 						<textcolor>FFFFFFFF</textcolor>
 						<shadowcolor>black</shadowcolor>
 					</control>
-					<control type="label">
-						<posx>230</posx>
-						<posy>4</posy>
-						<width>890</width>
-						<height>110</height>
-						<font>WeatherTemp</font>
-						<align>left</align>
-						<aligny>center</aligny>
-						<label>$INFO[ListItem.Label]</label>
-						<textcolor>white</textcolor>
-						<visible>false</visible>
-					</control>
 				</itemlayout>
-				<focusedlayout width="1280" height="175">
+				<focusedlayout width="226" height="175">
 					<control type="image">
 						<animation effect="fade" start="41" end="100" time="400">Focus</animation>
 						<animation effect="fade" start="41" end="41" time="400">UnFocus</animation>
-						<posx>4</posx>
-						<posy>28</posy>
+						<posx>5</posx>
+						<posy>27</posy>
 						<width>216</width>
 						<height>120</height>
 						<texture>facebook-media-filmstrip-mask.png</texture>
 						<colordiffuse>FF000000</colordiffuse>
-						<visible>$INFO[StringCompare(ListItem.Property(paging),)]</visible>
+						<visible>StringCompare(ListItem.Property(paging),)</visible>
 					</control>
 					<control type="image">
 						<animation effect="fade" start="53" end="53" time="400">UnFocus</animation>
-						<posx>4</posx>
-						<posy>28</posy>
+						<posx>5</posx>
+						<posy>27</posy>
 						<width>216</width>
 						<height>120</height>
 						<aspectratio scalediffuse="false">scale</aspectratio>
@@ -279,14 +249,13 @@
 						<width>226</width>
 						<height>175</height>
 						<texture>facebook-media-filmstrip.png</texture>
-						<visible>$INFO[StringCompare(ListItem.Property(paging),)]</visible>
+						<visible>StringCompare(ListItem.Property(paging),)</visible>
 					</control>
 					<control type="label">
-						<posx>40</posx>
-						<posy>105</posy>
+						<posx>14</posx>
+						<posy>130</posy>
 						<width>120</width>
 						<height>12</height>
-<!--						<angle>90</angle>-->
 						<font>font10_title</font>
 						<align>left</align>
 						<aligny>center</aligny>
@@ -294,40 +263,9 @@
 						<textcolor>FFFFFFFF</textcolor>
 						<shadowcolor>black</shadowcolor>
 					</control>
-					<control type="label">
-						<posx>230</posx>
-						<posy>4</posy>
-						<width>890</width>
-						<height>110</height>
-						<font>WeatherTemp</font>
-						<align>left</align>
-						<aligny>center</aligny>
-						<label>$INFO[ListItem.Label]</label>
-						<textcolor>FFFFFFFF</textcolor>
-					</control>
 				</focusedlayout>
 			</control>
 		</control>
-		
-		<control type="image" id="108">
-                <posx>1</posx>
-                <posy>0</posy>
-                <width>1280</width>
-                <height>720</height>
-                <!--  <aspectratio scalediffuse="false">scale</aspectratio> -->
-                <texture background="true" diffuse="facebook-media-menu-mask.png">facebook-media-menu-background.jpg</texture>
-                <visible>Control.IsVisible(190)</visible>
-        </control>
-        <control type="image" id="109">
-                <posx>0</posx>
-                <posy>0</posy>
-                <width>1280</width>
-                <height>720</height>
-                <aspectratio scalediffuse="false">scale</aspectratio>
-                <fadetime>200</fadetime>
-                <texture background="true" diffuse="facebook-media-menu-mask.png">$INFO[Container(120).ListItem.property(image0)]</texture>
-                <visible>Control.IsVisible(190)</visible>
-        </control>
 			
 		<control type="group">
 			<posx>800r</posx>
@@ -346,7 +284,7 @@
 				<height>32</height>
 				<texture>facebook-media-icon-tags.png</texture>
 				<colordiffuse>80333333</colordiffuse>
-				<visible>$INFO[StringCompare(Container(120).ListItem.property(tags),)]</visible>
+				<visible>StringCompare(Container(120).ListItem.property(tags),)</visible>
 			</control>
 			<control type="image">
 				<posx>79r</posx>
@@ -355,7 +293,7 @@
 				<height>32</height>
 				<texture>facebook-media-icon-comments.png</texture>
 				<colordiffuse>80333333</colordiffuse>
-				<visible>$INFO[StringCompare(Container(120).ListItem.property(comments),)]</visible>
+				<visible>StringCompare(Container(120).ListItem.property(comments),)</visible>
 			</control>
 			<control type="image">
 				<posx>42r</posx>
@@ -363,7 +301,7 @@
 				<width>32</width>
 				<height>32</height>
 				<texture>facebook-media-icon-tags.png</texture>
-				<visible>!$INFO[StringCompare(Container(120).ListItem.property(tags),)]</visible>
+				<visible>!StringCompare(Container(120).ListItem.property(tags),)</visible>
 			</control>
 			<control type="image">
 				<posx>79r</posx>
@@ -371,7 +309,7 @@
 				<width>32</width>
 				<height>32</height>
 				<texture>facebook-media-icon-comments.png</texture>
-				<visible>!$INFO[StringCompare(Container(120).ListItem.property(comments),)]</visible>
+				<visible>!StringCompare(Container(120).ListItem.property(comments),)</visible>
 			</control>
 			
 			<control type="image">
@@ -392,11 +330,12 @@
 			</control>
 		</control>
 		
+		<!-- -------------- CAPTION -------------------------------   -->
 		<control type="group" id="210">
-			<animation effect="slide" end="740,0" time="400" condition="!$INFO[StringCompare(Container(120).ListItem.property(caption),)]">Conditional</animation>
-			<animation effect="slide" end="0,0" time="400" condition="$INFO[StringCompare(Container(120).ListItem.property(caption),)]">Conditional</animation>
+			<animation effect="slide" end="385,0" time="400" condition="!StringCompare(Container(120).ListItem.property(caption),)">Conditional</animation>
+			<animation effect="slide" end="0,0" time="400" condition="StringCompare(Container(120).ListItem.property(caption),)">Conditional</animation>
 			<posx>-370</posx>
-			<posy>147r</posy>
+			<posy>10</posy>
 			<width>370</width>
 			<height>130</height>
 			<control type="image">
@@ -422,14 +361,15 @@
 			</control>
 		</control>
 		
+		<!-- -------------- CURRENT FRIEND -------------------------------   -->
 		<control type="group" id="180">
 			<animation effect="slide" start="450,0" end="0,0" time="400">Visible</animation>
 			<animation effect="slide" start="0,0" end="450,0" time="400">Hidden</animation>
 			<posx>830</posx>
-			<posy>523</posy>
+			<posy>440</posy>
 			<width>450</width>
 			<height>60</height>
-			<visible>!$INFO[StringCompare(Control.GetLabel(181),)]</visible>
+			<visible>!StringCompare(Control.GetLabel(181),)</visible>
 			<control type="image">
 				<width>450</width>
 				<height>60</height>
@@ -467,16 +407,18 @@
 			<ondown>160</ondown>
 			<texturefocus>facebook-media-progress-overlay.png</texturefocus>
 			<texturenofocus>facebook-media-progress-overlay.png</texturenofocus>
-			<visible>!$INFO[StringCompare(Control.GetLabel(152),)]</visible>
+			<visible>!StringCompare(Control.GetLabel(152),)</visible>
 		</control>
+		
+		<!-- -------------- PROGRESS BAR -------------------------------   -->
 		<control type="group" id="150">
 			<animation effect="slide" start="0,0" end="-500,0" time="400">Visible</animation>
 			<animation effect="slide" start="-500,0" end="0,0" time="400">Hidden</animation>
 			<posx>1280</posx>
-			<posy>63</posy>
+			<posy>172</posy>
 			<width>500</width>
 			<height>60</height>
-			<visible>!$INFO[StringCompare(Control.GetLabel(152),)]</visible>
+			<visible>!StringCompare(Control.GetLabel(152),)</visible>
 			<control type="image">
 				<posx>0</posx>
 				<posy>0</posy>
@@ -508,41 +450,45 @@
 			</control>
 		</control>
 		
-		<control type="image">
-			<description>Current User Back</description>
+		<!-- --------------CURRENT USER PIC -------------------------------   -->
+		<control type="group">
 			<posx>810</posx>
-			<posy>603</posy>
-			<width>500</width>
-			<height>100</height>
-			<texture>facebook-media-tube-back.png</texture>
-		</control>
-		
-		<control type="image" id="140">
-			<description>Current User Pic</description>
-			<posx>820</posx>
-			<posy>614</posy>
-			<width>104</width>
-			<height>80</height>
-			<aspectratio>keep</aspectratio>
-			<texture fallback="facebook-media-icon-generic-user.png">-</texture>
-		</control>
-		<control type="label" id="141">
-			<posx>940</posx>
-			<posy>603</posy>
-			<width>320</width>
-			<height>100</height>
-			<font>font30_title</font>
-			<align>left</align>
-			<aligny>center</aligny>
-			<textcolor>white</textcolor>
-		</control>
-		<control type="image">
-			<description>Current User Back</description>
-			<posx>810</posx>
-			<posy>603</posy>
-			<width>500</width>
-			<height>100</height>
-			<texture border="3">facebook-media-tube-overlay-left.png</texture>
+			<posy>55</posy>
+			<control type="image">
+				<description>Current User Back</description>
+				<posx>0</posx>
+				<posy>0</posy>
+				<width>500</width>
+				<height>100</height>
+				<texture>facebook-media-tube-back.png</texture>
+			</control>
+			<control type="image" id="140">
+				<description>Current User Pic</description>
+				<posx>10</posx>
+				<posy>11</posy>
+				<width>104</width>
+				<height>80</height>
+				<aspectratio>keep</aspectratio>
+				<texture fallback="facebook-media-icon-generic-user.png">-</texture>
+			</control>
+			<control type="label" id="141">
+				<posx>130</posx>
+				<posy>0</posy>
+				<width>320</width>
+				<height>100</height>
+				<font>font30_title</font>
+				<align>left</align>
+				<aligny>center</aligny>
+				<textcolor>white</textcolor>
+			</control>
+			<control type="image">
+				<description>Current User Back</description>
+				<posx>0</posx>
+				<posy>0</posy>
+				<width>500</width>
+				<height>100</height>
+				<texture border="3">facebook-media-tube-overlay-left.png</texture>
+			</control>
 		</control>
 		
 		<!-- OPTIONS MENU - - - - - - - - - - - - - - - - - - - - - - - - - - - - OPTIONS MENU  -->

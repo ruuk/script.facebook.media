@@ -132,10 +132,10 @@ class MainWindow(BaseWindow):
 				self.session.menuItemDeSelected()
 			elif action == ACTION_PREVIOUS_MENU:
 				self.session.menuItemDeSelected(prev_menu=True)
-			elif action == ACTION_MOVE_LEFT:
-				self.session.menuItemDeSelected()
-			elif action == ACTION_MOVE_RIGHT:
+			elif action == ACTION_MOVE_UP:
 				self.session.menuItemSelected()
+			elif action == ACTION_MOVE_DOWN:
+				self.session.menuItemDeSelected()
 #			elif action == ACTION_MOVE_UP:
 #				self.session.doNextPrev()
 #			elif action == ACTION_MOVE_DOWN:
@@ -380,6 +380,7 @@ class FacebookSession:
 		item.setProperty('category','paging')
 		item.setProperty('uid',uid)
 		item.setProperty('paging',ENCODE(url))
+		item.setProperty('ispagingitem','yes')
 		item.setProperty('nextprev',nextprev)
 		item.setProperty('media_type',itype)
 		if nextprev == 'next': item.setProperty('from_url',current_url)
@@ -722,6 +723,7 @@ class FacebookSession:
 			modifier = 50.0/total
 			for v in videos:
 				item = xbmcgui.ListItem()
+				item.setProperty('ispagingitem','no')
 				tn = v.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn)
 				caption = self.makeCaption(v, uid)
@@ -1331,7 +1333,7 @@ class FacebookSession:
 					<width>%s</width>
 					<height>%s</height>
 					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>$INFO[StringCompare(Container(120).ListItem.Label2,%s)]</visible>
+					<visible>StringCompare(Container(120).ListItem.Label2,%s)</visible>
 				</control>'''
 			
 		tagitem = '''
