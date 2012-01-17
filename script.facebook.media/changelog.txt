@@ -3,7 +3,7 @@ Facebook Media Changelog
 Current Version : 0.5.4
 
 Known Issues/TODO:
-	-When going back in the hierarchy the top display loses the last item in the hierarchy 
+	-When going back from viewing an image, the top hierarchy display loses the last item
 
 *** 0.5.4 ***
 

@@ -126,7 +126,13 @@ class MainWindow(BaseWindow):
 			self.session.photovideoMenuSelected()
 			
 	def onAction(self,action):
-		if self.getFocusId() == 120:
+		if self.getFocusId() == 119:
+			self.setFocusId(120)
+			if action == ACTION_MOVE_DOWN:
+				self.session.menuItemDeSelected()
+			elif action == ACTION_PREVIOUS_MENU:
+				self.session.menuItemDeSelected(prev_menu=True)
+		elif self.getFocusId() == 120:
 			if self.session.progressVisible: return
 			if action == ACTION_PARENT_DIR:
 				self.session.menuItemDeSelected()
@@ -134,8 +140,8 @@ class MainWindow(BaseWindow):
 				self.session.menuItemDeSelected(prev_menu=True)
 			elif action == ACTION_MOVE_UP:
 				self.session.menuItemSelected()
-			elif action == ACTION_MOVE_DOWN:
-				self.session.menuItemDeSelected()
+#			elif action == ACTION_MOVE_DOWN:
+#				self.session.menuItemDeSelected()
 #			elif action == ACTION_MOVE_UP:
 #				self.session.doNextPrev()
 #			elif action == ACTION_MOVE_DOWN:
@@ -144,18 +150,18 @@ class MainWindow(BaseWindow):
 				self.session.doNextPrev()
 				
 		elif self.getFocusId() == 125:
-			if action == ACTION_MOVE_LEFT or action == ACTION_MOVE_RIGHT:
-				self.setFocusId(120)
-			elif action == ACTION_PREVIOUS_MENU:
+			if action == ACTION_PREVIOUS_MENU:
 				self.doClose()
 		elif self.getFocusId() == 128:
-			if action == ACTION_MOVE_UP or action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU:
+			if  action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU:
 				self.setFocusId(120)
-			if action == ACTION_MOVE_LEFT:
-				pvlist = self.getControl(128)
-				if pvlist.getSelectedPosition() >= (pvlist.size() - 1): self.setFocusId(120)
-			elif action == ACTION_MOVE_DOWN:
-				if self.getControl(138).isVisible(): self.setFocusId(138)
+			#if action == ACTION_MOVE_DOWN:
+				#pvlist = self.getControl(128)
+				#if pvlist.getSelectedPosition() >= (pvlist.size() - 1): 
+			#	self.setFocusId(120)
+			#elif action == ACTION_MOVE_UP:
+				#if self.getControl(138).isVisible():
+			#	self.setFocusId(138)
 		elif self.getFocusId() == 138:
 			if action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU or action == ACTION_MOVE_LEFT or action == ACTION_MOVE_RIGHT:
 				self.setFocusId(128)
@@ -318,7 +324,7 @@ class FacebookSession:
 			items = self.getListItems(ilist)
 			state.listIndex = ilist.getSelectedPosition()
 		state.items = items
-		for set in self.stateSettings: state.settings[set] = self.getSetting(set)
+		for sett in self.stateSettings: state.settings[sett] = self.getSetting(sett)
 		return state
 	
 	def setCurrentState(self,items=None):
@@ -334,8 +340,8 @@ class FacebookSession:
 		if not state:
 			LOG('restoreState() - No State')
 			return
-		for set in self.stateSettings: self.clearSetting(set)
-		for set in self.stateSettings: self.setSetting(set,state.settings.get(set,''))
+		for sett in self.stateSettings: self.clearSetting(sett)
+		for sett in self.stateSettings: self.setSetting(sett,state.settings.get(sett,''))
 		ilist = self.window.getControl(120)
 		self.fillList(state.items)
 		ilist.selectItem(state.listIndex)
@@ -440,10 +446,10 @@ class FacebookSession:
 		self.setSetting('last_item_name',__lang__(30008))
 		LOG("CATEGORIES - STOPPED")
 
-	def updateImageCache(self,id):
-		tn = "https://graph.facebook.com/"+id+"/picture?access_token=" + self.graph.access_token
+	def updateImageCache(self,ID):
+		tn = "https://graph.facebook.com/"+ID+"/picture?access_token=" + self.graph.access_token
 		tn_url = self.getRealURL(tn).replace('https://','http://')
-		self.imageURLCache[id] = tn_url
+		self.imageURLCache[ID] = tn_url
 		return tn_url
 		
 	def ALBUMS(self,item):
@@ -925,6 +931,7 @@ class FacebookSession:
 	def doNextPrev(self):
 		ilist = self.window.getControl(120)
 		item = ilist.getSelectedItem()
+		if not item: return
 		if not item.getProperty('paging'): return
 		LOG('PAGING: %s' % item.getProperty('nextprev'))
 		self.setSetting('last_item_name',item.getProperty('previous'))
@@ -1048,10 +1055,10 @@ class FacebookSession:
 			name = self.getSetting('current_friend_name')
 		else:
 			self.setSetting('current_friend_name',name)
-		if name:
-			self.window.getControl(181).setLabel('Friend: ' + name)
-		else:
-			self.window.getControl(181).setLabel('')
+		#if name:
+		#	self.window.getControl(181).setLabel('Friend: ' + name)
+		#else:
+		#	self.window.getControl(181).setLabel('')
 		
 	def setUserDisplay(self):
 		self.window.getControl(140).setImage(self.getSetting('current_user_pic'))
@@ -1451,15 +1458,15 @@ def createWindowFile(skin_name):
 	
 	for fn in curr_fonts:
 		csize = curr_fonts[fn]
-		cmp = 0
+		cmpr = 0
 		smallest_size = 200
 		smallest_name = ''
-		for set in fonts_dom.findall('fontset'):
-			for font in set.findall('font'):
+		for sett in fonts_dom.findall('fontset'):
+			for font in sett.findall('font'):
 				name = font.find('name').text
 				size = int(font.find('size').text)
-				if size <= csize and size >= cmp:
-					cmp = size
+				if size <= csize and size >= cmpr:
+					cmpr = size
 					new_fonts[fn] = name
 				elif fn == name:
 					new_fonts[fn] = name

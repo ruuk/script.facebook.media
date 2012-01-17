@@ -4,53 +4,21 @@
 	<allowoverlay>no</allowoverlay>
 	<controls>
 		<control type="group" id="100">
-			<posx>160</posx>
+			<posx>278</posx>
 			<posy>0</posy>
 			<control type="largeimage" id="101">
-				<width>960</width>
+				<width>724</width>
 				<height>720</height>
-				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-ash4/254311_1955129991905_1052348714_2226983_7446991_n.jpg</texture>
+				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-snc6/225236_212969528732482_100000583096423_795424_6940315_n.jpg</texture>
 			</control>
 			<control type="group" id="150">
 				<control type="image">
-					<posx>818</posx>
-					<posy>146</posy>
-					<width>200</width>
-					<height>200</height>
+					<posx>-8</posx>
+					<posy>-8</posy>
+					<width>2</width>
+					<height>2</height>
 					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,ID-608569653)</visible>
-				</control>
-				<control type="image">
-					<posx>172</posx>
-					<posy>69</posy>
-					<width>200</width>
-					<height>200</height>
-					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,ID-1052348714)</visible>
-				</control>
-				<control type="image">
-					<posx>524</posx>
-					<posy>73</posy>
-					<width>200</width>
-					<height>200</height>
-					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,ID-1352390960)</visible>
-				</control>
-				<control type="image">
-					<posx>401</posx>
-					<posy>188</posy>
-					<width>200</width>
-					<height>200</height>
-					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,ID-100001203012029)</visible>
-				</control>
-				<control type="image">
-					<posx>629</posx>
-					<posy>249</posy>
-					<width>200</width>
-					<height>200</height>
-					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,ID-100001245376608)</visible>
+					<visible>StringCompare(Container(120).ListItem.Label2,no_id)</visible>
 				</control>
 			</control>
 		</control>
@@ -111,28 +79,8 @@
 				</focusedlayout>
 				<content>
 				<item>
-					<label>Samantha Jean Folden</label>
-					<label2>ID-608569653</label2>
-					<onclick>-</onclick>
-				</item>
-				<item>
-					<label>Carmen Phillips</label>
-					<label2>ID-1052348714</label2>
-					<onclick>-</onclick>
-				</item>
-				<item>
-					<label>Rick Phillips</label>
-					<label2>ID-1352390960</label2>
-					<onclick>-</onclick>
-				</item>
-				<item>
-					<label>Aeryn Phillips</label>
-					<label2>ID-100001203012029</label2>
-					<onclick>-</onclick>
-				</item>
-				<item>
-					<label>Tailar Folden</label>
-					<label2>ID-100001245376608</label2>
+					<label>No Tags</label>
+					<label2>no_id</label2>
 					<onclick>-</onclick>
 				</item>
 				</content>
