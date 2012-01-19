@@ -4,12 +4,12 @@
 	<allowoverlay>no</allowoverlay>
 	<controls>
 		<control type="group" id="100">
-			<posx>0</posx>
-			<posy>22</posy>
+			<posx>278</posx>
+			<posy>0</posy>
 			<control type="largeimage" id="101">
-				<width>1280</width>
-				<height>676</height>
-				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-snc6/230325_224831670860894_100000021877944_1006168_3178940_n.jpg</texture>
+				<width>724</width>
+				<height>720</height>
+				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-snc6/225236_212969528732482_100000583096423_795424_6940315_n.jpg</texture>
 			</control>
 			<control type="group" id="150">
 				<control type="image">

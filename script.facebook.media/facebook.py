@@ -104,9 +104,9 @@ class GraphAPI(object):
 	def __init__(self, access_token=None):
 		self.access_token = access_token
 
-	def get_object(self, id, **args):
+	def get_object(self, ID, **args):
 		"""Fetchs the given object from the graph."""
-		return self.request(id, args)
+		return self.request(ID, args)
 
 	def get_objects(self, ids, **args):
 		"""Fetchs all of the given object from the graph.
@@ -117,9 +117,9 @@ class GraphAPI(object):
 		args["ids"] = ",".join(ids)
 		return self.request("", args)
 
-	def get_connections(self, id, connection_name, **args):
+	def get_connections(self, ID, connection_name, **args):
 		"""Fetchs the connections for given object."""
-		return self.request(id + "/" + connection_name, args,update_prog=True)
+		return self.request(ID + "/" + connection_name, args,update_prog=True)
 
 	def put_object(self, parent_object, connection_name, **data):
 		"""Writes the given object to the graph, connected to the given parent.
@@ -172,9 +172,9 @@ class GraphAPI(object):
 		"""Likes the given post."""
 		return self.put_object(object_id, "likes")
 
-	def delete_object(self, id):
+	def delete_object(self, ID):
 		"""Deletes the object with the given ID from the graph."""
-		self.request(id, post_args={"method": "delete"})
+		self.request(ID, post_args={"method": "delete"})
 
 	def request(self, path, args=None, post_args=None,update_prog=False):
 		"""Fetches the given path in the Graph API.
@@ -209,14 +209,14 @@ class GraphAPI(object):
 
 
 class GraphAPIError(Exception):
-	def __init__(self, type, message):
+	def __init__(self, type_, message):
 		Exception.__init__(self, message)
-		self.type = type
+		self.type = type_
 
 class GraphWrapAuthError(Exception):
-	def __init__(self, type, message):
+	def __init__(self, type_, message):
 		Exception.__init__(self, message)
-		self.type = type
+		self.type = type_
 		self.message = message
 
 class Connections(list):
@@ -240,13 +240,13 @@ class Connections(list):
 	def _getPaging(self,obj,count):
 		paging = obj.get('paging')
 		if not paging: return
-		next = paging.get('next','')
+		next_ = paging.get('next','')
 		prev = paging.get('previous','')
-		limit = self._areTheSame(next, prev, count)
+		limit = self._areTheSame(next_, prev, count)
 		if limit:
 			self.previous = self._checkForContent(prev)
 			if not self.previous and count < limit and self.first: return
-			self.next = self._checkForContent(next)
+			self.next = self._checkForContent(next_)
 		
 	def _checkForContent(self,url):
 		if not url: return ''
@@ -255,14 +255,14 @@ class Connections(list):
 		if not len(connections['data']): return ''
 		return url
 	
-	def _areTheSame(self,next,prev,count):
+	def _areTheSame(self,next_,prev,count):
 		try:
-			limit = int(parse_qs(next.split('?')[-1])['limit'][0])
+			limit = int(parse_qs(next_.split('?')[-1])['limit'][0])
 		except:
 			limit = count
 			
 		try:
-			next_ut = int(parse_qs(next.split('?')[-1])['until'][0])
+			next_ut = int(parse_qs(next_.split('?')[-1])['until'][0])
 			prev_ut = int(parse_qs(prev.split('?')[-1])['since'][0])
 			if prev_ut == next_ut: return 0
 			return limit
@@ -270,17 +270,17 @@ class Connections(list):
 			return limit
 		
 class GraphObject:
-	def __init__(self,id=None,graph=None,data=None,**args):
-		if (not id) and data:
-			if 'id' in data: id = data['id']
-		self.id = id
+	def __init__(self,ID=None,graph=None,data=None,**args):
+		if (not ID) and data:
+			if 'id' in data: ID = data['id']
+		self.id = ID
 		self.args = args
 		self.graph = graph
 		self._cache = {}
 		self._data = data
 		self.connections = GraphConnections(self)
-		if id == 'me':
-			self._data = self._getObjectData(id,**args)
+		if ID == 'me':
+			self._data = self._getObjectData(ID,**args)
 			self.id = self._data.get('id') or 'me'
 		
 	def updateData(self):
@@ -293,8 +293,8 @@ class GraphObject:
 	def get(self,key,default=None,as_json=False):
 		return self._getData(key,default,as_json)
 		
-	def hasProperty(self,property):
-		return property in self._data
+	def hasProperty(self,prop):
+		return prop in self._data
 	
 	def comment(self,comment):
 		self.graph.put_comment(self.id,comment)
@@ -302,26 +302,26 @@ class GraphObject:
 	def like(self):
 		self.graph.put_like(self.id)
 		
-	def __getattr__(self, property):
-		if property.startswith('_'): return object.__getattr__(self,property)
-		if property.endswith('_'): property = property[:-1]
-		if property in self._cache:
-			return self._cache[property]
+	def __getattr__(self, prop):
+		if prop.startswith('_'): return object.__getattr__(self,prop)
+		if prop.endswith('_'): prop = prop[:-1]
+		if prop in self._cache:
+			return self._cache[prop]
 		
 		if not self._data:
 			self._data = self._getObjectData(self.id,**self.args)
 			if self.id == 'me': self.id = self._data.get('id') or 'me'
 		
 		def handler(default=None,as_json=False):
-			return self._getData(property,default,as_json)
+			return self._getData(prop,default,as_json)
 			
-		handler.method = property
+		handler.method = prop
 		
-		self._cache[property] = handler
+		self._cache[prop] = handler
 		return handler
 	
-	def _getData(self,property,default,as_json):
-		val = self._data.get(property)
+	def _getData(self,prop,default,as_json):
+		val = self._data.get(prop)
 		if not val: return default
 		if type(val) == type({}):
 			if 'data' in val:
@@ -331,10 +331,10 @@ class GraphObject:
 					return Connections(self.graph,val,progress=False)
 		return val
 	
-	def _getObjectData(self,id,**args):
+	def _getObjectData(self,ID,**args):
 		fail = False
 		try:
-			return self.graph.get_object(id,**args)
+			return self.graph.get_object(ID,**args)
 		except GraphAPIError,e:
 			if not e.type == 'OAuthException': raise
 			fail = True
@@ -344,7 +344,7 @@ class GraphObject:
 			if not self.graph.getNewToken():
 				if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 				else: return None
-			return self.graph.get_object(id,**args)
+			return self.graph.get_object(ID,**args)
 		
 	def _toJSON(self,data_obj):
 		return _dump_json(data_obj)
@@ -355,25 +355,25 @@ class GraphData:
 		self.graph = self.graphObject.graph
 		
 	
-	def __getattr__(self, property):
-		if property.startswith('_'): return object.__getattr__(self,property)
-		if property in self._cache:
-			return self._cache[property]
+	def __getattr__(self, prop):
+		if prop.startswith('_'): return object.__getattr__(self,prop)
+		if prop in self._cache:
+			return self._cache[prop]
 		
 		if not self._data: self._data = self._getObjectData(self.graphObject.id)
 		
 		def handler(default=None):
-			return self._data.get(property,default)
+			return self._data.get(prop,default)
 			
-		handler.method = property
+		handler.method = prop
 		
-		self._cache[property] = handler
+		self._cache[prop] = handler
 		return handler
 	
-	def _getObjectData(self,id,**args):
+	def _getObjectData(self,ID,**args):
 		fail = False
 		try:
-			return self.graph.get_object(id,**args)
+			return self.graph.get_object(ID,**args)
 		except GraphAPIError,e:
 			if not e.type == 'OAuthException': raise
 			fail = True
@@ -383,7 +383,7 @@ class GraphData:
 			if not self.graph.getNewToken():
 				if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 				else: return None
-			return self.graph.get_object(id,**args)
+			return self.graph.get_object(ID,**args)
 	
 class GraphConnections:
 	def __init__(self,graphObject):
@@ -456,14 +456,14 @@ class GraphWrap(GraphAPI):
 				return GraphObject(graph=self,data=data_obj)
 		return data_obj
 			
-	def getObject(self,id,**args):
-		return GraphObject(id,self,**args)
+	def getObject(self,ID,**args):
+		return GraphObject(ID,self,**args)
 	
 	def getObjects(self,ids=[]):
 		data = self.get_objects(ids)
 		objects = {}
-		for id in data:
-			objects[id] = GraphObject(id,self,data[id])
+		for ID in data:
+			objects[ID] = GraphObject(ID,self,data[ID])
 		return objects
 		
 	def urlRequest(self,url):
