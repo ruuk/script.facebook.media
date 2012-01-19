@@ -116,6 +116,8 @@ class MainWindow(BaseWindow):
 			self.session.window = self
 		else:
 			self.session = FacebookSession(self)
+			self.getControl(120).selectItem(2) 
+
 		
 	def onClick( self, controlID ):
 		if controlID == 120:
@@ -228,7 +230,7 @@ class FacebookSession:
 		self.progAutoTotal = 0
 		self.progAutoMessage = ''
 		self.lastItemNumber = 0
-		self.CACHE_PATH = os.path.join(__addon__.getAddonInfo('profile'),'cache')
+		self.CACHE_PATH = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('profile')),'cache')
 		if not os.path.exists(self.CACHE_PATH): os.makedirs(self.CACHE_PATH)
 		self.newUserCache = None
 		self.currentUser = None
@@ -865,10 +867,11 @@ class FacebookSession:
 				self.setFriend('')
 				self.preMediaSetup()
 				self.showMedia(item)
+				self.setPathDisplay()
+				return
 			elif cat == 'paging':
 				self.doNextPrev()
 				return
-			
 			self.setSetting('last_item_name',item.getLabel())
 			self.setPathDisplay()
 		except GraphWrapAuthError,e:
@@ -1177,6 +1180,7 @@ class FacebookSession:
 		xbmc.executebuiltin('PlayMedia(%s)' % item.getProperty('source'))
 		
 	def showMedia(self,item):
+		LOG('SHOWING MEDIA')
 		if self.itemType(item) == 'image':
 			self.showImage(item)
 		else:
@@ -1368,8 +1372,8 @@ class FacebookSession:
 		box_len = 200
 		box_off = box_len/2
 		
-		template_file_path = os.path.join(__addon__.getAddonInfo('path'),'tags.xml')
-		tags_file_path = os.path.join(__addon__.getAddonInfo('path'),'resources','skins','Default','720p','facebook-media-tags.xml')
+		template_file_path = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('path')),'tags.xml')
+		tags_file_path = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('path')),'resources','skins','Default','720p','facebook-media-tags.xml')
 		
 		tags_file = open(template_file_path,'r')
 		xml = tags_file.read()
@@ -1479,13 +1483,13 @@ def createWindowFile(skin_name):
 			if not fn in new_fonts:
 				new_fonts[fn] = smallest_name
 				
-	win_def_file = os.path.join(__addon__.getAddonInfo('path'),'resources','skins',THEME,'720p','facebook-media-main-skin.confluence.xml')
+	win_def_file = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('path')),'resources','skins',THEME,'720p','facebook-media-main-skin.confluence.xml')
 	f = open(win_def_file,'r')
 	win_def_xml = f.read()
 	f.close()
 	for fn in new_fonts:
 		win_def_xml = win_def_xml.replace(fn,new_fonts[fn])
-	win_new_file = os.path.join(__addon__.getAddonInfo('path'),'resources','skins',THEME,'720p','facebook-media-main-%s.xml' % skin_name)
+	win_new_file = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('path')),'resources','skins',THEME,'720p','facebook-media-main-%s.xml' % skin_name)
 	f = open(win_new_file,'w')
 	f.write(win_def_xml)
 	f.close()
@@ -1494,18 +1498,18 @@ def openWindow(window_name,session=None,**kwargs):
 		windowFile = 'facebook-media-%s.xml' % window_name
 		if window_name == 'main':
 			windowFile = 'facebook-media-main-%s.xml' % CURRENT_SKIN
-			windowFilePath = os.path.join(__addon__.getAddonInfo('path'),'resources','skins',THEME,'720p',windowFile)
+			windowFilePath = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('path')),'resources','skins',THEME,'720p',windowFile)
 			if not os.path.exists(windowFilePath):
 				try:
 					createWindowFile(CURRENT_SKIN)
 				except:
 					ERROR('ERROR GENERATING WINDOW FILE FOR SKIN: %s' % CURRENT_SKIN)
 					windowFile = 'facebook-media-main-skin.confluence.xml'
-			w = MainWindow(windowFile , __addon__.getAddonInfo('path'), THEME)
+			w = MainWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME)
 		elif window_name == 'auth':
-			w = AuthWindow(windowFile , __addon__.getAddonInfo('path'), THEME,session=session,**kwargs)
+			w = AuthWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME,session=session,**kwargs)
 		elif window_name == 'tags':
-			w = TagsWindow(windowFile , __addon__.getAddonInfo('path'), THEME,session=session,**kwargs)
+			w = TagsWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME,session=session,**kwargs)
 		else:
 			return #Won't happen :)
 		w.doModal()			

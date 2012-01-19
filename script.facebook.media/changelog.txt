@@ -3,7 +3,7 @@ Facebook Media Changelog
 Current Version : 0.5.4
 
 Known Issues/TODO:
-	-When going back from viewing an image, the top hierarchy display loses the last item
+	-Needs to handle mouse control better
 
 *** 0.5.4 ***
 
@@ -11,6 +11,9 @@ Updated for eden
 Re-worked/simplified the skin
 Localized the strings - anyone want to do some translating :)
 Fixed a bug where empty tag list wouldn't fade out
+Added fanart.jpg
+Fixed bug where top heirarchy list would lose last item after viewing media
+Fixed non-working input blocking during "progress bar" type activities
 
 *** 0.5.3 ***
 

@@ -9,7 +9,7 @@
 			<width>1280</width>
 			<height>720</height>
 			<colordiffuse>80FFFFFF</colordiffuse>
-			<texture>facebook-media-menu-background.png</texture>
+			<texture>facebook-media-background.png</texture>
 		</control>
 		<control type="image" id="101">
 			<posx>63</posx>
