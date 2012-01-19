@@ -52,7 +52,7 @@ def ENCODE(string):
 	return string.encode(ENCODING,'replace')
 
 def LOG(message):
-	print 'FACEBOOK MEDIA: %s' % message
+	print 'FACEBOOK MEDIA: %s' % ENCODE(str(message))
 	
 def ERROR(message):
 	LOG(message)
@@ -167,6 +167,9 @@ class MainWindow(BaseWindow):
 		elif self.getFocusId() == 138:
 			if action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU or action == ACTION_MOVE_LEFT or action == ACTION_MOVE_RIGHT:
 				self.setFocusId(128)
+		elif self.getFocusId() == 160:
+			if action == ACTION_PREVIOUS_MENU:
+				self.session.cancelProgress()
 		
 class AuthWindow(BaseWindow):
 	def __init__( self, *args, **kwargs):
@@ -1257,7 +1260,14 @@ class FacebookSession:
 		#graph.getNewToken()
 		self.window.getControl(122).setVisible(False)
 		self.window.getControl(131).setVisible(False)
-		user = graph.getObject('me',fields='id,name,picture')
+		try:
+			user = graph.getObject('me',fields='id,name,picture')
+		except:
+			message = ERROR('ERROR')
+			xbmcgui.Dialog().ok(__lang__(30035),message)
+			self.closeWindow()
+			self.newUserCache = None
+			return
 		uid = user.id
 		username = user.name()
 		if not self.addUserToList(uid):

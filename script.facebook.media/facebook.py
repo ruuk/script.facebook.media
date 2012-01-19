@@ -60,6 +60,19 @@ ENCODING = loc[1] or 'utf-8'
 def ENCODE(string):
 	return string.encode(ENCODING,'replace')
 
+def LOG(string):
+	try:
+		print 'WEBVIEWER:facebook.py - %s' % ENCODE(str(string))
+		return
+	except:
+		print "WEBVIEWER:facebook.py - COULDN'T ENCODE FOR LOG - RETRYING"
+	
+	try:
+		print 'WEBVIEWER:facebook.py - %s' % str(string)
+		return
+	except:
+		print "WEBVIEWER:facebook.py - COULDN'T ENCODE FOR LOG - FINAL"
+	
 class GraphAPI(object):
 	"""A client for the Facebook Graph API.
 
@@ -327,7 +340,7 @@ class GraphObject:
 			fail = True
 			
 		if fail:
-			print "ERROR GETTING OBJECT - GETTING NEW TOKEN"
+			LOG("ERROR GETTING OBJECT - GETTING NEW TOKEN")
 			if not self.graph.getNewToken():
 				if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 				else: return None
@@ -366,7 +379,7 @@ class GraphData:
 			fail = True
 			
 		if fail:
-			print "ERROR GETTING OBJECT - GETTING NEW TOKEN"
+			LOG("ERROR GETTING OBJECT - GETTING NEW TOKEN")
 			if not self.graph.getNewToken():
 				if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 				else: return None
@@ -388,12 +401,12 @@ class GraphConnections:
 			try:
 				return self._getConnections(method,**args)
 			except GraphAPIError,e:
-				print e.type
+				LOG(e.type)
 				if not e.type == 'OAuthException': raise
 				fail = True
 	
 			if fail:
-				print "ERROR GETTING CONNECTIONS - GETTING NEW TOKEN"
+				LOG("ERROR GETTING CONNECTIONS - GETTING NEW TOKEN")
 				if not self.graph.getNewToken():
 					if self.graph.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 					else: return None
@@ -496,23 +509,23 @@ class GraphWrap(GraphAPI):
 		url = 	'https://www.facebook.com/dialog/oauth?client_id='+self.client_id+\
 				'&redirect_uri='+self.redirect+\
 				'&type=user_agent&display=popup'+scope
-		print url
+		LOG(url)
 		try:
 			res = br.open(url)
 			html = res.read()
 		except:
-			print "ERROR: TOKEN PAGE INITIAL READ"
+			LOG("ERROR: TOKEN PAGE INITIAL READ")
 			raise
 		
 		script = False
 		try:
 			#check for login form
 			br.select_form(nr=0)
-			print "HTML"
+			LOG("HTML")
 		except:
 			self.genericError()
 			script = True
-			print "SCRIPT"
+			LOG("SCRIPT")
 			
 		if script:
 			#no form, maybe we're logged in and the token is in javascript on the page
@@ -524,9 +537,9 @@ class GraphWrap(GraphAPI):
 				br['pass'] = self.login_pass
 				res = br.submit()
 				url = res.geturl()
-				print "FORM"
+				LOG("FORM")
 			except:
-				print "FORM ERROR"
+				LOG("FORM ERROR")
 				raise
 				
 			script = False
@@ -534,19 +547,19 @@ class GraphWrap(GraphAPI):
 			if not token: script = True
 			
 			if script:
-				print "SCRIPT TOKEN"
+				LOG("SCRIPT TOKEN")
 				#no token in the url, let's try to parse it from javascript on the page
 				html = res.read()
-				print html
+				LOG(html)
 				token = self.parseTokenFromScript(html)
 				token = urllib.unquote(token.decode('unicode-escape'))
 		
 		if not self.tokenIsValid(token):
 			#if script: LOG("HTML:" + html)
 			return False
-		print "|--------------------"
-		print "|TOKEN: %s" % token
-		print "|--------------------"
+		LOG("|--------------------")
+		LOG("|TOKEN: %s" % token)
+		LOG("|--------------------")
 		self.saveToken(token)
 		return token
 		
@@ -555,10 +568,10 @@ class GraphWrap(GraphAPI):
 			#we submitted the form, check the result url for the access token
 			import urlparse
 			token = parse_qs(urlparse.urlparse(url.replace('#','?',1))[4])['access_token'][0]
-			print ENCODE("URL TOKEN: %s" % token)
+			LOG("URL TOKEN: %s" % token)
 			return token
 		except:
-			print ENCODE("TOKEN URL: %s" % url)
+			LOG("TOKEN URL: %s" % url)
 			self.genericError()
 			return None
 		
@@ -566,19 +579,19 @@ class GraphWrap(GraphAPI):
 		if not token: return False
 		if 'login_form' in token and 'standard_explanation' in token:
 			reason = re.findall('id="standard_explanation">(?:<p>)?([^<]*)<',token)
-			if reason: print reason[0]
-			print "TOKEN: " + token
+			if reason: LOG(reason[0])
+			LOG("TOKEN: " + token)
 			raise GraphWrapAuthError('LOGIN_FAILURE',reason)
 			return False
 		if 'html' in token or 'script' in token or len(token) > 160:
-			print "TOKEN: " + token
+			LOG("TOKEN: " + token)
 			raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 			return False
 		return True
 		
 	def genericError(self):
-		print 'ERROR: %s::%s (%d) - %s' % (self.__class__.__name__
-								   , sys.exc_info()[2].tb_frame.f_code.co_name, sys.exc_info()[2].tb_lineno, sys.exc_info()[1])
+		LOG('ERROR: %s::%s (%d) - %s' % (self.__class__.__name__
+								   , sys.exc_info()[2].tb_frame.f_code.co_name, sys.exc_info()[2].tb_lineno, sys.exc_info()[1]))
 								
 	def parseTokenFromScript(self,html):
 		return urllib.unquote_plus(html.split("#access_token=")[-1].split("&expires")[0])

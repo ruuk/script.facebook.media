@@ -4,45 +4,21 @@
 	<allowoverlay>no</allowoverlay>
 	<controls>
 		<control type="group" id="100">
-			<posx>361</posx>
-			<posy>0</posy>
+			<posx>0</posx>
+			<posy>22</posy>
 			<control type="largeimage" id="101">
-				<width>558</width>
-				<height>720</height>
-				<texture>http://a2.sphotos.ak.fbcdn.net/hphotos-ak-snc1/10218_1229309536848_1352390960_30643533_4755061_n.jpg</texture>
+				<width>1280</width>
+				<height>676</height>
+				<texture>http://a3.sphotos.ak.fbcdn.net/hphotos-ak-snc6/230325_224831670860894_100000021877944_1006168_3178940_n.jpg</texture>
 			</control>
 			<control type="group" id="150">
 				<control type="image">
-					<posx>237</posx>
-					<posy>188</posy>
-					<width>200</width>
-					<height>200</height>
+					<posx>-8</posx>
+					<posy>-8</posy>
+					<width>2</width>
+					<height>2</height>
 					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,ID-608569653)</visible>
-				</control>
-				<control type="image">
-					<posx>-66</posx>
-					<posy>36</posy>
-					<width>200</width>
-					<height>200</height>
-					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,ID-1052348714)</visible>
-				</control>
-				<control type="image">
-					<posx>8</posx>
-					<posy>123</posy>
-					<width>200</width>
-					<height>200</height>
-					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,ID-Aeryn)</visible>
-				</control>
-				<control type="image">
-					<posx>179</posx>
-					<posy>21</posy>
-					<width>200</width>
-					<height>200</height>
-					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,ID-100000583096423)</visible>
+					<visible>StringCompare(Container(120).ListItem.Label2,no_id)</visible>
 				</control>
 			</control>
 		</control>
@@ -103,23 +79,8 @@
 				</focusedlayout>
 				<content>
 				<item>
-					<label>Samantha Jean Folden</label>
-					<label2>ID-608569653</label2>
-					<onclick>-</onclick>
-				</item>
-				<item>
-					<label>Carmen Phillips</label>
-					<label2>ID-1052348714</label2>
-					<onclick>-</onclick>
-				</item>
-				<item>
-					<label>Aeryn</label>
-					<label2>ID-Aeryn</label2>
-					<onclick>-</onclick>
-				</item>
-				<item>
-					<label>Colleen Beaton</label>
-					<label2>ID-100000583096423</label2>
+					<label>No Tags</label>
+					<label2>no_id</label2>
 					<onclick>-</onclick>
 				</item>
 				</content>

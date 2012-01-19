@@ -3,7 +3,7 @@ Facebook Media Changelog
 Current Version : 0.5.4
 
 Known Issues/TODO:
-	-Needs to handle mouse control better
+	-Needs to handle mouse control better (ie no access to photo/video menu)
 
 *** 0.5.4 ***
 
@@ -14,6 +14,7 @@ Fixed a bug where empty tag list wouldn't fade out
 Added fanart.jpg
 Fixed bug where top heirarchy list would lose last item after viewing media
 Fixed non-working input blocking during "progress bar" type activities
+Cleaned up error handling of errors and failed auth in user authorization
 
 *** 0.5.3 ***
 

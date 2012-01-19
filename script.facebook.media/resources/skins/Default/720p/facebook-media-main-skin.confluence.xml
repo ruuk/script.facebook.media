@@ -219,9 +219,9 @@
 						<visible>StringCompare(ListItem.Property(paging),)</visible>
 					</control>
 					<control type="label">
-						<posx>14</posx>
+						<posx>20</posx>
 						<posy>130</posy>
-						<width>120</width>
+						<width>200</width>
 						<height>12</height>
 						<font>font10_title</font>
 						<align>left</align>
@@ -261,9 +261,9 @@
 						<visible>StringCompare(ListItem.Property(paging),)</visible>
 					</control>
 					<control type="label">
-						<posx>14</posx>
+						<posx>20</posx>
 						<posy>130</posy>
-						<width>120</width>
+						<width>200</width>
 						<height>12</height>
 						<font>font10_title</font>
 						<align>left</align>
@@ -399,64 +399,6 @@
 			</control>
 		</control>
 		
-		<!-- -------------- INPUT BLOCK OVERLAY -------------------------------   -->
-		<control type="button" id="160">
-			<animation effect="slide" start="0,0" end="0,720" time="0">Visible</animation>
-			<animation effect="slide" start="0,720" end="0,0" time="0">Hidden</animation>
-			<description>Box Focus</description>
-			<posx>0</posx>
-			<posy>-720</posy>
-			<width>1280</width>
-			<height>720</height>
-			<onleft>160</onleft>
-			<onright>160</onright>
-			<onup>160</onup>
-			<ondown>160</ondown>
-			<texturefocus>facebook-media-progress-overlay.png</texturefocus>
-			<texturenofocus>facebook-media-progress-overlay.png</texturenofocus>
-			<visible allowhiddenfocus="true">!StringCompare(Control.GetLabel(152),)</visible>
-		</control>
-		
-		<!-- -------------- PROGRESS BAR -------------------------------   -->
-		<control type="group" id="150">
-			<animation effect="slide" start="0,0" end="-500,0" time="400">Visible</animation>
-			<animation effect="slide" start="-500,0" end="0,0" time="400">Hidden</animation>
-			<posx>1280</posx>
-			<posy>55</posy>
-			<width>500</width>
-			<height>60</height>
-			<visible>!StringCompare(Control.GetLabel(152),)</visible>
-			<control type="image">
-				<posx>0</posx>
-				<posy>0</posy>
-				<width>500</width>
-				<height>60</height>
-				<texture>facebook-media-tube-back.png</texture>
-			</control>
-			<control type="image" id="153">
-				<posy>0</posy>
-				<width>1</width>
-				<height>60</height>
-				<texture>facebook-media-progress-bar.png</texture>
-			</control>
-			<control type="label" id="152">
-				<posx>50</posx>
-				<posy>0</posy>
-				<width>400</width>
-				<height>60</height>
-				<font>font24_title</font>
-				<align>center</align>
-				<aligny>center</aligny>
-				<textcolor>white</textcolor>
-			</control>
-			<control type="image">
-				<posy>0</posy>
-				<width>500</width>
-				<height>60</height>
-				<texture border="3">facebook-media-tube-overlay-left.png</texture>
-			</control>
-		</control>
-		
 		<!-- OPTIONS MENU - - - - - - - - - - - - - - - - - - - - - - - - - - - - OPTIONS MENU  -->
 		<control type="group">
 			<animation effect="slide" start="0,0" end="400,0" time="300">Visible</animation>
@@ -567,6 +509,64 @@
 			<textcolor>FFFFFFFF</textcolor>
 			<texturefocus>facebook-media-transparent.png</texturefocus>
 			<texturenofocus>facebook-media-transparent.png</texturenofocus>
+		</control>
+		
+		<!-- -------------- INPUT BLOCK OVERLAY -------------------------------   -->
+		<control type="button" id="160">
+			<animation effect="slide" start="0,0" end="0,720" time="0">Visible</animation>
+			<animation effect="slide" start="0,720" end="0,0" time="0">Hidden</animation>
+			<description>Box Focus</description>
+			<posx>0</posx>
+			<posy>-720</posy>
+			<width>1280</width>
+			<height>720</height>
+			<onleft>160</onleft>
+			<onright>160</onright>
+			<onup>160</onup>
+			<ondown>160</ondown>
+			<texturefocus>facebook-media-progress-overlay.png</texturefocus>
+			<texturenofocus>facebook-media-progress-overlay.png</texturenofocus>
+			<visible allowhiddenfocus="true">!StringCompare(Control.GetLabel(152),)</visible>
+		</control>
+		
+		<!-- -------------- PROGRESS BAR -------------------------------   -->
+		<control type="group" id="150">
+			<animation effect="slide" start="0,0" end="-500,0" time="400">Visible</animation>
+			<animation effect="slide" start="-500,0" end="0,0" time="400">Hidden</animation>
+			<posx>1280</posx>
+			<posy>55</posy>
+			<width>500</width>
+			<height>60</height>
+			<visible>!StringCompare(Control.GetLabel(152),)</visible>
+			<control type="image">
+				<posx>0</posx>
+				<posy>0</posy>
+				<width>500</width>
+				<height>60</height>
+				<texture>facebook-media-tube-back.png</texture>
+			</control>
+			<control type="image" id="153">
+				<posy>0</posy>
+				<width>1</width>
+				<height>60</height>
+				<texture>facebook-media-progress-bar.png</texture>
+			</control>
+			<control type="label" id="152">
+				<posx>50</posx>
+				<posy>0</posy>
+				<width>400</width>
+				<height>60</height>
+				<font>font24_title</font>
+				<align>center</align>
+				<aligny>center</aligny>
+				<textcolor>white</textcolor>
+			</control>
+			<control type="image">
+				<posy>0</posy>
+				<width>500</width>
+				<height>60</height>
+				<texture border="3">facebook-media-tube-overlay-left.png</texture>
+			</control>
 		</control>
 		
 	</controls>
