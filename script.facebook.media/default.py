@@ -134,6 +134,8 @@ class MainWindow(BaseWindow):
 				self.session.menuItemDeSelected()
 			elif action == ACTION_PREVIOUS_MENU:
 				self.session.menuItemDeSelected(prev_menu=True)
+		if self.getFocusId() == 118:
+			self.setFocusId(120)
 		elif self.getFocusId() == 120:
 			if self.session.progressVisible: return
 			if action == ACTION_PARENT_DIR:
@@ -142,12 +144,6 @@ class MainWindow(BaseWindow):
 				self.session.menuItemDeSelected(prev_menu=True)
 			elif action == ACTION_MOVE_UP:
 				self.session.menuItemSelected()
-#			elif action == ACTION_MOVE_DOWN:
-#				self.session.menuItemDeSelected()
-#			elif action == ACTION_MOVE_UP:
-#				self.session.doNextPrev()
-#			elif action == ACTION_MOVE_DOWN:
-#				self.session.doNextPrev()
 			else:
 				self.session.doNextPrev()
 				
@@ -157,13 +153,6 @@ class MainWindow(BaseWindow):
 		elif self.getFocusId() == 128:
 			if  action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU:
 				self.setFocusId(120)
-			#if action == ACTION_MOVE_DOWN:
-				#pvlist = self.getControl(128)
-				#if pvlist.getSelectedPosition() >= (pvlist.size() - 1): 
-			#	self.setFocusId(120)
-			#elif action == ACTION_MOVE_UP:
-				#if self.getControl(138).isVisible():
-			#	self.setFocusId(138)
 		elif self.getFocusId() == 138:
 			if action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU or action == ACTION_MOVE_LEFT or action == ACTION_MOVE_RIGHT:
 				self.setFocusId(128)
@@ -688,6 +677,9 @@ class FacebookSession:
 				self.fillList(items)
 				self.setListFocus(nextprev, photos)
 				self.setCurrentState(items)
+		except:
+			err = ERROR("ERROR GETTING PHOTOS")
+			xbmcgui.Dialog().ok(__lang__(30034),err)
 		finally:
 			self.endProgress()
 		

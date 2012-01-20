@@ -16,6 +16,8 @@ Added fanart.jpg
 Fixed bug where top heirarchy list would lose last item after viewing media
 Fixed non-working input blocking during "progress bar" type activities
 Cleaned up error handling of errors and failed auth in user authorization
+Fixed broken behavior where going off the end of a list without a next/prev arrow would wrap to the opposite
+side of the list and follow that arrow. Now just stops.
 
 *** 0.5.3 ***
 

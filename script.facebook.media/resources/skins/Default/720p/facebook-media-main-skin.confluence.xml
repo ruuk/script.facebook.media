@@ -21,12 +21,43 @@
 			<texture background="true">$INFO[Container(120).ListItem.property(image0)]</texture>
 		</control>
 		
+		<!-- -------------- CAPTION -------------------------------   -->
+		<control type="group" id="210">
+			<animation effect="slide" end="385,0" time="400" condition="!StringCompare(Container(120).ListItem.property(caption),)">Conditional</animation>
+			<animation effect="slide" end="0,0" time="400" condition="StringCompare(Container(120).ListItem.property(caption),)">Conditional</animation>
+			<posx>-370</posx>
+			<posy>55</posy>
+			<width>370</width>
+			<height>130</height>
+			<control type="image">
+				<width>370</width>
+				<height>130</height>
+				<texture border="20">facebook-media-tube-back.png</texture>
+			</control>
+			<control type="textbox">
+				<posx>20</posx>
+				<posy>10</posy>
+				<width>330</width>
+				<height>110</height>
+				<font>font12_title</font>
+				<textcolor>white</textcolor>
+				<info>Container(120).ListItem.property(caption)</info>
+				<shadowcolor>ff000000</shadowcolor>
+				<autoscroll delay="5000" time="1000" repeat="2000">Control.IsVisible(210)</autoscroll>
+			</control>
+			<control type="image">
+				<width>370</width>
+				<height>130</height>
+				<texture border="20">facebook-media-tube-overlay-lr.png</texture>
+			</control>
+		</control>
+		
 		<!-- PHOTOVIDEO MENU - - - - - - - - - - - - - - - - - - - - - - - - - - PHOTOVIDEO MENU  -->
-		<control type="group">
+		<control type="group" id="127">
 			<!-- <animation effect="slide" start="0,0" end="1010,0" time="200" condition="Control.HasFocus(128) | Control.HasFocus(138)">Conditional</animation> -->
-			<animation effect="zoom" start="100,0" end="100,100" center="640,502" time="200">VisibleChange</animation>
+			<animation effect="zoom" start="100,0" end="100,100" center="640,465" time="200">VisibleChange</animation>
 			<posx>340</posx>
-			<posy>454</posy>
+			<posy>417</posy>
 			<visible allowhiddenfocus="true">Control.HasFocus(128) | Control.HasFocus(138)</visible>
 			<control type="image">
 				<posx>0</posx>
@@ -177,14 +208,34 @@
 					<height>260</height>
 					<texture border="3">facebook-media-clear-overlay.png</texture>
 				</control>
+				<control type="image">
+					<width>800</width>
+					<height>260</height>
+					<texture border="1">facebook-media-black-outline.png</texture>
+				</control>
 			</control>
 		</control>
 		
 		<!-- -------------- MAIN - FILMSTRIP -------------------------------   -->
 		<control type="group">
 			<posx>-151</posx>
-			<posy>512</posy>
+			<posy>475</posy>
+			<control type="button" id="118">
+				<onup>120</onup>
+				<ondown>120</ondown>
+				<onleft>120</onleft>
+				<onright>120</onright>
+				<posx>0</posx>
+				<posy>0</posy>
+				<width>10</width>
+				<height>10</height>
+				<textcolor>FFFFFFFF</textcolor>
+				<texturefocus>facebook-media-transparent.png</texturefocus>
+				<texturenofocus>facebook-media-transparent.png</texturenofocus>
+			</control>
 			<control type="fixedlist" id="120">
+				<onleft>118</onleft>
+				<onright>118</onright>
 				<ondown>119</ondown>
 				<width>1451</width>
 				<height>175</height>
@@ -368,37 +419,6 @@
 			<texture border="3">facebook-media-tube-overlay.png</texture>
 		</control>
 		
-		<!-- -------------- CAPTION -------------------------------   -->
-		<control type="group" id="210">
-			<animation effect="slide" end="385,0" time="400" condition="!StringCompare(Container(120).ListItem.property(caption),)">Conditional</animation>
-			<animation effect="slide" end="0,0" time="400" condition="StringCompare(Container(120).ListItem.property(caption),)">Conditional</animation>
-			<posx>-370</posx>
-			<posy>55</posy>
-			<width>370</width>
-			<height>130</height>
-			<control type="image">
-				<width>370</width>
-				<height>130</height>
-				<texture border="20">facebook-media-tube-back.png</texture>
-			</control>
-			<control type="textbox">
-				<posx>20</posx>
-				<posy>10</posy>
-				<width>330</width>
-				<height>110</height>
-				<font>font12_title</font>
-				<textcolor>white</textcolor>
-				<info>Container(120).ListItem.property(caption)</info>
-				<shadowcolor>ff000000</shadowcolor>
-				<autoscroll delay="5000" time="1000" repeat="2000">Control.IsVisible(210)</autoscroll>
-			</control>
-			<control type="image">
-				<width>370</width>
-				<height>130</height>
-				<texture border="20">facebook-media-tube-overlay-lr.png</texture>
-			</control>
-		</control>
-		
 		<!-- OPTIONS MENU - - - - - - - - - - - - - - - - - - - - - - - - - - - - OPTIONS MENU  -->
 		<control type="group">
 			<animation effect="slide" start="0,0" end="400,0" time="300">Visible</animation>
@@ -488,27 +508,50 @@
 			</control>
 		</control>
 		
-		<control type="image">
+		<!-- SELECTION OVERLAY - - - - - - - - - - - - - - - - - - - - - - - - - - - -   -->
+		<control type="group">
 			<posx>512</posx>
-			<posy>495</posy>
-			<width>256</width>
-			<height>225</height>
-			<texture>facebook-media-filmstrip-selection.png</texture>
-		</control>
-		<control type="button" id="119">
-			<ondown>125</ondown>
-			<posx>540</posx>
-			<posy>694</posy>
-			<width>200</width>
-			<height>20</height>
-			<font>font10_title</font>
-			<align>center</align>
-			<aligny>center</aligny>
-			<label>Back: $INFO[Container(120).ListItem.property(previous)]</label>
-			<wrapmultiline>true</wrapmultiline>
-			<textcolor>FFFFFFFF</textcolor>
-			<texturefocus>facebook-media-transparent.png</texturefocus>
-			<texturenofocus>facebook-media-transparent.png</texturenofocus>
+			<posy>458</posy>
+			<control type="image">
+				<visible>!Control.IsVisible(127)</visible>
+				<animation effect="fade" start="0" end="100" time="200">VisibleChange</animation>
+				<posx>65</posx>
+				<posy>-69</posy>
+				<width>128</width>
+				<height>128</height>
+				<colordiffuse>88FFFFFF</colordiffuse>
+				<texture>facebook-media-arrow-up.png</texture>
+			</control>
+			<control type="image">
+				<posx>0</posx>
+				<posy>0</posy>
+				<width>256</width>
+				<height>259</height>
+				<texture>facebook-media-filmstrip-selection.png</texture>
+			</control>
+			<control type="button" id="119">
+				<ondown>125</ondown>
+				<posx>28</posx>
+				<posy>234</posy>
+				<width>200</width>
+				<height>20</height>
+				<font>font10_title</font>
+				<align>center</align>
+				<aligny>center</aligny>
+				<label>$INFO[Container(120).ListItem.property(previous)]</label>
+				<wrapmultiline>true</wrapmultiline>
+				<textcolor>FFFFFFFF</textcolor>
+				<texturefocus>facebook-media-transparent.png</texturefocus>
+				<texturenofocus>facebook-media-transparent.png</texturenofocus>
+			</control>
+			<control type="image">
+				<posx>65</posx>
+				<posy>149</posy>
+				<width>128</width>
+				<height>128</height>
+				<colordiffuse>88FFFFFF</colordiffuse>
+				<texture flipy="true">facebook-media-arrow-up.png</texture>
+			</control>
 		</control>
 		
 		<!-- -------------- INPUT BLOCK OVERLAY -------------------------------   -->
