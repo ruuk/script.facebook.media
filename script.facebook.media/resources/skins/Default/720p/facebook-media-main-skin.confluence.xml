@@ -57,7 +57,7 @@
 			<!-- <animation effect="slide" start="0,0" end="1010,0" time="200" condition="Control.HasFocus(128) | Control.HasFocus(138)">Conditional</animation> -->
 			<animation effect="zoom" start="100,0" end="100,100" center="640,465" time="200">VisibleChange</animation>
 			<posx>340</posx>
-			<posy>417</posy>
+			<posy>420</posy>
 			<visible allowhiddenfocus="true">Control.HasFocus(128) | Control.HasFocus(138)</visible>
 			<control type="image">
 				<posx>0</posx>
@@ -219,7 +219,7 @@
 		<!-- -------------- MAIN - FILMSTRIP -------------------------------   -->
 		<control type="group">
 			<posx>-151</posx>
-			<posy>475</posy>
+			<posy>478</posy>
 			<control type="button" id="118">
 				<onup>120</onup>
 				<ondown>120</ondown>
@@ -511,7 +511,7 @@
 		<!-- SELECTION OVERLAY - - - - - - - - - - - - - - - - - - - - - - - - - - - -   -->
 		<control type="group">
 			<posx>512</posx>
-			<posy>458</posy>
+			<posy>461</posy>
 			<control type="image">
 				<visible>!Control.IsVisible(127)</visible>
 				<animation effect="fade" start="0" end="100" time="200">VisibleChange</animation>
