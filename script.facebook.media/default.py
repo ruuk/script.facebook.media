@@ -756,6 +756,9 @@ class FacebookSession:
 				self.fillList(items)
 				self.setListFocus(nextprev, videos)
 				self.setCurrentState(items)
+		except:
+			err = ERROR("ERROR GETTING VIDEOS")
+			xbmcgui.Dialog().ok(__lang__(30034),err)
 		finally:
 			self.endProgress()
 			
