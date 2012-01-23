@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '04-18-2011'
-__version__ = '0.5.4'
+__version__ = '0.5.5'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -31,7 +31,8 @@ ACTION_PAGE_UP        = 5
 ACTION_PAGE_DOWN      = 6
 ACTION_SELECT_ITEM    = 7
 ACTION_HIGHLIGHT_ITEM = 8
-ACTION_PARENT_DIR     = 9
+ACTION_PARENT_DIR_OLD = 9
+ACTION_PARENT_DIR     = 92
 ACTION_PREVIOUS_MENU  = 10
 ACTION_SHOW_INFO      = 11
 ACTION_PAUSE          = 12
@@ -137,8 +138,9 @@ class MainWindow(BaseWindow):
 		if self.getFocusId() == 118:
 			self.setFocusId(120)
 		elif self.getFocusId() == 120:
+			#print action.getId()
 			if self.session.progressVisible: return
-			if action == ACTION_PARENT_DIR:
+			if action == ACTION_PARENT_DIR or action == ACTION_PARENT_DIR_OLD:
 				self.session.menuItemDeSelected()
 			elif action == ACTION_PREVIOUS_MENU:
 				self.session.menuItemDeSelected(prev_menu=True)
@@ -151,10 +153,10 @@ class MainWindow(BaseWindow):
 			if action == ACTION_PREVIOUS_MENU:
 				self.doClose()
 		elif self.getFocusId() == 128:
-			if  action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU:
+			if  action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU or action == ACTION_PARENT_DIR_OLD:
 				self.setFocusId(120)
 		elif self.getFocusId() == 138:
-			if action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU or action == ACTION_MOVE_LEFT or action == ACTION_MOVE_RIGHT:
+			if action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU or action == ACTION_MOVE_LEFT or action == ACTION_MOVE_RIGHT  or action == ACTION_PARENT_DIR_OLD:
 				self.setFocusId(128)
 		elif self.getFocusId() == 160:
 			if action == ACTION_PREVIOUS_MENU:

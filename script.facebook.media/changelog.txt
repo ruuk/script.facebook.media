@@ -1,10 +1,14 @@
 Facebook Media Changelog
 
-Current Version : 0.5.4
+Current Version : 0.5.5
 
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
 	-Sometimes displaying photo/video options delays waiting on facebook. Should show progress/notify user to wait
+
+*** 0.5.5 ***
+
+Fixed - backspace/parent dir now works as expected and goes to the previous menu level 
 
 *** 0.5.4 ***
 
