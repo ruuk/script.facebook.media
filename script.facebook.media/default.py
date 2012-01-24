@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '04-18-2011'
-__version__ = '0.5.5'
+__version__ = '0.5.6'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -141,7 +141,7 @@ class MainWindow(BaseWindow):
 			#print action.getId()
 			if self.session.progressVisible: return
 			if action == ACTION_PARENT_DIR or action == ACTION_PARENT_DIR_OLD:
-				self.session.menuItemDeSelected()
+				self.session.menuItemDeSelected(prev_menu=True)
 			elif action == ACTION_PREVIOUS_MENU:
 				self.session.menuItemDeSelected(prev_menu=True)
 			elif action == ACTION_MOVE_UP:
