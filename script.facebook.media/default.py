@@ -15,8 +15,8 @@ from facebook import GraphAPIError, GraphWrapAuthError
 
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
-__date__ = '04-18-2011'
-__version__ = '0.5.6'
+__date__ = '01-26-2012'
+__version__ = '0.5.7'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -117,7 +117,10 @@ class MainWindow(BaseWindow):
 			self.session.window = self
 		else:
 			self.session = FacebookSession(self)
-			self.getControl(120).selectItem(2) 
+			if not self.session.start():
+				self.doClose()
+				return
+			self.getControl(120).selectItem(2)
 
 		
 	def onClick( self, controlID ):
@@ -246,12 +249,12 @@ class FacebookSession:
 		self.setSetting('current_nav_path','')
 
 		self.endProgress()
-		self.start()
 		
 	def start(self):
 		user = self.getCurrentUser()
 		if not user:
-			if not self.openAddUserWindow(): return
+			if not self.openAddUserWindow(): return False
+			user = self.getCurrentUser()
 		
 		self.graph = self.newGraph(	user.email,
 									user.password,
@@ -266,6 +269,7 @@ class FacebookSession:
 		self.CATEGORIES()
 		self.setCurrentState()
 		self.setUserDisplay()
+		return True
 		
 	def newGraph(self,email,password,uid=None,token=None,new_token_callback=None):
 		graph = facebook.GraphWrap(token,new_token_callback=new_token_callback)
