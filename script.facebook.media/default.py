@@ -1,4 +1,4 @@
-#Facebook Media For Boxee
+#Facebook Media
 
 import os,urllib,urllib2,time
 import sys, traceback
@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.5.7'
+__version__ = '0.5.8'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -51,6 +51,9 @@ ENCODING = loc[1] or 'utf-8'
 
 def ENCODE(string):
 	return string.encode(ENCODING,'replace')
+
+def DONOTHING(text):
+	return text
 
 def LOG(message):
 	print 'FACEBOOK MEDIA: %s' % ENCODE(str(message))
@@ -385,7 +388,7 @@ class FacebookSession:
 		item.setProperty('hidetube','true')
 		item.setProperty('category','paging')
 		item.setProperty('uid',uid)
-		item.setProperty('paging',ENCODE(url))
+		item.setProperty('paging',DONOTHING(url))
 		item.setProperty('ispagingitem','yes')
 		item.setProperty('nextprev',nextprev)
 		item.setProperty('media_type',itype)
@@ -522,7 +525,7 @@ class FacebookSession:
 #					return
 
 				#aname = a.get('name','').encode('ISO-8859-1','replace')
-				aname = ENCODE(a.name(''))
+				aname = DONOTHING(a.name(''))
 				
 				item = xbmcgui.ListItem()
 				item.setLabel(aname)
@@ -587,11 +590,11 @@ class FacebookSession:
 				#	self.imageURLCache[fid] = tn_url
 				name = show[s].name('')
 				item = xbmcgui.ListItem()
-				item.setLabel(ENCODE(name))
-				item.setThumbnailImage(ENCODE(tn_url))
-				item.setProperty('friend_thumb',ENCODE(tn_url))
+				item.setLabel(DONOTHING(name))
+				item.setThumbnailImage(DONOTHING(tn_url))
+				item.setProperty('friend_thumb',DONOTHING(tn_url))
 				item.setProperty('uid',uid)
-				item.setProperty('fid',ENCODE(fid))
+				item.setProperty('fid',DONOTHING(fid))
 				item.setProperty('category','friend')
 				item.setProperty('previous',self.getSetting('last_item_name'))
 				items.append(item)
@@ -655,8 +658,8 @@ class FacebookSession:
 				tn = p.picture('') + '?fix=' + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
 				#tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn) # this seems to get better results then using the random server
 				item = xbmcgui.ListItem()
-				item.setLabel(ENCODE(self.removeCRLF(p.name(p.id))))
-				source = ENCODE(p.source())
+				item.setLabel(DONOTHING(self.removeCRLF(p.name(p.id))))
+				source = DONOTHING(p.source())
 				caption = self.makeCaption(p, uid)
 				item.setPath(source)
 				item.setProperty('source',source)
@@ -665,9 +668,9 @@ class FacebookSession:
 				item.setProperty('hidetube','true')
 				item.setLabel('')
 				item.setProperty('image0',source)
-				item.setThumbnailImage(ENCODE(tn))
+				item.setThumbnailImage(DONOTHING(tn))
 				item.setProperty('uid',uid)
-				item.setProperty('id',ENCODE(p.id))
+				item.setProperty('id',DONOTHING(p.id))
 				item.setProperty('caption',caption)
 				if p.hasProperty('comments'): item.setProperty('comments','true')
 				if p.hasProperty('tags'): item.setProperty('tags','true')
@@ -739,12 +742,12 @@ class FacebookSession:
 				item.setPath(v.source(''))
 				item.setProperty('source',v.source(''))
 				item.setProperty('uid',uid)
-				item.setProperty('id',ENCODE(v.id))
+				item.setProperty('id',DONOTHING(v.id))
 				item.setProperty('category','photovideo')
 				item.setProperty('media_type','video')
 				item.setProperty('hidetube','true')
-				item.setThumbnailImage(ENCODE(tn))
-				item.setProperty('image0',ENCODE(tn))
+				item.setThumbnailImage(DONOTHING(tn))
+				item.setProperty('image0',DONOTHING(tn))
 				item.setProperty('caption',caption)
 				if v.hasProperty('comments'): item.setProperty('comments','true')
 				if v.hasProperty('tags'): item.setProperty('tags','true')
@@ -786,7 +789,7 @@ class FacebookSession:
 		caption = name + title + obj.description('')
 		if not caption: return ''
 		caption += '[CR] '
-		return ENCODE(self.convertJSONText(caption))
+		return DONOTHING(self.convertJSONText(caption))
 		
 	def noItems(self,itype='items',paging=None):
 		if not paging: self.popState(clear=True)
@@ -1020,7 +1023,7 @@ class FacebookSession:
 		item.setProperty('sublabel',sublabel)
 		item.setProperty('name',name)
 		item.setProperty('item_number',str(itemNumber))
-		item.setProperty('data',ENCODE(data))
+		item.setProperty('data',DONOTHING(data))
 		return item
 		
 		
@@ -1281,7 +1284,7 @@ class FacebookSession:
 		self.setSetting('profile_pic_%s' % uid,user.picture('').replace('_q.','_n.'))
 		#self.getProfilePic(uid,force=True)
 		self.window.getControl(132).setVisible(False)
-		xbmcgui.Dialog().ok(__lang__(30036),ENCODE(username))
+		xbmcgui.Dialog().ok(__lang__(30036),DONOTHING(username))
 		self.closeWindow()
 		self.setSetting('has_user','true')
 		#self.setCurrentUser(uid)
