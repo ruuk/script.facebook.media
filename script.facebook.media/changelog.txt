@@ -8,9 +8,13 @@ Known Issues/TODO:
 	-Add ability to go to next image on image view/tags window
 	-Album caching (and other caching)
 
+*** 0.5.9 ***
+
+Hopefully fixes character encoding problems - Part 2: The Log
+
 *** 0.5.8 ***
 
-Hopfully fixes character encoding problems (ie Cyrillic)
+Hopefully fixes character encoding problems (ie Cyrillic)
 
 *** 0.5.7 ***
 

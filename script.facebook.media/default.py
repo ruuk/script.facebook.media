@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.5.8'
+__version__ = '0.5.9'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -50,7 +50,10 @@ print loc
 ENCODING = loc[1] or 'utf-8'
 
 def ENCODE(string):
-	return string.encode(ENCODING,'replace')
+	try:
+		return string.decode(ENCODING,'replace').encode('utf-8','replace')
+	except:
+		return '**ENCODE ERROR- LOST**'
 
 def DONOTHING(text):
 	return text
