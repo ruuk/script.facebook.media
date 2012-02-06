@@ -8,6 +8,10 @@ Known Issues/TODO:
 	-Add ability to go to next image on image view/tags window
 	-Album caching (and other caching)
 
+*** 0.6.0 ***
+
+Added error messages for login notifications and locked accounts
+
 *** 0.5.9 ***
 
 Hopefully fixes character encoding problems - Part 2: The Log

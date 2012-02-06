@@ -587,6 +587,15 @@ class GraphWrap(GraphAPI):
 			LOG("TOKEN: " + token)
 			raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 			return False
+		if 'login notifications' in token:
+			LOG("TOKEN: " + token)
+			raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Disable login notifications, then retry')
+			return False
+		if 'temporarily locked' in token:
+			LOG("TOKEN: " + token)
+			raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Facebook account is locked')
+			return False
+		#Because you enabled login notifications, your account is temporarily locked.
 		return True
 		
 	def genericError(self):
