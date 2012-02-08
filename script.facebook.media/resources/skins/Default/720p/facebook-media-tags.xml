@@ -7,18 +7,26 @@
 			<posx>160</posx>
 			<posy>0</posy>
 			<control type="largeimage" id="101">
-				<width>959</width>
+				<width>960</width>
 				<height>720</height>
-				<texture>http://a7.sphotos.ak.fbcdn.net/hphotos-ak-snc3/26896_1419390568755_1352390960_31114094_4357531_n.jpg</texture>
+				<texture>http://a7.sphotos.ak.fbcdn.net/hphotos-ak-snc1/5612_1215811679410_1352390960_30602191_8012787_n.jpg</texture>
 			</control>
 			<control type="group" id="150">
 				<control type="image">
-					<posx>-8</posx>
-					<posy>-8</posy>
-					<width>2</width>
-					<height>2</height>
+					<posx>603</posx>
+					<posy>86</posy>
+					<width>200</width>
+					<height>200</height>
 					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,no_id)</visible>
+					<visible>StringCompare(Container(120).ListItem.Label2,ID-608569653)</visible>
+				</control>
+				<control type="image">
+					<posx>134</posx>
+					<posy>172</posy>
+					<width>200</width>
+					<height>200</height>
+					<texture border="3">facebook-media-outline-box.png</texture>
+					<visible>StringCompare(Container(120).ListItem.Label2,ID-KennyFolden)</visible>
 				</control>
 			</control>
 		</control>
@@ -79,8 +87,13 @@
 				</focusedlayout>
 				<content>
 				<item>
-					<label>No Tags</label>
-					<label2>no_id</label2>
+					<label>Samantha Jean Folden</label>
+					<label2>ID-608569653</label2>
+					<onclick>-</onclick>
+				</item>
+				<item>
+					<label>Kenny Folden</label>
+					<label2>ID-KennyFolden</label2>
 					<onclick>-</onclick>
 				</item>
 				</content>

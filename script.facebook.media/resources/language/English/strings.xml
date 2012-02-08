@@ -62,6 +62,8 @@
 	<string id="30049">Finished</string>
 	<string id="30050">Authorization Complete</string>
 	<string id="30051">Back: %s</string>
+	
+	<string id="30052">Photos Per Page</string>
 		
     <string id="3001">No Tags</string>
 </strings>

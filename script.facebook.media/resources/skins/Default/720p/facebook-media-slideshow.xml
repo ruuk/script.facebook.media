@@ -1,0 +1,299 @@
+<?xml version="1.0"?>
+<window type="window">
+	<defaultcontrol always="true">120</defaultcontrol>
+	<allowoverlay>no</allowoverlay>
+	<controls>
+		<control type="group" id="100">
+			<posx>0</posx>
+			<posy>0</posy>
+			<control type="largeimage" id="101">
+				<width>1280</width>
+				<height>720</height>
+				<texture>-</texture>
+				<fadetime>500</fadetime>
+				<aspectratio>keep</aspectratio>
+			</control>
+			<control type="group" id="150">
+				<control type="button" id="300">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>319</onup>
+					<ondown>301</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(300)</visible>
+				</control>
+				<control type="button" id="301">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>300</onup>
+					<ondown>302</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(301)</visible>
+				</control>
+				<control type="button" id="302">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>301</onup>
+					<ondown>303</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(302)</visible>
+				</control>
+				<control type="button" id="303">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>302</onup>
+					<ondown>304</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(303)</visible>
+				</control>
+				<control type="button" id="304">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>303</onup>
+					<ondown>305</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(304)</visible>
+				</control>
+				<control type="button" id="305">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>304</onup>
+					<ondown>306</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(305)</visible>
+				</control>
+				<control type="button" id="306">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>305</onup>
+					<ondown>307</ondown>
+					<align>center</align>
+      				<aligny>top</aligny><textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(306)</visible>
+				</control>
+				<control type="button" id="307">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>306</onup>
+					<ondown>308</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(307)</visible>
+				</control>
+				<control type="button" id="308">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>307</onup>
+					<ondown>309</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(308)</visible>
+				</control>
+				<control type="button" id="309">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>308</onup>
+					<ondown>310</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(309)</visible>
+				</control>
+				<control type="button" id="310">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>309</onup>
+					<ondown>311</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(310)</visible>
+				</control>
+				<control type="button" id="311">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>310</onup>
+					<ondown>312</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(311)</visible>
+				</control>
+				<control type="button" id="312">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>311</onup>
+					<ondown>313</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(312)</visible>
+				</control>
+				<control type="button" id="313">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>312</onup>
+					<ondown>314</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(313)</visible>
+				</control>
+				<control type="button" id="314">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>313</onup>
+					<ondown>315</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(314)</visible>
+				</control>
+				<control type="button" id="315">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>314</onup>
+					<ondown>316</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(315)</visible>
+				</control>
+				<control type="button" id="316">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>315</onup>
+					<ondown>317</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(316)</visible>
+				</control>
+				<control type="button" id="317">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>316</onup>
+					<ondown>318</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(317)</visible>
+				</control>
+				<control type="button" id="318">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>317</onup>
+					<ondown>319</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(318)</visible>
+				</control>
+				<control type="button" id="319">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>200</width>
+					<height>200</height>
+					<onup>318</onup>
+					<ondown>300</ondown>
+					<align>center</align>
+      				<aligny>top</aligny>
+      				<textoffsety>205</textoffsety>
+					<texturefocus border="3">facebook-media-outline-box.png</texturefocus>
+					<texturenofocus>-</texturenofocus>
+					<visible allowhiddenfocus="true">Control.HasFocus(319)</visible>
+				</control>
+			</control>
+		</control>
+	</controls>
+</window>

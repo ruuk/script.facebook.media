@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -203,6 +203,7 @@ class TagsWindow(BaseWindow):
 	def onInit(self):
 		BaseWindow.onInit(self)
 		self.session.window = self
+		self.session.cr
 		self.getControl(150).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.HasFocus(120)')])
 		self.getControl(200).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.HasFocus(120)')])
 		self.setFocusId(120)
@@ -219,6 +220,110 @@ class TagsWindow(BaseWindow):
 		self.getControl(150).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.HasFocus(120)')])
 		self.getControl(200).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.HasFocus(120)')])
 		self.setFocusId(120)
+		
+class SlideshowTagsWindow(BaseWindow):
+	def __init__( self, *args, **kwargs):
+		self.session = kwargs.get('session')
+		self.photos = kwargs.get('photos',[''])
+		self.current_index = kwargs.get('index',0)
+		BaseWindow.__init__( self, *args, **kwargs )
+		
+	def onInit(self):
+		BaseWindow.onInit(self)
+		self.session.window = self
+		self.showPhoto()
+		self.getControl(150).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.IsVisible(150)')])
+		self.setFocusId(150)
+	
+	def onFocus( self, controlId ):
+		self.controlId = controlId
+		
+	def onClick( self, controlID ):
+		pass
+			
+	def onAction(self,action):
+		BaseWindow.onAction(self, action)
+		if action == ACTION_MOVE_LEFT:
+			self.prevPhoto()
+		elif action == ACTION_MOVE_RIGHT:
+			self.nextPhoto()
+		else:
+			self.getControl(150).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.IsVisible(150)')])
+			self.setFocusId(150)
+		
+	def currentPhoto(self):
+		return self.photos[self.current_index]
+	
+	def nextPhoto(self):
+		self.current_index += 1
+		if self.current_index >= len(self.photos):
+			self.current_index = 0
+		self.showPhoto()
+	
+	def prevPhoto(self):
+		self.current_index -= 1
+		if self.current_index < 0:
+			self.current_index = len(self.photos) - 1
+		self.showPhoto()
+	
+	def scale(self,w, h, x, y, maximum=True):
+		nw = y * w / h
+		nh = x * h / w
+		if maximum ^ (nw >= x):
+				return nw or 1, y
+		return x, nh or 1
+
+	def showPhoto(self):
+		photo = self.currentPhoto()
+		width = int(photo.width(0))
+		height = int(photo.height(0))
+		if not width or not height: return
+		tags = photo.tags()
+		source = photo.source('')
+		
+		window_w = self.getWidth()
+		window_h = self.getHeight()
+		
+		image_win_w, image_win_h = self.scale(width,height,window_w,window_h)
+		
+		w_aspect = window_w/float(window_h)
+		aspect = width/float(height)
+		x=0
+		y=0
+		LOG('SlideshowTags Window Width: %s - Height: %s' % (window_w,window_h))
+		if aspect < w_aspect:
+			wmod = int((1280*image_win_w)/window_w)
+			hmod = 720
+			x = int((1280*((window_w - image_win_w)/2))/window_w)
+		else:
+			wmod = 1280
+			hmod = int((720*image_win_h)/window_h)
+			y = int((720*((window_h - image_win_h)/2))/window_h)
+			
+		box_len = 200
+		box_off = box_len/2
+		LOG('SlideshowTags Image Location X: %s - Y: %s' % (x,y))
+		self.getControl(150).setPosition(x,y)
+		image = self.getControl(101)
+		#image.setWidth(wmod)
+		#image.setHeight(hmod)
+		#image.setPosition(x,y)
+		image.setImage(source)
+		
+		base_cid = 300
+		tag_count = len(tags)
+		for idx in range(0,20):
+			control = self.getControl(base_cid + idx)
+			if idx < tag_count:
+				tag = tags[idx]
+				tag_name = tag.name('')
+				tag_x = int(wmod * (float(tag.x(0))/100)) - box_off
+				tag_y = int(hmod * (float(tag.y(0))/100)) - box_off
+				control.setPosition(tag_x,tag_y)
+				control.setLabel(tag_name)
+				control.setEnabled(True)
+			else:
+				control.setEnabled(False)
 		
 class FacebookSession:
 	def __init__(self,window=None):
@@ -279,7 +384,7 @@ class FacebookSession:
 		
 	def newGraph(self,email,password,uid=None,token=None,new_token_callback=None):
 		graph = facebook.GraphWrap(token,new_token_callback=new_token_callback)
-		graph.setAppData('150505371652086',scope='user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,publish_stream')
+		graph.setAppData('150505371652086',scope='user_photos,friends_photos,user_videos,friends_videos,publish_stream')
 		graph.setLogin(email,password,uid)
 		return graph
 		
@@ -644,7 +749,7 @@ class FacebookSession:
 				photos = self.graph.urlRequest(paging)
 			else:
 				self.paging = []
-				photos = self.graph.getObject(aid).connections.photos()
+				photos = self.graph.getObject(aid).connections.photos(limit=self.getSetting('photo_limit',100))
 
 			tot = len(photos) or 1
 						
@@ -952,8 +1057,8 @@ class FacebookSession:
 		elif item.getProperty('media_type') == 'videos': 	self.VIDEOS(item)
 		elif item.getProperty('media_type') == 'albums': 	self.ALBUMS(item)
 			
-	def openTagsWindow(self):
-		openWindow('tags',session=self)
+	def openTagsWindow(self,photos,index):
+		openWindow('slideshow',session=self,photos=photos,index=index)
 	
 	def doCommentDialog(self,itemNumber):
 		comment = doKeyboard("Enter Comment",'',False)
@@ -1182,9 +1287,17 @@ class FacebookSession:
 			if os.path.isfile(f): os.remove(f)
 		
 	def showImage(self,item):
-		photo = self.graph.fromJSON(item.getProperty('data'))
-		self.createTagsWindow(photo)
-		self.openTagsWindow()
+		items = self.getListItems(self.window.getControl(120))
+		ct=0
+		idx = 0
+		photos = []
+		for it in items:
+			if it.getProperty('id') == item.getProperty('id'): idx = ct
+			photo = self.graph.fromJSON(it.getProperty('data'))
+			if photo:
+				photos.append(photo)
+				ct+=1
+		self.openTagsWindow(photos,idx)
 		
 	def showVideo(self,item):
 		xbmc.executebuiltin('PlayMedia(%s)' % item.getProperty('source'))
@@ -1431,8 +1544,12 @@ class FacebookSession:
 	def setSetting(self,key,value):
 		__addon__.setSetting(key,value)
 		
-	def getSetting(self,key):
-		return __addon__.getSetting(key)
+	def getSetting(self,key,default=None):
+		setting = __addon__.getSetting(key)
+		if not setting: return default
+		if type(default) == type(0):
+			return int(float(setting))
+		return setting
 		
 	def getAuth(self,email='',password='',graph=None):
 		redirect = urllib.quote('http://2ndmind.com/facebookphotos/complete.html')
@@ -1527,6 +1644,8 @@ def openWindow(window_name,session=None,**kwargs):
 			w = AuthWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME,session=session,**kwargs)
 		elif window_name == 'tags':
 			w = TagsWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME,session=session,**kwargs)
+		elif window_name == 'slideshow':
+			w = SlideshowTagsWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME,session=session,**kwargs)
 		else:
 			return #Won't happen :)
 		w.doModal()			
