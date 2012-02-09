@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -1542,7 +1542,7 @@ class FacebookSession:
 		__addon__.setSetting(key,'')
 		
 	def setSetting(self,key,value):
-		__addon__.setSetting(key,value)
+		__addon__.setSetting(key,value and str(value) or '')
 		
 	def getSetting(self,key,default=None):
 		setting = __addon__.getSetting(key)
