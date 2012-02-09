@@ -1,7 +1,7 @@
 #Facebook Media
 
 import os,urllib,urllib2,time
-import sys, traceback
+import sys, traceback, threading
 
 from xml.sax.saxutils import unescape as xml_unescape
 import threadpool
@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.6.2'
+__version__ = '0.6.3'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -93,8 +93,6 @@ class BaseWindow(xbmcgui.WindowXML):
 	def doClose(self):
 		self.session.window = self.oldWindow
 		self.close()
-		#import threading
-		#for t in threading.enumerate(): print t
 		
 	def onInit(self):
 		self.setSessionWindow()
@@ -194,46 +192,37 @@ class AuthWindow(BaseWindow):
 			
 	def onAction(self,action):
 		BaseWindow.onAction(self, action)
+
+class StoppableThread(threading.Thread):
+	def __init__(self,group=None, target=None, name=None, args=(), kwargs={}):
+		self._stop = threading.Event()
+		threading.Thread.__init__(self,group=group, target=target, name=name, args=args, kwargs=kwargs)
 		
-class TagsWindow(BaseWindow):
-	def __init__( self, *args, **kwargs):
-		self.session = kwargs.get('session')
-		BaseWindow.__init__( self, *args, **kwargs )
+	def stop(self):
+		self._stop.set()
 		
-	def onInit(self):
-		BaseWindow.onInit(self)
-		self.session.window = self
-		self.session.cr
-		self.getControl(150).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.HasFocus(120)')])
-		self.getControl(200).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.HasFocus(120)')])
-		self.setFocusId(120)
+	def stopped(self):
+		return self._stop.isSet()
 	
-	def onFocus( self, controlId ):
-		self.controlId = controlId
-		
-	def onClick( self, controlID ):
-		pass
-			
-	def onAction(self,action):
-		BaseWindow.onAction(self, action)
-#		if action == ACTION_MOVE_LEFT or action == ACTION_MOVE_RIGHT:
-		self.getControl(150).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.HasFocus(120)')])
-		self.getControl(200).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.HasFocus(120)')])
-		self.setFocusId(120)
-		
 class SlideshowTagsWindow(BaseWindow):
 	def __init__( self, *args, **kwargs):
 		self.session = kwargs.get('session')
 		self.photos = kwargs.get('photos',[''])
 		self.current_index = kwargs.get('index',0)
+		self.doSlideshow = kwargs.get('slideshow',False)
+		self.slideshowThread = None
+		self.closed = False
+		self.slideInterval = self.session.getSetting('slideshow_interval', 5)
 		BaseWindow.__init__( self, *args, **kwargs )
 		
 	def onInit(self):
 		BaseWindow.onInit(self)
 		self.session.window = self
 		self.showPhoto()
-		self.getControl(150).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.IsVisible(150)')])
-		self.setFocusId(150)
+		if not self.doSlideshow:
+			self.getControl(150).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.IsVisible(150)')])
+			self.setFocusId(150)
+		if self.doSlideshow: self.startSlideshow()
 	
 	def onFocus( self, controlId ):
 		self.controlId = controlId
@@ -247,9 +236,39 @@ class SlideshowTagsWindow(BaseWindow):
 			self.prevPhoto()
 		elif action == ACTION_MOVE_RIGHT:
 			self.nextPhoto()
+		elif action == ACTION_PLAYER_PLAY:
+			if self.slideshowThread:
+				self.stopSlideshow()
+			else:
+				self.startSlideshow()
+		elif action == ACTION_STOP:
+			self.stopSlideshow()
 		else:
 			self.getControl(150).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.IsVisible(150)')])
 			self.setFocusId(150)
+		
+	def doClose(self):
+		self.closed = True
+		self.stopSlideshow()
+		BaseWindow.doClose(self)
+		
+	def startSlideshow(self):
+		if self.slideshowThread: return
+		LOG('Starting Slideshow')
+		self.slideshowThread = threading.Timer(self.slideInterval, self.triggerNextFromThread)
+		self.slideshowThread.start()
+		
+	def stopSlideshow(self):
+		if self.slideshowThread:
+			LOG('Stopping Slideshow')
+			self.slideshowThread.cancel()
+			self.slideshowThread = None
+		
+	def triggerNextFromThread(self):
+		xbmc.executebuiltin('Action(Right)')
+		if self.closed: return #Probabaly not necessary, but just in case...
+		self.slideshowThread = threading.Timer(self.slideInterval, self.triggerNextFromThread)
+		self.slideshowThread.start()
 		
 	def currentPhoto(self):
 		return self.photos[self.current_index]
@@ -290,7 +309,7 @@ class SlideshowTagsWindow(BaseWindow):
 		aspect = width/float(height)
 		x=0
 		y=0
-		LOG('SlideshowTags Window Width: %s - Height: %s' % (window_w,window_h))
+		#LOG('SlideshowTags Window Width: %s - Height: %s' % (window_w,window_h))
 		if aspect < w_aspect:
 			wmod = int((1280*image_win_w)/window_w)
 			hmod = 720
@@ -302,7 +321,7 @@ class SlideshowTagsWindow(BaseWindow):
 			
 		box_len = 200
 		box_off = box_len/2
-		LOG('SlideshowTags Image Location X: %s - Y: %s' % (x,y))
+		#LOG('SlideshowTags Image Location X: %s - Y: %s' % (x,y))
 		self.getControl(150).setPosition(x,y)
 		image = self.getControl(101)
 		#image.setWidth(wmod)
@@ -310,20 +329,28 @@ class SlideshowTagsWindow(BaseWindow):
 		#image.setPosition(x,y)
 		image.setImage(source)
 		
-		base_cid = 300
+		base_gcid = 400
+		base_lcid = 500
+		base_lgcid = 200
 		tag_count = len(tags)
 		for idx in range(0,20):
-			control = self.getControl(base_cid + idx)
+			group = self.getControl(base_gcid + idx)
+			label = self.getControl(base_lcid + idx)
+			labelgroup = self.getControl(base_lgcid + idx)
 			if idx < tag_count:
 				tag = tags[idx]
 				tag_name = tag.name('')
 				tag_x = int(wmod * (float(tag.x(0))/100)) - box_off
 				tag_y = int(hmod * (float(tag.y(0))/100)) - box_off
-				control.setPosition(tag_x,tag_y)
-				control.setLabel(tag_name)
-				control.setEnabled(True)
+				if tag_y + 245 > 720:
+					labelgroup.setPosition(-50,-45)
+				else:
+					labelgroup.setPosition(-50,205)
+				group.setPosition(tag_x,tag_y)
+				label.setLabel(tag_name)
+				group.setEnabled(True)
 			else:
-				control.setEnabled(False)
+				group.setEnabled(False)
 		
 class FacebookSession:
 	def __init__(self,window=None):
@@ -980,7 +1007,6 @@ class FacebookSession:
 						return
 				self.setCurrentState()
 				self.setFriend('')
-				self.preMediaSetup()
 				self.showMedia(item)
 				self.setPathDisplay()
 				return
@@ -1036,11 +1062,7 @@ class FacebookSession:
 		itemNumber = int(item.getProperty('item_number'))
 		if name == 'slideshow':
 			self.setFriend()
-			items = self.getListItems(self.window.getControl(120))
-			self.preMediaSetup()
-			self.showImages(items)
-		elif name == 'tags':
-			self.openTagsWindow()
+			self.showImages(None,True)
 		elif name == 'comments':
 			self.doCommentDialog(itemNumber)
 		elif name == 'likes':
@@ -1057,8 +1079,8 @@ class FacebookSession:
 		elif item.getProperty('media_type') == 'videos': 	self.VIDEOS(item)
 		elif item.getProperty('media_type') == 'albums': 	self.ALBUMS(item)
 			
-	def openTagsWindow(self,photos,index):
-		openWindow('slideshow',session=self,photos=photos,index=index)
+	def openSlideshowTagsWindow(self,photos,index,slideshow=False):
+		openWindow('slideshow',session=self,photos=photos,index=index,slideshow=slideshow)
 	
 	def doCommentDialog(self,itemNumber):
 		comment = doKeyboard("Enter Comment",'',False)
@@ -1119,7 +1141,6 @@ class FacebookSession:
 		items.append(self.createPhotoMenuItem('likes', __lang__(30043) % len(likes), __lang__(30044), likes_string, itemNumber))
 		if self.itemType(item) == 'image':
 			items.append(self.createPhotoMenuItem('slideshow', __lang__(30045), __lang__(30046), '', itemNumber))
-#			if tags: self.createTagsWindow(pv_obj)
 		self.window.getControl(128).reset()
 		self.window.getControl(128).addItems(items)
 		self.window.setFocusId(128)
@@ -1225,13 +1246,7 @@ class FacebookSession:
 		LOG('PROGRESS CANCEL ATTEMPT')
 		self.cancel_progress = True
 		
-	def preMediaSetup(self):
-		return
-#		blank = []
-#		blank.append(xbmcgui.ListItem())
-#		self.window.getControl(120).addItems(blank)
-		
-	def showImages(self,items):
+	def showImagesOld(self,items):
 		target_path = os.path.join(self.CACHE_PATH,'slideshow')
 		if not os.path.exists(target_path): os.makedirs(target_path)
 		self.clearDirFiles(target_path)
@@ -1286,7 +1301,8 @@ class FacebookSession:
 			f = os.path.join(filepath,f)
 			if os.path.isfile(f): os.remove(f)
 		
-	def showImage(self,item):
+	def showImages(self,item=None,slideshow=False):
+		if not item: item = self.getFocusedItem(120)
 		items = self.getListItems(self.window.getControl(120))
 		ct=0
 		idx = 0
@@ -1297,7 +1313,7 @@ class FacebookSession:
 			if photo:
 				photos.append(photo)
 				ct+=1
-		self.openTagsWindow(photos,idx)
+		self.openSlideshowTagsWindow(photos,idx,slideshow)
 		
 	def showVideo(self,item):
 		xbmc.executebuiltin('PlayMedia(%s)' % item.getProperty('source'))
@@ -1305,7 +1321,7 @@ class FacebookSession:
 	def showMedia(self,item):
 		LOG('SHOWING MEDIA')
 		if self.itemType(item) == 'image':
-			self.showImage(item)
+			self.showImages(item)
 		else:
 			self.showVideo(item)
 		
@@ -1460,83 +1476,6 @@ class FacebookSession:
 #		self.setSetting('current_user_pic','')
 #		outfile = os.path.join(self.CACHE_PATH,'current_user_pic')
 #		self.setSetting('current_user_pic',self.getFile(self.currentUser.pic,outfile))
-		
-	def createTagsWindow(self,photo):
-		width = int(photo.width(0))
-		height = int(photo.height(0))
-		if not width or not height: return
-		tags = photo.tags()
-		source = photo.source('')
-		tagbox = '''
-				<control type="image">
-					<posx>%s</posx>
-					<posy>%s</posy>
-					<width>%s</width>
-					<height>%s</height>
-					<texture border="3">facebook-media-outline-box.png</texture>
-					<visible>StringCompare(Container(120).ListItem.Label2,%s)</visible>
-				</control>'''
-			
-		tagitem = '''
-				<item>
-					<label>%s</label>
-					<label2>%s</label2>
-					<onclick>-</onclick>
-				</item>'''
-		aspect = width/float(height)
-		x=0
-		y=0
-		if aspect < (16/9.0):
-			mod = (720.0/height)
-			wmod = int(round(mod * width))
-			hmod = 720
-			x = (1280 - wmod)/2
-			y = 0
-		else:
-			mod = (1280.0/width) 
-			wmod = 1280
-			hmod = int(round(mod * height))
-			x = 0
-			y = (720 - hmod) / 2
-			
-		box_len = 200
-		box_off = box_len/2
-		
-		template_file_path = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('path')),'tags.xml')
-		tags_file_path = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('path')),'resources','skins','Default','720p','facebook-media-tags.xml')
-		
-		tags_file = open(template_file_path,'r')
-		xml = tags_file.read()
-		tags_file.close()
-		
-		xml = xml.replace('G_X',str(x))
-		xml = xml.replace('G_Y',str(y))
-		xml = xml.replace('I_WIDTH',str(wmod))
-		xml = xml.replace('I_HEIGHT',str(hmod))
-		xml = xml.replace('TAGGED_IMAGE',source)
-		
-		boxes = ''
-		items = ''
-		if tags:
-			for tag in tags:
-				tag_name = tag.name('')
-				tag_id = tag.id or tag_name
-				tag_id = 'ID-' + tag_id.replace(' ','')
-				tag_x = int(wmod * (float(tag.x(0))/100)) - box_off
-				tag_y = int(hmod * (float(tag.y(0))/100)) - box_off
-				boxes += tagbox % (tag_x,tag_y,box_len,box_len,tag_id)
-				items += tagitem % (tag_name,tag_id)
-		else:
-			#If not tags this is the easy way to make the tag list fade :)
-			boxes = tagbox % (-8,-8,2,2,'no_id')
-			items = tagitem % (__lang__(3001),'no_id')
-		
-		xml = xml.replace('<!-- TAGBOXES -->',boxes)
-		xml = xml.replace('<!-- TAGITEMS -->',items)
-		
-		tags_file = open(tags_file_path,'w')
-		tags_file.write(xml)
-		tags_file.close()
 			
 	def clearSetting(self,key):
 		__addon__.setSetting(key,'')
@@ -1642,8 +1581,6 @@ def openWindow(window_name,session=None,**kwargs):
 			w = MainWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME)
 		elif window_name == 'auth':
 			w = AuthWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME,session=session,**kwargs)
-		elif window_name == 'tags':
-			w = TagsWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME,session=session,**kwargs)
 		elif window_name == 'slideshow':
 			w = SlideshowTagsWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME,session=session,**kwargs)
 		else:

@@ -1,11 +1,18 @@
 Facebook Media Changelog
 
-Current Version : 0.6.2
+Current Version : 0.6.3
 
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
 	-Sometimes displaying photo/video options delays waiting on facebook. Should show progress/notify user to wait
 	-Album caching (and other caching)
+
+*** 0.6.3 ***
+
+Finished (basically) the photo/tags view
+Added ability to start a slideshow from the photo/tags view (PLAY will start/stop and STOP will stop)
+Slideshow option now uses photo/tags view for slideshows
+Added a slideshow interval option to settings
 
 *** 0.6.2 ***
 
