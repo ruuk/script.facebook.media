@@ -332,7 +332,8 @@ class SlideshowTagsWindow(BaseWindow):
 		base_gcid = 400
 		base_lcid = 500
 		base_lgcid = 200
-		tag_count = len(tags)
+		tag_count = 0
+		if tags: tag_count = len(tags)
 		for idx in range(0,20):
 			group = self.getControl(base_gcid + idx)
 			label = self.getControl(base_lcid + idx)
@@ -350,6 +351,8 @@ class SlideshowTagsWindow(BaseWindow):
 				label.setLabel(tag_name)
 				group.setEnabled(True)
 			else:
+				group.setPosition(-300,-300)
+				label.setLabel('')
 				group.setEnabled(False)
 		
 class FacebookSession:
