@@ -1,11 +1,20 @@
 Facebook Media Changelog
 
-Current Version : 0.6.3
+Current Version : 0.6.4
 
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
 	-Sometimes displaying photo/video options delays waiting on facebook. Should show progress/notify user to wait
 	-Album caching (and other caching)
+	-Exit photo/tags view with same photo selected (option?)
+	-Go to tagged friend when selecting tag from photo/tags view
+
+*** 0.6.4 ***
+
+Restart interval when pressing prev/next or moving through tags during slideshow
+Changed default photo limit to 200
+Removed album thumbnail url resolving, should speed up albums display
+Pop up notification on slideshow on/off
 
 *** 0.6.3 ***
 

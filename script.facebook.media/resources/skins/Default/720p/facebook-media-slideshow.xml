@@ -6,10 +6,10 @@
 		<control type="group" id="100">
 			<posx>0</posx>
 			<posy>0</posy>
-			<control type="largeimage" id="101">
+			<control type="image" id="101">
 				<width>1280</width>
 				<height>720</height>
-				<texture>-</texture>
+				<texture background="true">-</texture>
 				<fadetime>500</fadetime>
 				<aspectratio>keep</aspectratio>
 			</control>
@@ -635,6 +635,35 @@
 					</control>
 				</control>
 				
+			</control>
+		</control>
+		
+		<!-- Notification                                            -->
+		<control type="group" id="160">
+			<posx>880</posx>
+			<posy>560</posy>
+			<width>370</width>
+			<height>60</height>
+			<control type="image">
+				<width>370</width>
+				<height>60</height>
+				<texture border="20">facebook-media-tube-back.png</texture>
+			</control>
+			<control type="label" id="161">
+				<posx>0</posx>
+				<posy>0</posy>
+				<width>370</width>
+				<height>60</height>
+				<align>center</align>
+				<aligny>center</aligny>
+				<font>font12_title</font>
+				<textcolor>white</textcolor>
+				<shadowcolor>ff000000</shadowcolor>
+			</control>
+			<control type="image">
+				<width>370</width>
+				<height>60</height>
+				<texture border="20">facebook-media-tube-overlay-lr.png</texture>
 			</control>
 		</control>
 	</controls>

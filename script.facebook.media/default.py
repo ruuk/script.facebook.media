@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.6.3'
+__version__ = '0.6.4'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -216,6 +216,7 @@ class SlideshowTagsWindow(BaseWindow):
 		BaseWindow.__init__( self, *args, **kwargs )
 		
 	def onInit(self):
+		self.getControl(160).setVisible(False)
 		BaseWindow.onInit(self)
 		self.session.window = self
 		self.showPhoto()
@@ -244,6 +245,7 @@ class SlideshowTagsWindow(BaseWindow):
 		elif action == ACTION_STOP:
 			self.stopSlideshow()
 		else:
+			self.resetSlideshow()
 			self.getControl(150).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.IsVisible(150)')])
 			self.setFocusId(150)
 		
@@ -255,31 +257,42 @@ class SlideshowTagsWindow(BaseWindow):
 	def startSlideshow(self):
 		if self.slideshowThread: return
 		LOG('Starting Slideshow')
+		self.showNotification(__lang__(30054))
 		self.slideshowThread = threading.Timer(self.slideInterval, self.triggerNextFromThread)
 		self.slideshowThread.start()
 		
 	def stopSlideshow(self):
 		if self.slideshowThread:
 			LOG('Stopping Slideshow')
+			self.showNotification(__lang__(30055))
 			self.slideshowThread.cancel()
 			self.slideshowThread = None
 		
 	def triggerNextFromThread(self):
 		xbmc.executebuiltin('Action(Right)')
-		if self.closed: return #Probabaly not necessary, but just in case...
-		self.slideshowThread = threading.Timer(self.slideInterval, self.triggerNextFromThread)
-		self.slideshowThread.start()
 		
 	def currentPhoto(self):
 		return self.photos[self.current_index]
 	
+	def resetSlideshow(self):
+		if self.slideshowThread:
+			if self.closed: return #Probabaly not necessary, but just in case...
+			if self.slideshowThread: self.slideshowThread.cancel()
+			self.slideshowThread = threading.Timer(self.slideInterval, self.triggerNextFromThread)
+			self.slideshowThread.start()
+			return True
+		else:
+			return False
+			
 	def nextPhoto(self):
+		self.resetSlideshow()
 		self.current_index += 1
 		if self.current_index >= len(self.photos):
 			self.current_index = 0
 		self.showPhoto()
 	
 	def prevPhoto(self):
+		self.resetSlideshow()
 		self.current_index -= 1
 		if self.current_index < 0:
 			self.current_index = len(self.photos) - 1
@@ -354,6 +367,12 @@ class SlideshowTagsWindow(BaseWindow):
 				group.setPosition(-300,-300)
 				label.setLabel('')
 				group.setEnabled(False)
+				
+	def showNotification(self,notice):
+		self.getControl(161).setLabel(notice)
+		self.getControl(160).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.IsVisible(160)')])
+		self.getControl(160).setVisible(True)
+		self.getControl(160).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.IsVisible(160)')])
 		
 class FacebookSession:
 	def __init__(self,window=None):
@@ -495,6 +514,8 @@ class FacebookSession:
 		self.setPathDisplay()
 
 	def getRealURL(self,url):
+		return url
+	
 		if not url: return url
 		for ct in range(1,4):
 			try:

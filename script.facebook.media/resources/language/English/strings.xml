@@ -65,6 +65,8 @@
 	
 	<string id="30052">Photos Per Page</string>
 	<string id="30053">Slideshow Interval</string>
+	<string id="30054">Slideshow: ON</string>
+	<string id="30055">Slideshow: OFF</string>
 		
     <string id="3001">No Tags</string>
 </strings>
