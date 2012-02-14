@@ -244,6 +244,8 @@ class SlideshowTagsWindow(BaseWindow):
 				self.startSlideshow()
 		elif action == ACTION_STOP:
 			self.stopSlideshow()
+		elif action == ACTION_CONTEXT_MENU:
+			self.session.showPhotoDialog(self.currentPhoto().source(''))
 		else:
 			self.resetSlideshow()
 			self.getControl(150).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.IsVisible(150)')])
@@ -613,6 +615,37 @@ class FacebookSession:
 		tn_url = self.getRealURL(tn).replace('https://','http://')
 		self.imageURLCache[ID] = tn_url
 		return tn_url
+		
+	def sharePhoto(self,url):
+		LOG('Sharing Photo')
+		try:
+			import ShareSocial #@UnresolvedImport
+		except:
+			return
+		
+		share = ShareSocial.getShare('script.image.facebook','imagelink',url,'Facebook Media','Facebook Media Photo')
+		share.share()
+		
+	def showPhotoDialog(self,url):
+		options = []
+		optionIDs = []
+		try:
+			import ShareSocial #@UnresolvedImport
+			if ShareSocial.shareTargetAvailable('imagelink'):
+				options.append(__lang__(30056))
+				optionIDs.append('share')
+		except:
+			pass
+		if not options:
+			options.append(__lang__(30058))
+			optionIDs.append('NOOPTIONS')
+		idx = xbmcgui.Dialog().select(__lang__(30057),options)
+		if idx < 0:
+			return
+		else:
+			option = optionIDs[idx]
+		if option == 'share':
+			self.sharePhoto(url)
 		
 	def ALBUMS(self,item):
 		LOG('ALBUMS - STARTED')
