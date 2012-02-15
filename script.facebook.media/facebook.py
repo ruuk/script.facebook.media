@@ -455,7 +455,23 @@ class GraphWrap(GraphAPI):
 			elif 'id' in data_obj:
 				return GraphObject(graph=self,data=data_obj)
 		return data_obj
-			
+		
+	def putWallPost(self,message, attachment={}, profile_id="me"):
+		fail = False
+		try:
+			return self.put_wall_post(message, attachment, profile_id)
+		except GraphAPIError,e:
+			LOG(e.type)
+			if not e.type == 'OAuthException': raise
+			fail = True
+	
+		if fail:
+			LOG("ERROR POSTING TO WALL - GETTING NEW TOKEN")
+			if not self.getNewToken():
+				if self.access_token: raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
+				else: return None
+			return self.put_wall_post(message, attachment, profile_id)
+		
 	def getObject(self,ID,**args):
 		return GraphObject(ID,self,**args)
 	

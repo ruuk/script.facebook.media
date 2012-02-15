@@ -412,32 +412,26 @@ class FacebookSession:
 
 		self.endProgress()
 		
-	def start(self):
+	def start(self,noApp=False):
 		user = self.getCurrentUser()
 		if not user:
 			if not self.openAddUserWindow(): return False
 			user = self.getCurrentUser()
 		
-		self.graph = self.newGraph(	user.email,
-									user.password,
-									user.id,
-									user.token,
-									self.newTokenCallback )
+		self.graph = newGraph(	user.email,
+								user.password,
+								user.id,
+								user.token,
+								self.newTokenCallback )
 		
 		#print user.username
 		#print user.email
-		
+		if noApp: return
 		self.loadOptions()
 		self.CATEGORIES()
 		self.setCurrentState()
 		self.setUserDisplay()
 		return True
-		
-	def newGraph(self,email,password,uid=None,token=None,new_token_callback=None):
-		graph = facebook.GraphWrap(token,new_token_callback=new_token_callback)
-		graph.setAppData('150505371652086',scope='user_photos,friends_photos,user_videos,friends_videos,publish_stream')
-		graph.setLogin(email,password,uid)
-		return graph
 		
 	def newTokenCallback(self,token):
 		self.token = token
@@ -623,7 +617,10 @@ class FacebookSession:
 		except:
 			return
 		
-		share = ShareSocial.getShare('script.image.facebook','imagelink',url,'Facebook Media','Facebook Media Photo')
+		share = ShareSocial.getShare('script.facebook.media','imagelink')
+		share.content = url
+		share.name = 'Facebook Media'
+		share.title = 'Facebook Media Photo'
 		share.share()
 		
 	def showPhotoDialog(self,url):
@@ -631,7 +628,7 @@ class FacebookSession:
 		optionIDs = []
 		try:
 			import ShareSocial #@UnresolvedImport
-			if ShareSocial.shareTargetAvailable('imagelink'):
+			if ShareSocial.shareTargetAvailable('imagelink','script.facebook.media'):
 				options.append(__lang__(30056))
 				optionIDs.append('share')
 		except:
@@ -1449,7 +1446,7 @@ class FacebookSession:
 		self.window.getControl(121).setVisible(False)
 		#email,password = self.newUserCache
 		self.newUserCache = None
-		graph = self.newGraph(email, password,token=token)
+		graph = newGraph(email, password,token=token)
 		#graph.getNewToken()
 		self.window.getControl(122).setVisible(False)
 		self.window.getControl(131).setVisible(False)
@@ -1562,7 +1559,7 @@ class FacebookSession:
 		url,html = webviewer.getWebResult(url,autoForms=autoForms,autoClose=autoClose) #@UnusedVariable
 		
 		if not graph: graph = self.graph
-		if not graph: graph = self.newGraph(email, password)
+		if not graph: graph = newGraph(email, password)
 		token = graph.extractTokenFromURL(url)
 		if graph.tokenIsValid(token):
 			return token
@@ -1644,7 +1641,28 @@ def openWindow(window_name,session=None,**kwargs):
 			return #Won't happen :)
 		w.doModal()			
 		del w
-		
+
+def newGraph(email,password,uid=None,token=None,new_token_callback=None):
+	graph = facebook.GraphWrap(token,new_token_callback=new_token_callback)
+	graph.setAppData('150505371652086',scope='user_photos,friends_photos,user_videos,friends_videos,publish_stream')
+	graph.setLogin(email,password,uid)
+	return graph
+	
+def registerAsShareTarget():
+	try:
+		import ShareSocial #@UnresolvedImport
+	except:
+		LOG('Could not import ShareSocial')
+		return
+	
+	target = ShareSocial.getShareTarget()
+	target.addonID = 'script.facebook.media'
+	target.name = 'Facebook'
+	target.importPath = 'share'
+	target.shareTypes = ['imagelink']
+	ShareSocial.registerShareTarget(target)
+	LOG('Registered as share target with ShareSocial')
+	
 XBMC_VERSION = xbmc.getInfoLabel('System.BuildVersion')
 SKIN_PATH = xbmc.translatePath('special://skin')
 if SKIN_PATH.endswith(os.path.sep): SKIN_PATH = SKIN_PATH[:-1]
@@ -1652,4 +1670,6 @@ CURRENT_SKIN = os.path.basename(SKIN_PATH)
 LOG('XBMC Version: %s' % XBMC_VERSION)
 LOG('XBMC Skin: %s' % CURRENT_SKIN)
 
-openWindow('main')
+if __name__ == '__main__':
+	registerAsShareTarget()
+	openWindow('main')
