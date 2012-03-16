@@ -617,7 +617,7 @@ class FacebookSession:
 		except:
 			return
 		
-		share = ShareSocial.getShare('script.facebook.media','imagelink')
+		share = ShareSocial.getShare('script.facebook.media','image')
 		share.content = url
 		share.name = 'Facebook Media'
 		share.title = 'Facebook Media Photo'
@@ -628,7 +628,7 @@ class FacebookSession:
 		optionIDs = []
 		try:
 			import ShareSocial #@UnresolvedImport
-			if ShareSocial.shareTargetAvailable('imagelink','script.facebook.media'):
+			if ShareSocial.shareTargetAvailable('image','script.facebook.media'):
 				options.append(__lang__(30056))
 				optionIDs.append('share')
 		except:
@@ -1546,7 +1546,7 @@ class FacebookSession:
 		
 	def getAuth(self,email='',password='',graph=None):
 		redirect = urllib.quote('http://2ndmind.com/facebookphotos/complete.html')
-		scope = urllib.quote('user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,user_videos,friends_videos,publish_stream')
+		scope = urllib.quote('user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,user_videos,friends_videos,publish_stream,read_stream')
 		url = 'https://graph.facebook.com/oauth/authorize?client_id=150505371652086&redirect_uri=%s&type=user_agent&scope=%s' % (redirect,scope)
 		from webviewer import webviewer #@UnresolvedImport
 		login = {'action':'login.php'}
@@ -1644,7 +1644,7 @@ def openWindow(window_name,session=None,**kwargs):
 
 def newGraph(email,password,uid=None,token=None,new_token_callback=None):
 	graph = facebook.GraphWrap(token,new_token_callback=new_token_callback)
-	graph.setAppData('150505371652086',scope='user_photos,friends_photos,user_videos,friends_videos,publish_stream')
+	graph.setAppData('150505371652086',scope='user_photos,friends_photos,user_videos,friends_videos,publish_stream,read_stream')
 	graph.setLogin(email,password,uid)
 	return graph
 	
@@ -1659,7 +1659,8 @@ def registerAsShareTarget():
 	target.addonID = 'script.facebook.media'
 	target.name = 'Facebook'
 	target.importPath = 'share'
-	target.shareTypes = ['imagelink']
+	target.shareTypes = ['image','audio','video','imagefile','videofile','status']
+	target.provideTypes = ['feed']
 	ShareSocial.registerShareTarget(target)
 	LOG('Registered as share target with ShareSocial')
 	
