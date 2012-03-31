@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.6.5'
+__version__ = '0.6.6'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -1441,6 +1441,13 @@ class FacebookSession:
 			self.newUserCache = None
 			return
 		
+		if not token:
+			LOG('addUser(): Failed to get authorization token')
+			xbmcgui.Dialog().ok(__lang__(30035),__lang__(30060))
+			self.closeWindow()
+			self.newUserCache = None
+			return
+		
 		LOG("ADD USER PART 2")
 		self.window.getControl(112).setVisible(False)
 		self.window.getControl(121).setVisible(False)
@@ -1544,7 +1551,7 @@ class FacebookSession:
 			return int(float(setting))
 		return setting
 		
-	def getAuth(self,email='',password='',graph=None):
+	def getAuth(self,email='',password='',graph=None,no_auto=False):
 		redirect = urllib.quote('http://2ndmind.com/facebookphotos/complete.html')
 		scope = urllib.quote('user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,user_videos,friends_videos,publish_stream,read_stream')
 		url = 'https://graph.facebook.com/oauth/authorize?client_id=150505371652086&redirect_uri=%s&type=user_agent&scope=%s' % (redirect,scope)
@@ -1556,7 +1563,10 @@ class FacebookSession:
 		autoForms = [login,{'action':'uiserver.php'}]
 		autoClose = {'url':'.*access_token=.*','heading':__lang__(30049),'message':__lang__(30050)}
 		webviewer.WR.browser._ua_handlers["_cookies"].cookiejar.clear()
-		url,html = webviewer.getWebResult(url,autoForms=autoForms,autoClose=autoClose) #@UnusedVariable
+		if no_auto or self.getSetting('disable_auto_login', False):
+			url,html = webviewer.getWebResult(url) #@UnusedVariable
+		else:
+			url,html = webviewer.getWebResult(url,autoForms=autoForms,autoClose=autoClose) #@UnusedVariable
 		
 		if not graph: graph = self.graph
 		if not graph: graph = newGraph(email, password)

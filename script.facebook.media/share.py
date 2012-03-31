@@ -111,7 +111,6 @@ class FacebookTargetFunctions(ShareSocial.TargetFunctions):
 		
 	def getShareData(self,share):
 		obj_id = share.callbackData
-		print obj_id
 		obj = self.graph.getObject(obj_id)
 		share.page = obj.link('')
 		if share.shareType == 'image':
