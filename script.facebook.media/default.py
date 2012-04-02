@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.6.6'
+__version__ = '0.6.7'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -1276,7 +1276,7 @@ class FacebookSession:
 			self.progAutoCt+=1
 			ct = self.progAutoCt
 			message=self.progAutoMessage.replace('@CT',str(ct)).replace('@TOT',str(total))
-		if not self.progressVisible: return
+		if not self.progressVisible: return True
 		if self.cancel_progress: return False
 		try:
 			if ct < 0 or ct > total:

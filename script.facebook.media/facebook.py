@@ -236,7 +236,7 @@ class GraphAPI(object):
 				if update_prog:
 					sofar += chunk
 					prog = int((sofar * 40) / total)
-					if not self.updateProgress(30 + prog): return
+					if update_prog and not self.updateProgress(30 + prog): return
 			response = _parse_json(data)
 		finally:
 			fileob.close()
@@ -269,7 +269,9 @@ class Connections(list):
 		self.progress = progress
 		self.previous = ''
 		self.next = ''
-		self.count = connections.get('count',0)
+		self.count = 0
+		if connections:
+			self.count = connections.get('count',0)
 		if connections: self.processConnections(connections)
 		
 	def processConnections(self,connections):
