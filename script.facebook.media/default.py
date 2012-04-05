@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.6.7'
+__version__ = '0.6.8'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -61,6 +61,8 @@ def DONOTHING(text):
 def LOG(message):
 	print 'FACEBOOK MEDIA: %s' % ENCODE(str(message))
 	
+LOG('Version: ' + __version__)
+
 def ERROR(message):
 	LOG(message)
 	traceback.print_exc()
@@ -1549,6 +1551,8 @@ class FacebookSession:
 		if not setting: return default
 		if type(default) == type(0):
 			return int(float(setting))
+		elif isinstance(default,bool):
+			return default == 'true'
 		return setting
 		
 	def getAuth(self,email='',password='',graph=None,no_auto=False):
@@ -1568,6 +1572,8 @@ class FacebookSession:
 		else:
 			url,html = webviewer.getWebResult(url,autoForms=autoForms,autoClose=autoClose) #@UnusedVariable
 		
+		if self.getSetting('debug', False): print html
+		
 		if not graph: graph = self.graph
 		if not graph: graph = newGraph(email, password)
 		token = graph.extractTokenFromURL(url)
@@ -1585,15 +1591,17 @@ def doKeyboard(prompt,default='',hidden=False):
 def createWindowFile(skin_name):
 	if not skin_name: raise Exception
 	from elementtree import ElementTree as etree #@UnresolvedImport
-	fonts_xml = open(os.path.join(SKIN_PATH,'720p','Font.xml')).read()
+	
+	path = os.path.join(SKIN_PATH,'720p','Font.xml')
+	if not os.path.exists(path): path = os.path.join(SKIN_PATH,'1080i','Font.xml')
+	if not os.path.exists(path): return
+	
+	fonts_xml = open(path).read()	
 	fonts_dom = etree.fromstring(fonts_xml)
 	curr_fonts = {	'font10_title':12,
 					'font12_title':16,
-					'font12_title':20,
-					'font24_title':24,
-					'font28_title':28,
-					'font30_title':30,
-					'WeatherTemp':80}
+					'font13_title':20,
+					'font24_title':24}
 	
 	new_fonts = {}
 	

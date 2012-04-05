@@ -1,6 +1,6 @@
 Facebook Media Changelog
 
-Current Version : 0.6.7
+Current Version : 0.6.8
 
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
@@ -9,7 +9,14 @@ Known Issues/TODO:
 	-Exit photo/tags view with same photo selected (option?)
 	-Go to tagged friend when selecting tag from photo/tags view
 
-*** 0.6.6 ***
+*** 0.6.8 ***
+
+Added debug option in settings (Currently only prints HTML to log when auth fails)
+Fixed skin customizing for 1080 skins.
+Removed *args,**kwargs from window __init__'s to get rid of deprecation warning
+Added logging of version
+
+*** 0.6.7 ***
 
 Fixed a bug causing an error when showing comments/likes
 
