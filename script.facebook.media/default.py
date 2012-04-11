@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.6.8'
+__version__ = '0.6.9'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -1554,11 +1554,16 @@ class FacebookSession:
 		elif isinstance(default,bool):
 			return default == 'true'
 		return setting
-		
+	
 	def getAuth(self,email='',password='',graph=None,no_auto=False):
+		xbmcgui.Dialog().ok('Authorize','Goto xbmc.2ndmind.net/fb','Authorize the addon, and write down the pin.','Click OK when done')
+		token = doKeyboard('Enter the 4 digit pin')
+		return token
+	
+	def getAuthOld(self,email='',password='',graph=None,no_auto=False):
 		redirect = urllib.quote('http://2ndmind.com/facebookphotos/complete.html')
 		scope = urllib.quote('user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags,user_videos,friends_videos,publish_stream,read_stream')
-		url = 'https://graph.facebook.com/oauth/authorize?client_id=150505371652086&redirect_uri=%s&type=user_agent&scope=%s' % (redirect,scope)
+		url = 'https://graph.facebook.com/oauth/authorize?client_id=150505371652086&redirect_uri=%s&display=page&scope=%s' % (redirect,scope)
 		from webviewer import webviewer #@UnresolvedImport
 		login = {'action':'login.php'}
 		if email and password:
