@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.6.9'
+__version__ = '0.7.0'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -974,7 +974,7 @@ class FacebookSession:
 		f_id = obj.from_({}).get('id','')
 		if f_id != uid:
 			name = obj.from_({}).get('name','') or ''
-			if name: name = '[COLOR FF55FF55]'+__lang__(30022) % name +'[/COLOR][CR]'
+			if name: name = u'[COLOR FF55FF55]'+__lang__(30022) % name +u'[/COLOR][CR]'
 		title = obj.name('')
 		if title: title = '[COLOR yellow]%s[/COLOR][CR]' % title
 		caption = name + title + obj.description('')
@@ -1552,7 +1552,7 @@ class FacebookSession:
 		if type(default) == type(0):
 			return int(float(setting))
 		elif isinstance(default,bool):
-			return default == 'true'
+			return setting == 'true'
 		return setting
 	
 	def getAuth(self,email='',password='',graph=None,no_auto=False):

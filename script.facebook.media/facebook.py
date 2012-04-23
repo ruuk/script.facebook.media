@@ -35,7 +35,7 @@ usage of this module might look like this:
 from poster.encode import multipart_encode
 import poster.streaminghttp
 import urllib, urllib2
-import sys, re
+import sys, re, codecs
 from urllib2 import HTTPError
 from cgi import parse_qs
 
@@ -219,6 +219,10 @@ class GraphAPI(object):
 					raise GraphAPIError(	'OAuthException',
 											'Expired/bad token')
 			raise
+		
+		encoding = fileob.info().get('content-type').split('charset=')[-1]
+		fileob = codecs.EncodedFile(fileob, encoding)
+		
 		if update_prog: self.updateProgress(30)
 		try:
 			data = ''
