@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.7.0'
+__version__ = '0.7.1'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -686,7 +686,7 @@ class FacebookSession:
 			for a in albums:
 				cover = None
 				acp = a.cover_photo()
-				if acp: cover = cover_objects[acp]
+				if acp: cover = cover_objects.get(acp)
 				if cover:
 					tn_url = cover.picture('')
 					self.imageURLCache[a.id] = tn_url
