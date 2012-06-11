@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.7.2'
+__version__ = '0.7.3'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -1459,14 +1459,29 @@ class FacebookSession:
 		#graph.getNewToken()
 		self.window.getControl(122).setVisible(False)
 		self.window.getControl(131).setVisible(False)
+		#retry = False
 		try:
 			user = graph.getObject('me',fields='id,name,picture')
+		#except facebook.GraphWrapAuthError,e:
+		#	if e.type == 'RENEW_TOKEN_FAILURE':
+		#		retry = True
 		except:
 			message = ERROR('ERROR')
 			xbmcgui.Dialog().ok(__lang__(30035),message)
 			self.closeWindow()
 			self.newUserCache = None
 			return
+#		if retry:
+#			token = self.getAuth2(email,password)
+#			try:
+#				user = graph.getObject('me',fields='id,name,picture')
+#			except:
+#				message = ERROR('ERROR')
+#				xbmcgui.Dialog().ok(__lang__(30035),message)
+#				self.closeWindow()
+#				self.newUserCache = None
+#				return
+			
 		uid = user.id
 		username = user.name()
 		if not self.addUserToList(uid):
@@ -1559,6 +1574,35 @@ class FacebookSession:
 		xbmcgui.Dialog().ok('Authorize','Goto xbmc.2ndmind.net/fb','Authorize the addon, and write down the pin.','Click OK when done')
 		token = doKeyboard('Enter the 4 digit pin')
 		return token
+					
+	def getAuth2(self,email='',password='',graph=None,no_auto=False):
+		if not graph: graph = self.graph
+		scope = ''
+		if graph.scope: scope = '&scope=' + graph.scope
+		url = 	'https://www.facebook.com/dialog/oauth?client_id='+graph.client_id+\
+				'&redirect_uri='+graph.redirect+\
+				'&type=user_agent&display=popup'+scope
+		from webviewer import webviewer #@UnresolvedImport
+		#login = {'action':'login.php'}
+		#if email and password:
+		#	login['autofill'] = 'email=%s,pass=%s' % (email,password)
+		#	login['autosubmit'] = 'true'
+		#autoForms = [login,{'action':'uiserver.php'}]
+		#autoClose = {'url':'.*access_token=.*','heading':__lang__(30049),'message':__lang__(30050)}
+		webviewer.WR.browser._ua_handlers["_cookies"].cookiejar.clear()
+		#if no_auto or self.getSetting('disable_auto_login', False):
+		url,html = webviewer.getWebResult(url) #@UnusedVariable
+		#else:
+		#	url,html = webviewer.getWebResult(url,autoForms=autoForms,autoClose=autoClose) #@UnusedVariable
+		
+		if self.getSetting('debug', False): print html
+		
+		if not graph: graph = self.graph
+		if not graph: graph = newGraph(email, password)
+		token = graph.extractTokenFromURL(url)
+		if graph.tokenIsValid(token):
+			return token
+		return None
 	
 	def getAuthOld(self,email='',password='',graph=None,no_auto=False):
 		redirect = urllib.quote('http://2ndmind.com/facebookphotos/complete.html')

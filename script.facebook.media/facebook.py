@@ -638,13 +638,23 @@ class GraphWrap(GraphAPI):
 				
 			script = False
 			token = self.extractTokenFromURL(url)
+			html = res.read()
+			if not token:
+				#if 'class="checkpoint"' in html:
+				token = self.handleLoginNotificationCrap(br)
 			if not token: script = True
 			
 			if script:
 				LOG("SCRIPT TOKEN")
 				#no token in the url, let's try to parse it from javascript on the page
-				html = res.read()
-				LOG(html)
+				try:
+					import xbmcaddon, xbmc, os
+					__addon__ = xbmcaddon.Addon(id='script.facebook.media')
+					htmlFile = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('profile')),'cache','DEBUG_HTML.html')
+					open(htmlFile,'w').write(html)
+					LOG('html output written to: ' + htmlFile)
+				except:
+					pass
 				token = self.parseTokenFromScript(html)
 				token = urllib.unquote(token.decode('unicode-escape'))
 		
@@ -654,6 +664,29 @@ class GraphWrap(GraphAPI):
 		LOG("\n|--------------------\n|TOKEN: %s\n|--------------------"  % token)
 		self.saveToken(token)
 		return token
+		
+	def handleLoginNotificationCrap(self,br):
+		LOG('Handling Login Notification Crap')
+		br.select_form(nr=0)
+		res = br.submit()
+		res.read()
+		#if not 'Media XBMC' in html: return None
+		url = res.geturl()
+		LOG('LN First URL: ' + url)
+		if 'access_token' in url: return self.extractTokenFromURL(url)
+		br.select_form(nr=0)
+		res = br.submit(name='submit[This is Okay]',label='This is Okay')
+		res.read()
+		url = res.geturl()
+		LOG('LN Second URL: ' + url)
+		if 'access_token' in url: return self.extractTokenFromURL(url)
+		br.select_form(nr=0)
+		res = br.submit(name='submit[Don&#039;t Save]',label='Don&#039;t Save')
+		res.read()
+		url = res.geturl()
+		LOG('LN Third URL: ' + url)
+		if 'access_token' in url: return self.extractTokenFromURL(url)
+		return None
 		
 	def extractTokenFromURL(self,url):
 		try:
