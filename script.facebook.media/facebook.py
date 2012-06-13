@@ -39,6 +39,9 @@ import sys, re, codecs
 from urllib2 import HTTPError
 from cgi import parse_qs
 
+import os, xbmc, xbmcaddon
+__addon__ = xbmcaddon.Addon(id='script.facebook.media')
+
 poster.streaminghttp.register_openers()
 
 # Find a JSON parser
@@ -493,6 +496,7 @@ class GraphWrap(GraphAPI):
 		self._progTotal = 100
 		self._progMessage = ''
 		self.uid = None
+		self.cookieJar = None
 	
 	def withProgress(self,callback,modifier=1,total=100,message=''):
 		poster.streaminghttp.PROGRESS_CALLBACK = callback
@@ -596,7 +600,16 @@ class GraphWrap(GraphAPI):
 	def getNewToken(self):
 		import mechanize #@UnresolvedImport
 		br = mechanize.Browser()
-		br._ua_handlers["_cookies"].cookiejar.clear()
+		__addon__ = xbmcaddon.Addon(id='script.facebook.media')
+		cookiesPath = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('profile')),'cache','cookies')
+		LOG('Cookies will be saved to: ' + cookiesPath)
+		cookies = mechanize.LWPCookieJar(cookiesPath)
+		if os.path.exists(cookiesPath): cookies.load()
+		self.cookieJar = cookies
+		opener = mechanize.build_opener(mechanize.HTTPCookieProcessor(cookies))
+		mechanize.install_opener(opener)
+		br.set_cookiejar(self.cookieJar)
+		#br._ua_handlers["_cookies"].cookiejar.clear()
 		br.set_handle_robots(False)
 		scope = ''
 		if self.scope: scope = '&scope=' + self.scope
@@ -648,7 +661,6 @@ class GraphWrap(GraphAPI):
 				LOG("SCRIPT TOKEN")
 				#no token in the url, let's try to parse it from javascript on the page
 				try:
-					import xbmcaddon, xbmc, os
 					__addon__ = xbmcaddon.Addon(id='script.facebook.media')
 					htmlFile = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('profile')),'cache','DEBUG_HTML.html')
 					open(htmlFile,'w').write(html)
@@ -663,6 +675,8 @@ class GraphWrap(GraphAPI):
 			return False
 		LOG("\n|--------------------\n|TOKEN: %s\n|--------------------"  % token)
 		self.saveToken(token)
+		if self.cookieJar is not None:
+			self.cookieJar.save()
 		return token
 		
 	def handleLoginNotificationCrap(self,br):
