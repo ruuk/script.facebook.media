@@ -284,7 +284,7 @@ class Connections(list):
 	def processConnections(self,connections):
 		cons = []
 		for c in connections['data']:
-			cons.append(GraphObject(c['id'],self.graph,c))
+			cons.append(GraphObject(c.get('id'),self.graph,c))
 		self._getPaging(connections,len(cons))
 		self.extend(cons)
 		if self.progress: self.graph.updateProgress(100)
@@ -325,7 +325,7 @@ import UserDict
 class UTF8DictWrap(UserDict.UserDict):
 	def get(self,key,failobj=None):
 		val = UserDict.UserDict.get(self, key, failobj)
-		if hasattr(val,'encode'): return val.encode('utf-8')
+		if hasattr(val,'encode'): return unicode(val.encode('utf-8'),'utf-8')
 		return val
 	
 			
@@ -390,7 +390,7 @@ class GraphObject:
 				else:
 					return Connections(self.graph,val,progress=False)
 			return UTF8DictWrap(val)
-		if hasattr(val,'encode'): return val.encode('utf-8')
+		if hasattr(val,'encode'): return unicode(val.encode('utf-8'),'utf-8')
 		return val
 	
 	def _getObjectData(self,ID,**args):
@@ -425,7 +425,9 @@ class GraphData:
 		if not self._data: self._data = self._getObjectData(self.graphObject.id)
 		
 		def handler(default=None):
-			return self._data.get(prop,default)
+			val = self._data.get(prop,default)
+			if hasattr(val,'encode'): return unicode(val.encode('utf-8'),'utf-8')
+			return val
 			
 		handler.method = prop
 		

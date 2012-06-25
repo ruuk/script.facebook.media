@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-26-2012'
-__version__ = '0.7.4'
+__version__ = '0.7.5'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -970,13 +970,13 @@ class FacebookSession:
 		return xml_unescape(urllib.unquote(text),{"&apos;": "'", "&quot;": '"'})
 	
 	def makeCaption(self,obj,uid):
-		name = ''
+		name = u''
 		f_id = obj.from_({}).get('id','')
 		if f_id != uid:
-			name = obj.from_({}).get('name','') or ''
+			name = obj.from_({}).get('name','') or u''
 			if name: name = u'[COLOR FF55FF55]'+__lang__(30022) % name +u'[/COLOR][CR]'
 		title = obj.name('')
-		if title: title = '[COLOR yellow]%s[/COLOR][CR]' % title
+		if title: title = u'[COLOR yellow]%s[/COLOR][CR]' % title
 		caption = name + title + obj.description('')
 		if not caption: return ''
 		caption += '[CR] '
