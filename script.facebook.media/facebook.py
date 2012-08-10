@@ -638,7 +638,9 @@ class GraphWrap(GraphAPI):
 			
 		if script:
 			#no form, maybe we're logged in and the token is in javascript on the page
-			token = self.parseTokenFromScript(html)
+			url = res.geturl()
+			token = self.extractTokenFromURL(url)
+			if not token: token = self.parseTokenFromScript(html)
 		else:
 			try:
 				#fill out the form and submit
