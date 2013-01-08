@@ -15,8 +15,8 @@ from facebook import GraphAPIError, GraphWrapAuthError
 
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
-__date__ = '01-26-2012'
-__version__ = '0.7.6'
+__date__ = '01-08-2013'
+__version__ = '0.7.7'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -107,7 +107,7 @@ class BaseWindow(xbmcgui.WindowXML):
 		self.session.window = self
 		
 	def onAction(self,action):
-		if action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU:
+		if action.getId() == ACTION_PARENT_DIR or action.getId() == ACTION_PREVIOUS_MENU:
 			self.doClose()
 			return True
 		else:
@@ -140,35 +140,35 @@ class MainWindow(BaseWindow):
 	def onAction(self,action):
 		if self.getFocusId() == 119:
 			self.setFocusId(120)
-			if action == ACTION_MOVE_DOWN:
+			if action.getId() == ACTION_MOVE_DOWN:
 				self.session.menuItemDeSelected()
-			elif action == ACTION_PREVIOUS_MENU:
+			elif action.getId() == ACTION_PREVIOUS_MENU:
 				self.session.menuItemDeSelected(prev_menu=True)
 		if self.getFocusId() == 118:
 			self.setFocusId(120)
 		elif self.getFocusId() == 120:
 			#print action.getId()
 			if self.session.progressVisible: return
-			if action == ACTION_PARENT_DIR or action == ACTION_PARENT_DIR_OLD:
+			if action.getId() == ACTION_PARENT_DIR or action.getId() == ACTION_PARENT_DIR_OLD:
 				self.session.menuItemDeSelected(prev_menu=True)
-			elif action == ACTION_PREVIOUS_MENU:
+			elif action.getId() == ACTION_PREVIOUS_MENU:
 				self.session.menuItemDeSelected(prev_menu=True)
-			elif action == ACTION_MOVE_UP:
+			elif action.getId() == ACTION_MOVE_UP:
 				self.session.menuItemSelected()
 			else:
 				self.session.doNextPrev()
 				
 		elif self.getFocusId() == 125:
-			if action == ACTION_PREVIOUS_MENU:
+			if action.getId() == ACTION_PREVIOUS_MENU:
 				self.doClose()
 		elif self.getFocusId() == 128:
-			if  action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU or action == ACTION_PARENT_DIR_OLD:
+			if  action.getId() == ACTION_PARENT_DIR or action.getId() == ACTION_PREVIOUS_MENU or action.getId() == ACTION_PARENT_DIR_OLD:
 				self.setFocusId(120)
 		elif self.getFocusId() == 138:
-			if action == ACTION_PARENT_DIR or action == ACTION_PREVIOUS_MENU or action == ACTION_MOVE_LEFT or action == ACTION_MOVE_RIGHT  or action == ACTION_PARENT_DIR_OLD:
+			if action.getId() == ACTION_PARENT_DIR or action.getId() == ACTION_PREVIOUS_MENU or action.getId() == ACTION_MOVE_LEFT or action.getId() == ACTION_MOVE_RIGHT  or action.getId() == ACTION_PARENT_DIR_OLD:
 				self.setFocusId(128)
 		elif self.getFocusId() == 160:
-			if action == ACTION_PREVIOUS_MENU:
+			if action.getId() == ACTION_PREVIOUS_MENU:
 				self.session.cancelProgress()
 		
 class AuthWindow(BaseWindow):
@@ -235,18 +235,18 @@ class SlideshowTagsWindow(BaseWindow):
 			
 	def onAction(self,action):
 		BaseWindow.onAction(self, action)
-		if action == ACTION_MOVE_LEFT:
+		if action.getId() == ACTION_MOVE_LEFT:
 			self.prevPhoto()
-		elif action == ACTION_MOVE_RIGHT:
+		elif action.getId() == ACTION_MOVE_RIGHT:
 			self.nextPhoto()
-		elif action == ACTION_PLAYER_PLAY:
+		elif action.getId() == ACTION_PLAYER_PLAY:
 			if self.slideshowThread:
 				self.stopSlideshow()
 			else:
 				self.startSlideshow()
-		elif action == ACTION_STOP:
+		elif action.getId() == ACTION_STOP:
 			self.stopSlideshow()
-		elif action == ACTION_CONTEXT_MENU:
+		elif action.getId() == ACTION_CONTEXT_MENU:
 			self.session.showPhotoDialog(self.currentPhoto().source(''))
 		else:
 			self.resetSlideshow()
@@ -377,7 +377,41 @@ class SlideshowTagsWindow(BaseWindow):
 		self.getControl(160).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.IsVisible(160)')])
 		self.getControl(160).setVisible(True)
 		self.getControl(160).setAnimations([('conditional','effect=fade start=100 end=0 time=400 delay=2000 condition=Control.IsVisible(160)')])
+	
+class ListItemProxy:
+	def __init__(self):
+		self.label = ''
+		self.label2 = ''
+		self.icon = ''
+		self.thumb = ''
+		self.path = ''
+		self.properties = {}
+		self.infos = {}
+	
+	def getLabel(self): return self.label
+	def getLabel2(self): return self.label2
+	def isSelected(self): return False
+	def select(self,selected): pass
+	def setIconImage(self,icon): self.icon = icon
+	def setInfo(self,itype, infoLabels): self.infos[itype] = infoLabels
+	def setLabel(self,label): self.label = label
+	def setLabel2(self,label2): self.label2 = label2
+	def setPath(self,path): self.path = path
+	def setProperty(self,key, value): self.properties[key] = value
+	def setThumbnailImage(self,thumb): self.thumb = thumb
+	
+	def asListItem(self):
+		item = xbmcgui.ListItem()
+		item.setLabel(self.label)
+		item.setLabel2(self.label2)
+		item.setIconImage(self.icon)
+		item.setThumbnailImage(self.thumb)
+		item.setPath(self.path)
+		for k,v in self.properties.items():
+			item.setProperty(k,v)
+		return item
 		
+
 class FacebookSession:
 	def __init__(self,window=None):
 		self.window = window
@@ -481,7 +515,9 @@ class FacebookSession:
 		if not items:
 			items = self.getListItems(ilist)
 			state.listIndex = ilist.getSelectedPosition()
-		state.items = items
+		storageList = xbmcgui.ControlList(-100,-100,80,80)
+		storageList.addItems(items)
+		state.items = storageList
 		for sett in self.stateSettings: state.settings[sett] = self.getSetting(sett)
 		return state
 	
@@ -492,6 +528,8 @@ class FacebookSession:
 		if not self.states: return False
 		state = self.states.pop()
 		if not clear: self.restoreState(state)
+		del state.items
+		del state
 		return True
 	
 	def restoreState(self,state,onload=False):
@@ -501,7 +539,7 @@ class FacebookSession:
 		for sett in self.stateSettings: self.clearSetting(sett)
 		for sett in self.stateSettings: self.setSetting(sett,state.settings.get(sett,''))
 		ilist = self.window.getControl(120)
-		self.fillList(state.items)
+		self.fillList(self.getListItems(state.items))
 		ilist.selectItem(state.listIndex)
 		self.current_state = state
 		self.setFriend(restore=True)
@@ -597,7 +635,7 @@ class FacebookSession:
 			if friend_thumb: item.setProperty('friend_thumb',friend_thumb)
 			else: item.setProperty('friend_thumb','facebook-media-icon-%s.png' % cid)
 			item.setProperty('background','')
-			item.setProperty('previous',self.getSetting('last_item_name'))
+			item.setProperty('previous',self.getSetting('last_item_name') or 'ERROR')
 			items.append(item)
 				
 		self.fillList(items)
@@ -725,7 +763,7 @@ class FacebookSession:
 				item.setProperty('album',a.id)
 				item.setProperty('uid',uid)
 				item.setProperty('category','photos')
-				item.setProperty('previous',self.getSetting('last_item_name'))
+				item.setProperty('previous',self.getSetting('last_item_name') or 'ERROR')
 				items.append(item)
 				
 			if albums.next:
@@ -769,7 +807,7 @@ class FacebookSession:
 			modifier = 50.0 / total
 			for s in srt:
 				fid = show[s].id
-				tn_url = show[s].picture('').replace('_q.','_n.')
+				tn_url = show[s].picture('').get('url','').replace('_q.','_n.')
 				ct+=1
 				self.updateProgress(int(ct*modifier)+offset, 100, __lang__(30012) % (ct,total))
 				
@@ -1031,15 +1069,15 @@ class FacebookSession:
 		state_len = len(self.states)
 		try:
 			item = self.getFocusedItem(120)
+			name = item.getLabel()
 			
 			cat = item.getProperty('category')
 			uid = item.getProperty('uid') or 'me'
 			
 			if cat == 'friend':
-				name = item.getLabel()
 				self.CATEGORIES(item)
 				self.setFriend(name)
-				self.setSetting('last_item_name',item.getLabel())
+				self.setSetting('last_item_name',name)
 				self.setPathDisplay()
 				return
 			else:
@@ -1069,7 +1107,7 @@ class FacebookSession:
 			elif cat == 'paging':
 				self.doNextPrev()
 				return
-			self.setSetting('last_item_name',item.getLabel())
+			self.setSetting('last_item_name',name)
 			self.setPathDisplay()
 		except GraphWrapAuthError,e:
 			if len(self.states) > state_len: self.popState()
@@ -1240,7 +1278,7 @@ class FacebookSession:
 		path = []
 		for state in self.states:
 			path.append(state.settings.get('last_item_name') or '')
-		path.append(self.getSetting('last_item_name'))
+		path.append(self.getSetting('last_item_name') or '')
 		path = ' : '.join(path[1:])
 		self.window.getControl(195).setLabel(path)
 		LOG('PATH - %s' % path)
@@ -1491,7 +1529,7 @@ class FacebookSession:
 		self.setSetting('username_%s' % uid,username)
 		self.setSetting('token_%s' % uid,graph.access_token)
 		#if self.token: self.setSetting('token_%s' % uid,self.token)
-		self.setSetting('profile_pic_%s' % uid,user.picture('').replace('_q.','_n.'))
+		self.setSetting('profile_pic_%s' % uid,user.picture('').get('url','').replace('_q.','_n.'))
 		#self.getProfilePic(uid,force=True)
 		self.window.getControl(132).setVisible(False)
 		xbmcgui.Dialog().ok(__lang__(30036),DONOTHING(username))
@@ -1573,6 +1611,8 @@ class FacebookSession:
 	def getAuth(self,email='',password='',graph=None,no_auto=False):
 		xbmcgui.Dialog().ok('Authorize','Goto xbmc.2ndmind.net/fb','Authorize the addon, and write down the pin.','Click OK when done')
 		token = doKeyboard('Enter the 4 digit pin')
+		token = urllib2.urlopen('http://xbmc.2ndmind.net/fb/gettoken.php?pin=' + token).read()
+		#print 'tkn: ' + token
 		return token
 					
 	def getAuth2(self,email='',password='',graph=None,no_auto=False):

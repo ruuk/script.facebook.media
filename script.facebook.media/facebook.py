@@ -284,7 +284,8 @@ class Connections(list):
 	def processConnections(self,connections):
 		cons = []
 		for c in connections['data']:
-			cons.append(GraphObject(c.get('id'),self.graph,c))
+			if hasattr(c,'get'):
+				cons.append(GraphObject(c.get('id'),self.graph,c))
 		self._getPaging(connections,len(cons))
 		self.extend(cons)
 		if self.progress: self.graph.updateProgress(100)
@@ -387,8 +388,10 @@ class GraphObject:
 			if 'data' in val:
 				if as_json:
 					return self._toJSON(val)
-				else:
+				elif isinstance(val['data'],list):
 					return Connections(self.graph,val,progress=False)
+				else:
+					val = val['data']
 			return UTF8DictWrap(val)
 		if hasattr(val,'encode'): return unicode(val.encode('utf-8'),'utf-8')
 		return val
@@ -611,7 +614,7 @@ class GraphWrap(GraphAPI):
 		opener = mechanize.build_opener(mechanize.HTTPCookieProcessor(cookies))
 		mechanize.install_opener(opener)
 		br.set_cookiejar(self.cookieJar)
-		#br._ua_handlers["_cookies"].cookiejar.clear()
+		br._ua_handlers["_cookies"].cookiejar.clear()
 		br.set_handle_robots(False)
 		scope = ''
 		if self.scope: scope = '&scope=' + self.scope
