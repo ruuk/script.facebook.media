@@ -1,6 +1,6 @@
 Facebook Media Changelog
 
-Current Version : 0.7.7
+Current Version : 0.7.8
 
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
@@ -8,6 +8,12 @@ Known Issues/TODO:
 	-Album caching (and other caching)
 	-Exit photo/tags view with same photo selected (option?)
 	-Go to tagged friend when selecting tag from photo/tags view
+
+*** 0.7.8 ***
+
+Added ability to provide an 'imagestream' for ShareSocial (ie. for use in Plugin Slideshow Screensaver)
+Fix for errors when providing the Home 'feed' to ShareSocial
+Fix for some FB errors being interpreted as a bad token issue
 
 *** 0.7.7 ***
 

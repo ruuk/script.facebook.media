@@ -219,8 +219,12 @@ class GraphAPI(object):
 				reason = e.headers.get('WWW-Authenticate')
 				LOG('\nMessage: %s\nReason: %s' % (e.msg,reason))
 				if 'invalid_token' in reason or 'invalid_request' in reason:
-					raise GraphAPIError(	'OAuthException',
-											'Expired/bad token')
+					if 'unsupported get request' in reason.lower():
+						raise GraphAPIError(	'BadGetException',
+												'Unsupported get request')
+					else:
+						raise GraphAPIError(	'OAuthException',
+												'Expired/bad token')
 			raise
 		
 		encoding = fileob.info().get('content-type').split('charset=')[-1]

@@ -15,8 +15,8 @@ from facebook import GraphAPIError, GraphWrapAuthError
 
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
-__date__ = '01-08-2013'
-__version__ = '0.7.7'
+__date__ = '01-21-2013'
+__version__ = '0.7.8'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -1767,7 +1767,7 @@ def registerAsShareTarget():
 	target.name = 'Facebook'
 	target.importPath = 'share'
 	target.shareTypes = ['image','audio','video','imagefile','videofile','status']
-	target.provideTypes = ['feed']
+	target.provideTypes = ['feed','imagestream']
 	ShareSocial.registerShareTarget(target)
 	LOG('Registered as share target with ShareSocial')
 	
