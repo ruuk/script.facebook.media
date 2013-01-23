@@ -119,7 +119,7 @@ class FacebookTargetFunctions(ShareSocial.TargetFunctions):
 			for p in photos:
 				share = ShareSocial.getShare('script.facebook.media',  'image')
 				share.name = 'Facebook Media'
-				share.title = 'Facebook Media Photo'
+				share.title = p.name('')
 				share.page = p.link('')
 				share.thumbnail = p.icon('')
 				share.media = p.source('')
