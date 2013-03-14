@@ -11,7 +11,7 @@ Known Issues/TODO:
 
 *** 0.8.0 ***
 
-When entering authorization pin, will now no longer accept an invalid pin format 
+When entering authorization pin, will now no longer accept an invalid pin format
 Added ability to save authorization site debug info to the log
 Authorization site (http://xbmc.2ndmind.com/fb): Now provides an optional 12 digit pin for browsers on a different IP. Now also reacts to and displays errors and saves debug info on errors or failure to get a token
 
