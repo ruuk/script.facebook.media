@@ -1,6 +1,6 @@
 Facebook Media Changelog
 
-Current Version : 0.7.9
+Current Version : 0.8.0
 
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
@@ -8,6 +8,12 @@ Known Issues/TODO:
 	-Album caching (and other caching)
 	-Exit photo/tags view with same photo selected (option?)
 	-Go to tagged friend when selecting tag from photo/tags view
+
+*** 0.8.0 ***
+
+When entering authorization pin, will now no longer accept an invalid pin format 
+Added ability to save authorization site debug info to the log
+Authorization site (http://xbmc.2ndmind.com/fb): Now provides an optional 12 digit pin for browsers on a different IP. Now also reacts to and displays errors and saves debug info on errors or failure to get a token
 
 *** 0.7.9 ***
 

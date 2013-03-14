@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-21-2013'
-__version__ = '0.7.9'
+__version__ = '0.8.0'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -1474,6 +1474,10 @@ class FacebookSession:
 			self.window.getControl(102).setVisible(False)
 			self.window.getControl(111).setVisible(False)
 			token = self.getAuth(email,password)
+			if token == None:
+				self.closeWindow()
+				self.newUserCache = None
+				return
 		except:
 			message = ERROR('ERROR')
 			xbmcgui.Dialog().ok(__lang__(30035),message)
@@ -1610,8 +1614,21 @@ class FacebookSession:
 	
 	def getAuth(self,email='',password='',graph=None,no_auto=False):
 		xbmcgui.Dialog().ok('Authorize','Goto xbmc.2ndmind.net/fb','Authorize the addon, and write down the pin.','Click OK when done')
-		token = doKeyboard('Enter the 4 digit pin')
-		token = urllib2.urlopen('http://xbmc.2ndmind.net/fb/gettoken.php?pin=' + token).read()
+		pin = '-'
+		while (len(pin) != 4 and len(pin) != 12) or not pin.isdigit():
+			if pin != '-':
+				xbmcgui.Dialog().ok('Bad PIN','PIN must be 4 or 12 digits')
+			else:
+				pin = '' 
+			pin = doKeyboard('Enter the 4 or 12 digit pin',pin)
+			if pin == None: return
+			pin = pin.replace('-','')
+			
+		token = urllib2.urlopen('http://xbmc.2ndmind.net/fb/gettoken.php?pin=' + pin).read()
+		if not token:
+			dbg = urllib2.urlopen('http://xbmc.2ndmind.net/fb/getdebug.php?pin=' + pin).read()
+			LOG('Failed to get token. Site debug info:')
+			LOG(dbg)
 		#print 'tkn: ' + token
 		return token
 					
