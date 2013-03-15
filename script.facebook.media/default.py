@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-21-2013'
-__version__ = '0.8.0'
+__version__ = '0.8.1'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -90,7 +90,7 @@ class WindowState:
 class BaseWindow(xbmcgui.WindowXML):
 	def __init__( self, *args, **kwargs):
 		self.oldWindow = None
-		xbmcgui.WindowXML.__init__( self, *args, **kwargs )
+		xbmcgui.WindowXML.__init__( self )
 		
 	def doClose(self):
 		self.session.window = self.oldWindow
@@ -1294,8 +1294,8 @@ class FacebookSession:
 		#	self.window.getControl(181).setLabel('')
 		
 	def setUserDisplay(self):
-		self.window.getControl(140).setImage(self.getSetting('current_user_pic'))
-		self.window.getControl(141).setLabel(self.getSetting('current_user_name'))
+		self.window.getControl(140).setImage(self.getSetting('current_user_pic',''))
+		self.window.getControl(141).setLabel(self.getSetting('current_user_name','ERROR'))
 			
 	def startProgress(self,message='',auto_ct_start=0,auto_total=0,auto_message=''):
 		self.progressVisible = True
@@ -1601,7 +1601,7 @@ class FacebookSession:
 		__addon__.setSetting(key,'')
 		
 	def setSetting(self,key,value):
-		__addon__.setSetting(key,value and str(value) or '')
+		__addon__.setSetting(key,value and unicode(value) or '')
 		
 	def getSetting(self,key,default=None):
 		setting = __addon__.getSetting(key)
