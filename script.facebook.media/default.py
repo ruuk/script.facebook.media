@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-21-2013'
-__version__ = '0.8.1'
+__version__ = '0.8.2'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -51,9 +51,22 @@ ENCODING = loc[1] or 'utf-8'
 
 def ENCODE(string):
 	try:
+		return string.encode('utf-8','replace')
+	except:
+		LOG('ENCODE() - Failed to encode to UTF-8')
+		
+	try:
+		return string.encode('latin','replace')
+	except:
+		LOG('ENCODE() - Failed to encode to latin')
+		
+	try:
 		return string.decode(ENCODING,'replace').encode('utf-8','replace')
 	except:
-		return '**ENCODE ERROR- LOST**'
+		LOG('ENCODE() - Failed to encode to UTF-8 (alt-method) - using repr()')
+		ret = repr(string)
+		if ret.startswith('u'): ret = ret[1:]
+		return ret[1:-1]
 
 def DONOTHING(text):
 	return text
@@ -122,11 +135,15 @@ class MainWindow(BaseWindow):
 		if self.session:
 			self.session.window = self
 		else:
-			self.session = FacebookSession(self)
-			if not self.session.start():
-				self.doClose()
-				return
-			self.getControl(120).selectItem(2)
+			try:
+				self.session = FacebookSession(self)
+				if not self.session.start():
+					self.doClose()
+					return
+				self.getControl(120).selectItem(2)
+			except:
+				ERROR('Unhandled Error')
+				self.close()
 
 		
 	def onClick( self, controlID ):
@@ -1601,7 +1618,7 @@ class FacebookSession:
 		__addon__.setSetting(key,'')
 		
 	def setSetting(self,key,value):
-		__addon__.setSetting(key,value and unicode(value) or '')
+		__addon__.setSetting(key,value and ENCODE(value) or '')
 		
 	def getSetting(self,key,default=None):
 		setting = __addon__.getSetting(key)

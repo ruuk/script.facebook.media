@@ -9,6 +9,10 @@ Known Issues/TODO:
 	-Exit photo/tags view with same photo selected (option?)
 	-Go to tagged friend when selecting tag from photo/tags view
 
+*** 0.8.2 ***
+
+Fixed some issues with unicode errors - hopefully. I hate encodings 
+
 *** 0.8.1 ***
 
 Fixed some issues with unicode errors 
