@@ -76,7 +76,7 @@ def LOG(string):
 		print "FACEBOOK MEDIA:facebook.py - COULDN'T ENCODE FOR LOG - RETRYING"
 	
 	try:
-		print 'FACEBOOK MEDIA:facebook.py - %s' % str(string)
+		print 'FACEBOOK MEDIA:facebook.py - %s' % repr(string)
 		return
 	except:
 		print "FACEBOOK MEDIA:facebook.py - COULDN'T ENCODE FOR LOG - FINAL"
@@ -666,6 +666,7 @@ class GraphWrap(GraphAPI):
 			if not token:
 				#if 'class="checkpoint"' in html:
 				token = self.handleLoginNotificationCrap(br)
+				
 			if not token: script = True
 			
 			if script:
@@ -706,13 +707,37 @@ class GraphWrap(GraphAPI):
 		LOG('LN Second URL: ' + url)
 		if 'access_token' in url: return self.extractTokenFromURL(url)
 		br.select_form(nr=0)
-		res = br.submit(name='submit[Don&#039;t Save]',label='Don&#039;t Save')
-		res.read()
+		self.isolateSubmitButton(br, 'dont_save')
+		res = br.submit()
+		html = res.read()
 		url = res.geturl()
 		LOG('LN Third URL: ' + url)
 		if 'access_token' in url: return self.extractTokenFromURL(url)
+		if 'name="submit[Continue]"' in html:
+			LOG("Found 'Continue' page: submitting")
+			br.select_form(nr=0)
+			res = br.submit()
+			url = res.geturl()
+			if 'access_token' in url: return self.extractTokenFromURL(url)
 		return None
+	
+	def isolateSubmitButton(self,br,value):
+		submit_buttons = self.find_controls(br,ctype="submit")
+		for button in submit_buttons[:]:
+			if button.value != value: br.form.controls.remove(button)
 		
+	def find_controls(self, br,name=None, ctype=None, kind=None, cid=None, predicate=None, label=None):
+		i = 0
+		results = []
+	
+		try :
+			while(True):
+				results.append(br.find_control(name, ctype, kind, cid, predicate, label, nr=i))
+				i += 1
+		except Exception as e: #Exception tossed if control not found @UnusedVariable
+			pass
+		return results
+
 	def extractTokenFromURL(self,url):
 		try:
 			#we submitted the form, check the result url for the access token
@@ -733,7 +758,7 @@ class GraphWrap(GraphAPI):
 			LOG("TOKEN: " + token)
 			raise GraphWrapAuthError('LOGIN_FAILURE',reason)
 			return False
-		if 'html' in token or 'script' in token or len(token) > 160:
+		if 'html' in token or 'script' in token or len(token) > 250:
 			LOG("TOKEN: " + token)
 			raise GraphWrapAuthError('RENEW_TOKEN_FAILURE','Failed to get new token')
 			return False

@@ -1,6 +1,6 @@
 Facebook Media Changelog
 
-Current Version : 0.8.1
+Current Version : 0.8.3
 
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
@@ -8,6 +8,11 @@ Known Issues/TODO:
 	-Album caching (and other caching)
 	-Exit photo/tags view with same photo selected (option?)
 	-Go to tagged friend when selecting tag from photo/tags view
+
+*** 0.8.3 ***
+
+Fixed a bug caused by new longer Facebook token lengths
+Fixed a bug with login notifications forms and improved forms handling (fixes "no control matching name 'submit[Don&#039;t Save]'" errors)
 
 *** 0.8.2 ***
 
