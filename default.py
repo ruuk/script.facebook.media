@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-21-2013'
-__version__ = '0.8.3'
+__version__ = '0.8.4'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -1630,7 +1630,9 @@ class FacebookSession:
 		return setting
 	
 	def getAuth(self,email='',password='',graph=None,no_auto=False):
-		xbmcgui.Dialog().ok('Authorize','Goto xbmc.2ndmind.net/fb','Authorize the addon, and write down the pin.','Click OK when done')
+		#xbmcgui.Dialog().ok('Authorize','Goto xbmc.2ndmind.net/fb','Authorize the addon, and write down the pin.','Click OK when done')
+		xbmcgui.Dialog().ok('Authorize','Goto xbmc.2ndmind.net/fb','and authorize the addon.','Click OK when done')
+		return '123456789'
 		pin = '-'
 		while (len(pin) != 4 and len(pin) != 12) or not pin.isdigit():
 			if pin != '-':
