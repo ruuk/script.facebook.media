@@ -599,7 +599,7 @@ class GraphWrap(GraphAPI):
 		
 	def browserRead(self,readable,post=''):
 		html = readable.read()
-		if True:
+		if False:
 			htmlFile = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('profile')),'cache','DEBUG_HTML%s.html' % post)
 			with open(htmlFile,'w') as f:
 				f.write(html.strip("'"))
