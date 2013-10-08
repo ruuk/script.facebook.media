@@ -583,7 +583,7 @@ class GraphWrap(GraphAPI):
 		self.login_pass = passw
 		if token: self.access_token = token
 		
-	def setAppData(self,aid,redirect='http://www.facebook.com/connect/login_success.html',scope=None):
+	def setAppData(self,aid,redirect='https://www.facebook.com/connect/login_success.html',scope=None):
 		self.client_id = aid
 		self.redirect = redirect
 		self.scope = scope
@@ -596,6 +596,14 @@ class GraphWrap(GraphAPI):
 		finally:
 			fobj.close()
 		return (response == 1)
+		
+	def browserRead(self,readable,post=''):
+		html = readable.read()
+		if True:
+			htmlFile = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('profile')),'cache','DEBUG_HTML%s.html' % post)
+			with open(htmlFile,'w') as f:
+				f.write(html.strip("'"))
+		return html
 		
 	def checkIsAppUser(self):
 		url = 'https://api.facebook.com/method/users.isAppUser?format=json&access_token='+self.access_token
@@ -662,7 +670,7 @@ class GraphWrap(GraphAPI):
 				
 			script = False
 			token = self.extractTokenFromURL(url)
-			html = res.read()
+			html = self.browserRead(res,'-noscript')
 			if not token:
 				#if 'class="checkpoint"' in html:
 				token = self.handleLoginNotificationCrap(br)
@@ -695,7 +703,7 @@ class GraphWrap(GraphAPI):
 		LOG('Handling Login Notification Crap')
 		br.select_form(nr=0)
 		res = br.submit()
-		res.read()
+		self.browserRead(res,'-loginnotifycrap1')
 		#if not 'Media XBMC' in html: return None
 		url = res.geturl()
 		LOG('LN First URL: ' + url)
@@ -707,8 +715,9 @@ class GraphWrap(GraphAPI):
 		LOG('LN Second URL: ' + url)
 		if 'access_token' in url: return self.extractTokenFromURL(url)
 		br.select_form(nr=0)
-		self.isolateSubmitButton(br, 'dont_save')
+		self.isolateSubmitButton(br, 'save_device')
 		res = br.submit()
+		
 		html = res.read()
 		url = res.geturl()
 		LOG('LN Third URL: ' + url)
@@ -718,10 +727,14 @@ class GraphWrap(GraphAPI):
 			br.select_form(nr=0)
 			res = br.submit()
 			url = res.geturl()
-			if 'access_token' in url: return self.extractTokenFromURL(url)
+			if 'access_token' in url:
+				return self.extractTokenFromURL(url)
+			else:
+				LOG("No Token In URL: {0}".format(url))
 		return None
 	
 	def isolateSubmitButton(self,br,value):
+		return
 		submit_buttons = self.find_controls(br,ctype="submit")
 		for button in submit_buttons[:]:
 			if button.value != value: br.form.controls.remove(button)

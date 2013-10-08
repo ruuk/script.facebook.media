@@ -1,6 +1,6 @@
 Facebook Media Changelog
 
-Current Version : 0.8.4
+Current Version : 0.8.5
 
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
@@ -8,6 +8,10 @@ Known Issues/TODO:
 	-Album caching (and other caching)
 	-Exit photo/tags view with same photo selected (option?)
 	-Go to tagged friend when selecting tag from photo/tags view
+
+*** 0.8.5 ***
+
+Fixed a bug generating the error "no form matching nr 0" caused by a redirect page being set to http instead of https when 'Secure Browsing' is enabled in facebook
 
 *** 0.8.4 ***
 
