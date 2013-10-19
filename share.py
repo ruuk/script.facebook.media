@@ -94,7 +94,7 @@ class FacebookTargetFunctions(ShareSocial.TargetFunctions):
 						commsObj.addItem(c.from_().get('name'),uimage,c.message(''),c.created_time())
 						commsObj.count = comments.count
 						commsObj.callbackDict['id'] = f.id
-				else:
+				elif comments:
 					commsObj.count = comments.get('count',0)
 					commsObj.callbackDict['id'] = f.id
 				pic = f.picture('')

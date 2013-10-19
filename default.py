@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-21-2013'
-__version__ = '0.8.4'
+__version__ = '0.8.6'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -1786,7 +1786,7 @@ def openWindow(window_name,session=None,**kwargs):
 		del w
 
 def newGraph(email,password,uid=None,token=None,new_token_callback=None):
-	graph = facebook.GraphWrap(token,new_token_callback=new_token_callback)
+	graph = facebook.GraphWrap(token,new_token_callback=new_token_callback,version=__version__)
 	graph.setAppData('150505371652086',scope='user_photos,friends_photos,user_videos,friends_videos,publish_stream,read_stream')
 	graph.setLogin(email,password,uid)
 	return graph

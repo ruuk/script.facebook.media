@@ -496,7 +496,7 @@ class GraphConnections:
 		return self.graph._processConnections(connections,paging)
 			
 class GraphWrap(GraphAPI):
-	def __init__(self,token,new_token_callback=None):
+	def __init__(self,token,new_token_callback=None,version='8.0'):
 		GraphAPI.__init__(self,token)
 		self.uid = None
 		self._newTokenCallback = new_token_callback
@@ -506,6 +506,7 @@ class GraphWrap(GraphAPI):
 		self._progMessage = ''
 		self.uid = None
 		self.cookieJar = None
+		self.version = version
 	
 	def withProgress(self,callback,modifier=1,total=100,message=''):
 		poster.streaminghttp.PROGRESS_CALLBACK = callback
@@ -628,6 +629,9 @@ class GraphWrap(GraphAPI):
 		br.set_cookiejar(self.cookieJar)
 		br._ua_handlers["_cookies"].cookiejar.clear()
 		br.set_handle_robots(False)
+		agent = 'XBMC/{0} Facebook-Media/{1}'.format(xbmc.getInfoLabel('System.BuildVersion'),self.version)
+		LOG('Setting User Agent: {0}'.format(agent))
+		br.addheaders = [('User-agent',agent)]
 		scope = ''
 		if self.scope: scope = '&scope=' + self.scope
 		url = 	'https://www.facebook.com/dialog/oauth?client_id='+self.client_id+\
@@ -755,7 +759,7 @@ class GraphWrap(GraphAPI):
 		try:
 			#we submitted the form, check the result url for the access token
 			import urlparse
-			token = parse_qs(urlparse.urlparse(url.replace('#','?',1))[4])['access_token'][0]
+			token = parse_qs(urlparse.urlparse(url.replace('#','?',1).replace('??','?'))[4])['access_token'][0]
 			LOG("URL TOKEN: %s" % token)
 			return token
 		except:
