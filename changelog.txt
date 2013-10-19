@@ -11,7 +11,7 @@ Known Issues/TODO:
 
 *** 0.8.6 ***
 
-Fix for token not being properly extracted from the URL
+Fix for token not being properly extracted from the auth reply URL
 
 *** 0.8.5 ***
 
