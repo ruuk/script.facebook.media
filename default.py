@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-21-2013'
-__version__ = '0.8.6'
+__version__ = '0.8.7'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -80,16 +80,72 @@ def ERROR(message):
 	LOG(message)
 	traceback.print_exc()
 	return str(sys.exc_info()[1])
+
+#############################################################################################
+# Password handling
+#############################################################################################
+
+import platform
+original_syscmd_uname = platform._syscmd_uname
+def new_syscmd_uname(option,default=''):
+	try:
+		return platform._syscmd_uname(option,default)
+	except:
+		return default
+platform._syscmd_uname = new_syscmd_uname
+
+import keyring
 	
+def getPassword(user_pass_key):
+	try:
+		password = keyring.get_password('FacebookMedia_XBMC',user_pass_key)
+		checkPass = __addon__.getSetting(user_pass_key)
+		if not password and checkPass:
+			savePassword(user_pass_key,checkPass)
+			__addon__.setSetting(user_pass_key,'')
+			LOG('Password loaded and cleared from settings. Saved via keyring.')
+			return checkPass
+		else:
+			LOG('Password loaded from keyring.')
+		return password
+	except:
+		ERROR('Failed to get password from keyring, getting from settings...')
+		return __addon__.getSetting(user_pass_key) or ''
+
+def savePassword(user_pass_key,password):
+	try:
+		if not password:
+			try:
+				keyring.delete_password('FacebookMedia_XBMC',user_pass_key)
+			except:
+				pass
+		else:
+			keyring.set_password('FacebookMedia_XBMC',user_pass_key,password or '')
+			LOG('Password saved via keyring.')
+		if not password and __addon__.getSetting(user_pass_key):
+			__addon__.setSetting(user_pass_key,'') #Just to make sure the password is not lingering here
+		return True
+	except:
+		ERROR('Failed to set password via keyring, saving to settings...')
+		__addon__.setSetting(user_pass_key,password or '')
+	return False
+
+#############################################################################################
+
 class FacebookUser:
 	def __init__(self,uid):
 		self.id = uid
 		self.email = __addon__.getSetting('login_email_%s' % uid)
-		self.password = __addon__.getSetting('login_pass_%s' % uid)
+		self._password = None
 		self.token = __addon__.getSetting('token_%s' % uid)
 		self.pic = __addon__.getSetting('profile_pic_%s' % uid)
 		self.username = __addon__.getSetting('username_%s' % uid)
 		
+	def password(self):
+		if self._password: return self._password
+		self._password = getPassword('login_pass_%s' % self.id)
+		return self._password
+	
 	def updateToken(self,token):
 		self.token = token
 		__addon__.setSetting('token_%s' % self.id,str(token))
@@ -472,7 +528,7 @@ class FacebookSession:
 			user = self.getCurrentUser()
 		
 		self.graph = newGraph(	user.email,
-								user.password,
+								user.password(),
 								user.id,
 								user.token,
 								self.newTokenCallback )
@@ -1131,7 +1187,7 @@ class FacebookSession:
 			if e.type == 'RENEW_TOKEN_FAILURE':
 				response = xbmcgui.Dialog().yesno(__lang__(30030), __lang__(30031), __lang__(30032), __lang__(30033))
 				if response:
-					self.openAddUserWindow(self.currentUser.email, self.currentUser.password)
+					self.openAddUserWindow(self.currentUser.email, self.currentUser.password())
 			else:
 				message = ERROR('UNHANDLED ERROR')
 				xbmcgui.Dialog().ok(__lang__(30034),message)
@@ -1164,7 +1220,7 @@ class FacebookSession:
 			elif action == 'remove_user':
 				self.removeUserMenu()
 			elif action == 'reauth_user':
-				self.openAddUserWindow(self.currentUser.email, self.currentUser.password)
+				self.openAddUserWindow(self.currentUser.email, self.currentUser.password())
 		
 	def photovideoMenuSelected(self):
 		self.window.setFocusId(120)
@@ -1282,7 +1338,7 @@ class FacebookSession:
 	def removeUser(self,uid):
 		self.removeUserFromList(uid)
 		self.clearSetting('login_email_%s' % uid)
-		self.clearSetting('login_pass_%s' % uid)
+		savePassword('login_pass_%s' % uid)
 		self.clearSetting('token_%s' % uid)
 		self.clearSetting('profile_pic_%s' % uid)
 		self.clearSetting('username_%s' % uid)
@@ -1472,21 +1528,27 @@ class FacebookSession:
 		
 	def closeWindow(self):
 		self.window.doClose()
-	
+			
 	def addUser(self,email=None,password=None):
 		try:
 			LOG("ADD USER PART 1")
 			self.window.getControl(101).setVisible(False)
+			lastEmail = self.getSetting('last_email', '')
+			lastPass = ''
 			if not email:
-				email = doKeyboard(__lang__(30047))
+				email = doKeyboard(__lang__(30047),default=lastEmail)
 			if not email:
 				self.closeWindow()
 				return
+			self.setSetting('last_email', email)
+			if lastEmail == email: lastPass = getPassword('last_password')
+			savePassword('last_password', '')
 			if not password:
-				password = doKeyboard(__lang__(30048),hidden=True)
+				password = doKeyboard(__lang__(30048),default=lastPass,hidden=True)
 			if not password:
 				self.closeWindow()
 				return
+			savePassword('last_password', password)
 			self.newUserCache = (email,password)
 			self.window.getControl(102).setVisible(False)
 			self.window.getControl(111).setVisible(False)
@@ -1546,7 +1608,8 @@ class FacebookSession:
 		if not self.addUserToList(uid):
 			LOG("USER ALREADY ADDED")
 		self.setSetting('login_email_%s' % uid,email)
-		self.setSetting('login_pass_%s' % uid,password)
+		#self.setSetting('login_pass_%s' % uid,password)
+		enc = savePassword('login_pass_%s' % uid, password)
 		self.setSetting('username_%s' % uid,username)
 		self.setSetting('token_%s' % uid,graph.access_token)
 		#if self.token: self.setSetting('token_%s' % uid,self.token)
@@ -1557,6 +1620,7 @@ class FacebookSession:
 		self.closeWindow()
 		self.setSetting('has_user','true')
 		#self.setCurrentUser(uid)
+		if enc: xbmcgui.Dialog().ok(__lang__(30063),__lang__(30062))
 		return uid
 	
 	def getUserList(self):
@@ -1591,7 +1655,7 @@ class FacebookSession:
 		u = self.currentUser
 		self.setSetting('current_user_name', u.username)
 		self.updateUserPic()
-		if self.graph: self.graph.setLogin(u.email,u.password,u.id,u.token)
+		if self.graph: self.graph.setLogin(u.email,u.password(),u.id,u.token)
 		self.setUserDisplay()
 		
 	def getCurrentUser(self):

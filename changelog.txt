@@ -9,6 +9,12 @@ Known Issues/TODO:
 	-Exit photo/tags view with same photo selected (option?)
 	-Go to tagged friend when selecting tag from photo/tags view
 
+*** 0.8.7 ***
+
+Added support for saving passwords encrypted via system keyring (should work on most systems, falls back to saving in settings.xml)
+When adding a user, email and password are now saved (pass encrypted if possible) if adding the user fails and reloaded when trying again
+Made changes to addon.xml for Gotham
+
 *** 0.8.6 ***
 
 Fix for token not being properly extracted from the auth reply URL

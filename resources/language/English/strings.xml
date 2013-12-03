@@ -73,6 +73,8 @@
 	<string id="30059">Disable Browser Authorization Auto-Login</string>
 	<string id="30060">Failed To Get Authorization Token</string>
 	<string id="30061">Debug Logging</string>
+	<string id="30062">Encrypted password save enabled</string>
+	<string id="30063">Message</string>
 		
     <string id="3001">No Tags</string>
 </strings>
