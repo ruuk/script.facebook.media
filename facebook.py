@@ -711,6 +711,8 @@ class GraphWrap(GraphAPI):
 		#if not 'Media XBMC' in html: return None
 		url = res.geturl()
 		LOG('LN First URL: ' + url)
+		if 'login.php' in url:
+			raise GraphWrapAuthError('BAD_USERPASS','Failed: Probable bad user/pass')
 		if 'access_token' in url: return self.extractTokenFromURL(url)
 		br.select_form(nr=0)
 		try:
