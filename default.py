@@ -16,7 +16,7 @@ from facebook import GraphAPIError, GraphWrapAuthError
 __author__ = 'ruuk (Rick Phillips)'
 __url__ = 'http://code.google.com/p/facebook-media/'
 __date__ = '01-21-2013'
-__version__ = '0.8.7'
+__version__ = '0.8.8'
 __addon__ = xbmcaddon.Addon(id='script.facebook.media')
 __lang__ = __addon__.getLocalizedString
 
@@ -1338,7 +1338,7 @@ class FacebookSession:
 	def removeUser(self,uid):
 		self.removeUserFromList(uid)
 		self.clearSetting('login_email_%s' % uid)
-		savePassword('login_pass_%s' % uid)
+		savePassword('login_pass_%s' % uid,'')
 		self.clearSetting('token_%s' % uid)
 		self.clearSetting('profile_pic_%s' % uid)
 		self.clearSetting('username_%s' % uid)

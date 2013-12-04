@@ -713,7 +713,10 @@ class GraphWrap(GraphAPI):
 		LOG('LN First URL: ' + url)
 		if 'access_token' in url: return self.extractTokenFromURL(url)
 		br.select_form(nr=0)
-		res = br.submit(name='submit[This is Okay]',label='This is Okay')
+		try:
+			res = br.submit(name='submit[Continue]')
+		except:
+			res = br.submit()
 		res.read()
 		url = res.geturl()
 		LOG('LN Second URL: ' + url)
