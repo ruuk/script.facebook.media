@@ -1,6 +1,6 @@
 Facebook Media Changelog
 
-Current Version : 0.9.1
+Current Version : 0.9.2
 
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
