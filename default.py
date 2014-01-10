@@ -110,10 +110,10 @@ else:
 				savePassword(user_pass_key,checkPass)
 				__addon__.setSetting(user_pass_key,'')
 				LOG('Password loaded and cleared from settings. Saved via keyring.')
-				return checkPass
+				return checkPass or ''
 			else:
 				LOG('Password loaded from keyring.')
-			return password
+			return password or ''
 		except:
 			ERROR('Failed to get password from keyring, getting from settings...')
 			return __addon__.getSetting(user_pass_key) or ''
