@@ -100,6 +100,7 @@ else:
 			return default
 	platform._syscmd_uname = new_syscmd_uname
 	
+	from keyring.backends import getpass
 	import keyring
 		
 	def getPassword(user_pass_key):

@@ -1,6 +1,6 @@
 Facebook Media Changelog
 
-Current Version : 0.9.4
+Current Version : 0.9.5
 
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
@@ -8,6 +8,10 @@ Known Issues/TODO:
 	-Album caching (and other caching)
 	-Exit photo/tags view with same photo selected (option?)
 	-Go to tagged friend when selecting tag from photo/tags view
+
+*** 0.9.5 ***
+
+Fix for bug causing auth to fail on OpenElec (perhaps other platforms) - added password dialog to set keyring password when necessary
 
 *** 0.9.4 ***
 
