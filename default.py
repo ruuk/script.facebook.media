@@ -82,60 +82,19 @@ def ERROR(message):
 #############################################################################################
 # Password handling
 #############################################################################################
-if xbmc.getCondVisibility('System.Platform.Darwin') or xbmc.getCondVisibility('System.Platform.OSX'):
-	LOG("OSX or Darwin detected: Disabling password keyring")
-	def getPassword(user_pass_key):
-		return __addon__.getSetting(user_pass_key) or ''
-	
-	def savePassword(user_pass_key,password):
-		__addon__.setSetting(user_pass_key,password or '')
-		return False
-else:
-	import platform
-	original_syscmd_uname = platform._syscmd_uname
-	def new_syscmd_uname(option,default=''):
-		try:
-			return platform._syscmd_uname(option,default)
-		except:
-			return default
-	platform._syscmd_uname = new_syscmd_uname
-	
-	from keyring.backends import getpass
-	import keyring
-		
-	def getPassword(user_pass_key):
-		try:
-			password = keyring.get_password('FacebookMedia_XBMC',user_pass_key)
-			checkPass = __addon__.getSetting(user_pass_key)
-			if not password and checkPass:
-				savePassword(user_pass_key,checkPass)
-				__addon__.setSetting(user_pass_key,'')
-				LOG('Password loaded and cleared from settings. Saved via keyring.')
-				return checkPass or ''
-			else:
-				LOG('Password loaded from keyring.')
-			return password or ''
-		except:
-			ERROR('Failed to get password from keyring, getting from settings...')
-			return __addon__.getSetting(user_pass_key) or ''
-	
-	def savePassword(user_pass_key,password):
-		try:
-			if not password:
-				try:
-					keyring.delete_password('FacebookMedia_XBMC',user_pass_key)
-				except:
-					pass
-			else:
-				keyring.set_password('FacebookMedia_XBMC',user_pass_key,password or '')
-				LOG('Password saved via keyring.')
-			if not password and __addon__.getSetting(user_pass_key):
-				__addon__.setSetting(user_pass_key,'') #Just to make sure the password is not lingering here
-			return True
-		except:
-			ERROR('Failed to set password via keyring, saving to settings...')
-			__addon__.setSetting(user_pass_key,password or '')
-		return False
+import passwordStorage  # @UnresolvedImport
+
+def getPassword(user_pass_key):
+	password = passwordStorage.retrieve(user_pass_key)
+	if not password:
+		password = doKeyboard('Unable to load password. Please enter your password:',hidden=True)
+		if password: savePassword(user_pass_key,password)
+	return password
+
+def savePassword(user_pass_key,password):
+	passwordStorage.store(user_pass_key,password)
+	if __addon__.getSetting(user_pass_key): __addon__.setSetting(user_pass_key,'') #Just to make sure the password is not lingering here
+	return passwordStorage.encrypted
 
 #############################################################################################
 
@@ -147,6 +106,9 @@ class FacebookUser:
 		self.token = __addon__.getSetting('token_%s' % uid)
 		self.pic = __addon__.getSetting('profile_pic_%s' % uid)
 		self.username = __addon__.getSetting('username_%s' % uid)
+		
+	def resetPassword(self):
+		self._password = None
 		
 	def password(self):
 		if self._password: return self._password
@@ -1228,6 +1190,8 @@ class FacebookSession:
 				self.removeUserMenu()
 			elif action == 'reauth_user':
 				self.openAddUserWindow(self.currentUser.email, self.currentUser.password())
+				self.currentUser.resetPassword()
+				
 		
 	def photovideoMenuSelected(self):
 		self.window.setFocusId(120)
