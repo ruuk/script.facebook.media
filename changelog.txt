@@ -1,6 +1,6 @@
 Facebook Media Changelog
 
-Current Version : 0.9.6
+Current Version : 0.9.7
 
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
@@ -9,7 +9,7 @@ Known Issues/TODO:
 	-Exit photo/tags view with same photo selected (option?)
 	-Go to tagged friend when selecting tag from photo/tags view
 
-*** 0.9.6 ***
+*** 0.9.7 ***
 
 Now uses external password storage module
 

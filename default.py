@@ -86,9 +86,7 @@ import passwordStorage  # @UnresolvedImport
 
 def getPassword(user_pass_key):
 	password = passwordStorage.retrieve(user_pass_key)
-	if not password:
-		password = doKeyboard('Unable to load password. Please enter your password:',hidden=True)
-		if password: savePassword(user_pass_key,password)
+	if password: savePassword(user_pass_key,password)
 	return password
 
 def savePassword(user_pass_key,password):
