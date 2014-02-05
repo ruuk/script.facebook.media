@@ -84,8 +84,12 @@ def ERROR(message):
 #############################################################################################
 import passwordStorage  # @UnresolvedImport
 
-def getPassword(user_pass_key):
-	password = passwordStorage.retrieve(user_pass_key)
+def getPassword(user_pass_key,username=''):
+	if username:
+		ask_msg = 'Facebook password for %s' % username
+		password = passwordStorage.retrieve(user_pass_key,ask_msg=ask_msg)
+	else:
+		password = passwordStorage.retrieve(user_pass_key,ask_on_fail=False)
 	if password: savePassword(user_pass_key,password)
 	return password
 
@@ -110,7 +114,7 @@ class FacebookUser:
 		
 	def password(self):
 		if self._password: return self._password
-		self._password = getPassword('login_pass_%s' % self.id)
+		self._password = getPassword('login_pass_%s' % self.id,username=self.username)
 		return self._password
 	
 	def updateToken(self,token):
