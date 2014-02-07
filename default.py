@@ -86,7 +86,7 @@ import passwordStorage  # @UnresolvedImport
 
 def getPassword(user_pass_key,username=''):
 	if username:
-		ask_msg = 'Facebook password for %s' % username
+		ask_msg = 'Facebook password for %s:' % username
 		password = passwordStorage.retrieve(user_pass_key,ask_msg=ask_msg)
 	else:
 		password = passwordStorage.retrieve(user_pass_key,ask_on_fail=False)
