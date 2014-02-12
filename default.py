@@ -91,7 +91,7 @@ def getPassword(user_pass_key,username=''):
 	else:
 		password = passwordStorage.retrieve(user_pass_key,ask_on_fail=False)
 	if password: savePassword(user_pass_key,password)
-	return password
+	return password or ''
 
 def savePassword(user_pass_key,password):
 	passwordStorage.store(user_pass_key,password)
