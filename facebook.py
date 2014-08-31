@@ -579,7 +579,7 @@ class GraphWrap(GraphAPI):
 		return Connections(self,connections,first=False)
 	
 	def setLogin(self,email,passw,uid=None,token=None):
-		self.uid = uid
+		self.uid = uid or self.uid
 		self.login_email = email
 		self.login_pass = passw
 		if token: self.access_token = token

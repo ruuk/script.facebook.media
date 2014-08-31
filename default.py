@@ -120,6 +120,12 @@ class FacebookUser:
 	def updateToken(self,token):
 		self.token = token
 		__addon__.setSetting('token_%s' % self.id,str(token))
+		
+	def changePassword(self):
+		password = doKeyboard(__lang__(30048),hidden=True)
+		if not password or password == self._password: return
+		self._password = password
+		savePassword('login_pass_{0}'.format(self.id), password)
 
 class WindowState:
 	def __init__(self):
@@ -527,7 +533,8 @@ class FacebookSession:
 			items.append(item)
 		options = [	('add_user','facebook-media-icon-adduser.png',__lang__(30038),'data'),
 					('remove_user','facebook-media-icon-removeuser.png',__lang__(30039),'data'),
-					('reauth_user','facebook-media-icon-reauth-user.png',__lang__(30040),'data')]
+					('reauth_user','facebook-media-icon-reauth-user.png',__lang__(30040),'data'),
+					('change_user_password','facebook-media-icon-reauth-user.png',__lang__(30064),'data')]
 		for action,icon,label,data in options:
 			item = xbmcgui.ListItem()
 			item.setThumbnailImage(icon)
@@ -1193,6 +1200,9 @@ class FacebookSession:
 			elif action == 'reauth_user':
 				self.openAddUserWindow(self.currentUser.email, self.currentUser.password())
 				self.currentUser.resetPassword()
+			elif action == 'change_user_password':
+				self.currentUser.changePassword()
+				self.graph.setLogin(self.currentUser.email,self.currentUser.password())
 				
 		
 	def photovideoMenuSelected(self):
