@@ -86,7 +86,7 @@ import passwordStorage  # @UnresolvedImport
 
 def getPassword(user_pass_key,username=''):
 	if username:
-		ask_msg = 'Facebook password for %s:' % username
+		ask_msg = ' [B]Facebook[/B] password for %s: ' % username
 		password = passwordStorage.retrieve(user_pass_key,ask_msg=ask_msg)
 	else:
 		password = passwordStorage.retrieve(user_pass_key,ask_on_fail=False)
@@ -94,7 +94,7 @@ def getPassword(user_pass_key,username=''):
 	return password or ''
 
 def savePassword(user_pass_key,password):
-	passwordStorage.store(user_pass_key,password)
+	passwordStorage.store(user_pass_key,password,only_if_unlocked=True)
 	if __addon__.getSetting(user_pass_key): __addon__.setSetting(user_pass_key,'') #Just to make sure the password is not lingering here
 	return passwordStorage.encrypted
 
