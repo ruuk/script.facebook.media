@@ -1595,6 +1595,7 @@ class FacebookSession:
 		enc = savePassword('login_pass_%s' % uid, password)
 		self.setSetting('username_%s' % uid,username)
 		self.setSetting('token_%s' % uid,graph.access_token)
+		self.graph.access_token = graph.access_token
 		#if self.token: self.setSetting('token_%s' % uid,self.token)
 		self.setSetting('profile_pic_%s' % uid,user.picture('').get('url','').replace('_q.','_n.'))
 		#self.getProfilePic(uid,force=True)
@@ -1677,6 +1678,12 @@ class FacebookSession:
 		return setting
 	
 	def getAuth(self,email='',password='',graph=None,no_auto=False):
+		import OAuthHelper
+	
+		token = OAuthHelper.getToken('facebook')
+		return token
+	
+	def getAuthOld(self,email='',password='',graph=None,no_auto=False):
 		#xbmcgui.Dialog().ok('Authorize','Goto xbmc.2ndmind.net/fb','Authorize the addon, and write down the pin.','Click OK when done')
 		xbmcgui.Dialog().ok('Authorize','Goto xbmc.2ndmind.net/fb','and authorize the addon.','Click OK when done')
 		return '123456789'
@@ -1707,7 +1714,10 @@ def doKeyboard(prompt,default='',hidden=False):
 
 def createWindowFile(skin_name):
 	if not skin_name: raise Exception
-	from elementtree import ElementTree as etree #@UnresolvedImport
+	try:
+		from elementtree import ElementTree as etree
+	except:
+		import xml.etree.ElementTree as etree
 	
 	path = os.path.join(SKIN_PATH,'720p','Font.xml')
 	if not os.path.exists(path): path = os.path.join(SKIN_PATH,'1080i','Font.xml')

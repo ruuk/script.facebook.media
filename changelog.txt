@@ -9,6 +9,12 @@ Known Issues/TODO:
 	-Exit photo/tags view with same photo selected (option?)
 	-Go to tagged friend when selecting tag from photo/tags view
 
+*** 0.9.13 ***
+
+Fix for skin customization not working with different versions of python
+Change Password Storage module requirement to 0.1.9
+Use OAuth Helper module for authentication
+
 *** 0.9.12 ***
 
 Minor change to work better with changes in password storage module
