@@ -1,7 +1,5 @@
 Facebook Media Changelog
 
-Current Version : 0.9.12
-
 Known Issues/TODO:
 	-Needs to handle mouse control better (ie no access to photo/video menu)
 	-Sometimes displaying photo/video options delays waiting on facebook. Should show progress/notify user to wait

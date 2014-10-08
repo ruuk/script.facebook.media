@@ -1680,7 +1680,7 @@ class FacebookSession:
 	def getAuth(self,email='',password='',graph=None,no_auto=False):
 		import OAuthHelper
 	
-		token = OAuthHelper.getToken('facebook')
+		token = OAuthHelper.getToken('script.facebook.media')
 		return token
 	
 	def getAuthOld(self,email='',password='',graph=None,no_auto=False):
