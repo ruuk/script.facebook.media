@@ -1595,7 +1595,10 @@ class FacebookSession:
 		enc = savePassword('login_pass_%s' % uid, password)
 		self.setSetting('username_%s' % uid,username)
 		self.setSetting('token_%s' % uid,graph.access_token)
-		self.graph.access_token = graph.access_token
+		if self.graph:
+			self.graph.access_token = graph.access_token
+		else:
+			self.graph = graph
 		#if self.token: self.setSetting('token_%s' % uid,self.token)
 		self.setSetting('profile_pic_%s' % uid,user.picture('').get('url','').replace('_q.','_n.'))
 		#self.getProfilePic(uid,force=True)
@@ -1681,6 +1684,7 @@ class FacebookSession:
 		import OAuthHelper
 	
 		token = OAuthHelper.getToken('script.facebook.media')
+		if graph: graph.access_token = token
 		return token
 	
 	def getAuthOld(self,email='',password='',graph=None,no_auto=False):
