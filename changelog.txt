@@ -7,6 +7,11 @@ Known Issues/TODO:
 	-Exit photo/tags view with same photo selected (option?)
 	-Go to tagged friend when selecting tag from photo/tags view
 
+*** 0.9.14 ***
+
+Remove 'Friends' item from main menu to reduce app permissions
+No longer asks for email/pass when adding a user
+
 *** 0.9.13 ***
 
 Fix for skin customization not working with different versions of python
@@ -98,11 +103,11 @@ Fixed a bug with login notifications forms and improved forms handling (fixes "n
 
 *** 0.8.2 ***
 
-Fixed some issues with unicode errors - hopefully. I hate encodings 
+Fixed some issues with unicode errors - hopefully. I hate encodings
 
 *** 0.8.1 ***
 
-Fixed some issues with unicode errors 
+Fixed some issues with unicode errors
 
 *** 0.8.0 ***
 
@@ -125,7 +130,7 @@ Fix for some FB errors being interpreted as a bad token issue
 Fixed issue causing XBMC to crash when backing up in the hierarchy
 Fixed issues with some changes to Facebook API causing errors with user images and similar
 Fixed authentication code not actually fetching token after 4 digit code was entered
-External: When going to xbmc.2ndmind.com/fb, it now forces the user to re-enter their password, thereby giving a chance to logout the user 
+External: When going to xbmc.2ndmind.com/fb, it now forces the user to re-enter their password, thereby giving a chance to logout the user
 
 *** 0.7.6 ***
 
@@ -223,11 +228,11 @@ Fixed infinite auth restart when no user is added on fresh install
 
 *** 0.5.6 ***
 
-Allow back/parent dir to exit app for those with limited remote function 
+Allow back/parent dir to exit app for those with limited remote function
 
 *** 0.5.5 ***
 
-Fixed - backspace/parent dir now works as expected and goes to the previous menu level 
+Fixed - backspace/parent dir now works as expected and goes to the previous menu level
 
 *** 0.5.4 ***
 
