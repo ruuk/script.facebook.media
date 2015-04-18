@@ -10,6 +10,7 @@ Known Issues/TODO:
 *** 0.9.14 ***
 
 Remove 'Friends' item from main menu to reduce app permissions
+Add option to 'Extend Authorization'
 No longer asks for email/pass when adding a user
 
 *** 0.9.13 ***
