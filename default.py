@@ -79,24 +79,24 @@ def ERROR(message):
     traceback.print_exc()
     return str(sys.exc_info()[1])
 
-#############################################################################################
-# Password handling
-#############################################################################################
-import passwordStorage  # @UnresolvedImport
-
-def getPassword(user_pass_key,username=''):
-    if username:
-        ask_msg = ' [B]Facebook[/B] password for %s: ' % username
-        password = passwordStorage.retrieve(user_pass_key,ask_msg=ask_msg)
-    else:
-        password = passwordStorage.retrieve(user_pass_key,ask_on_fail=False)
-    if password: savePassword(user_pass_key,password)
-    return password or ''
-
-def savePassword(user_pass_key,password):
-    passwordStorage.store(user_pass_key,password,only_if_unlocked=True)
-    if __addon__.getSetting(user_pass_key): __addon__.setSetting(user_pass_key,'') #Just to make sure the password is not lingering here
-    return passwordStorage.encrypted
+##############################################################################################
+## Password handling
+##############################################################################################
+#import passwordStorage  # @UnresolvedImport
+#
+#def getPassword(user_pass_key,username=''):
+#    if username:
+#        ask_msg = ' [B]Facebook[/B] password for %s: ' % username
+#        password = passwordStorage.retrieve(user_pass_key,ask_msg=ask_msg)
+#    else:
+#        password = passwordStorage.retrieve(user_pass_key,ask_on_fail=False)
+#    if password: savePassword(user_pass_key,password)
+#    return password or ''
+#
+#def savePassword(user_pass_key,password):
+#    passwordStorage.store(user_pass_key,password,only_if_unlocked=True)
+#    if __addon__.getSetting(user_pass_key): __addon__.setSetting(user_pass_key,'') #Just to make sure the password is not lingering here
+#    return passwordStorage.encrypted
 
 #############################################################################################
 
@@ -113,9 +113,10 @@ class FacebookUser:
         self._password = None
 
     def password(self):
-        if self._password: return self._password
-        self._password = getPassword('login_pass_%s' % self.id,username=self.username)
-        return self._password
+#        if self._password: return self._password
+#        self._password = getPassword('login_pass_%s' % self.id,username=self.username)
+#        return self._password
+        return None
 
     def updateToken(self,token):
         self.token = token
@@ -125,7 +126,7 @@ class FacebookUser:
         password = doKeyboard(__lang__(30048),hidden=True)
         if not password or password == self._password: return
         self._password = password
-        savePassword('login_pass_{0}'.format(self.id), password)
+        #savePassword('login_pass_{0}'.format(self.id), password)
 
 class WindowState:
     def __init__(self):
@@ -467,6 +468,7 @@ class FacebookSession:
     def __init__(self,window=None):
         self.window = window
         self.graph = None
+        self._permissions = None
         self.states = []
         self.current_state = None
         self.paging = []
@@ -549,7 +551,8 @@ class FacebookSession:
             items.append(item)
         options = [ ('add_user','facebook-media-icon-adduser.png',__lang__(30038),'data'),
                     ('remove_user','facebook-media-icon-removeuser.png',__lang__(30039),'data'),
-                    ('reauth_user','facebook-media-icon-reauth-user.png',__lang__(30040),'data')
+                    ('reauth_user','facebook-media-icon-reauth-user.png',__lang__(30040),'data'),
+                    ('extauth_user','facebook-media-icon-reauth-user.png','Extend Authorization','data')
         ]
                     #('change_user_password','facebook-media-icon-reauth-user.png',__lang__(30064),'data')]
         for action,icon,label,data in options:
@@ -676,6 +679,18 @@ class FacebookSession:
 #        else:
 #            ilist.addItems(items)
 
+    def permission(self,perm):
+        if not self._permissions:
+            self._permissions = {}
+            for p in self.graph.getObject('me').connections.permissions():
+                self._permissions[p.permission()] = p.status() == 'granted' and True or False
+        LOG('Permissons: {0}'.format( ', '.join([p for p in self._permissions.keys() if self._permissions[p]])))
+        return self._permissions.get(perm,False)
+
+    def refreshCATEGORIES(self):
+        self.setSetting('last_item_name',__lang__(30009))
+        self.CATEGORIES()
+
     def CATEGORIES(self,item=None):
         LOG("CATEGORIES - STARTED")
         window = self.window
@@ -687,14 +702,16 @@ class FacebookSession:
             friend_thumb = item.getProperty('friend_thumb')
 
         items = []
-#        cids = ('albums','videos','friends','photosofme','videosofme')
-#        if uid == 'me':
-#            cats = (__lang__(30001),__lang__(30002),__lang__(30003),__lang__(30004),__lang__(30005))
-#        else:
-#            cats = (__lang__(30001),__lang__(30002),__lang__(30003),__lang__(30006),__lang__(30007))
 
-        cids = ('albums','videos','photosofme','videosofme')
-        cats = (__lang__(30001),__lang__(30002),__lang__(30004),__lang__(30005))
+        if not item and self.permission('user_friends'):
+            cids = ('albums','videos','friends','photosofme','videosofme')
+            cats = (__lang__(30001),__lang__(30002),__lang__(30003),__lang__(30004),__lang__(30005))
+        else:
+            cids = ('albums','videos','photosofme','videosofme')
+            if uid == 'me':
+                cats = (__lang__(30001),__lang__(30002),__lang__(30004),__lang__(30005))
+            else:
+                cats = (__lang__(30001),__lang__(30002),__lang__(30006),__lang__(30007))
 
         for cat,cid in zip(cats,cids):
             item = xbmcgui.ListItem()
@@ -1210,6 +1227,7 @@ class FacebookSession:
         uid = item.getProperty('uid')
         if uid:
             self.setCurrentUser(uid)
+            self.refreshCATEGORIES()
         else:
             action = item.getProperty('action')
             if action == 'add_user':
@@ -1220,6 +1238,11 @@ class FacebookSession:
             elif action == 'reauth_user':
                 self.openAddUserWindow(self.currentUser.email, self.currentUser.password())
                 self.currentUser.resetPassword()
+            elif action == 'extauth_user':
+                token = self.getAuthExtended(graph=self.graph)
+                self.newTokenCallback(token)
+                self._permissions = None
+                self.refreshCATEGORIES()
             elif action == 'change_user_password':
                 self.currentUser.changePassword()
                 self.graph.setLogin(self.currentUser.email,self.currentUser.password())
@@ -1345,7 +1368,7 @@ class FacebookSession:
     def removeUser(self,uid):
         self.removeUserFromList(uid)
         self.clearSetting('login_email_%s' % uid)
-        savePassword('login_pass_%s' % uid,'')
+#        savePassword('login_pass_%s' % uid,'')
         self.clearSetting('token_%s' % uid)
         self.clearSetting('profile_pic_%s' % uid)
         self.clearSetting('username_%s' % uid)
@@ -1662,6 +1685,7 @@ class FacebookSession:
 
     def setCurrentUser(self,uid):
         self.currentUser = FacebookUser(uid)
+        self._permissions = None
         self.setSetting('current_user', uid)
         u = self.currentUser
         self.setSetting('current_user_name', u.username)
@@ -1708,6 +1732,13 @@ class FacebookSession:
         import OAuthHelper
 
         token = OAuthHelper.getToken('script.facebook.media')
+        if graph: graph.access_token = token
+        return token
+
+    def getAuthExtended(self,graph=None):
+        import OAuthHelper
+
+        token = OAuthHelper.getToken('script.facebook.media_extended')
         if graph: graph.access_token = token
         return token
 
@@ -1823,7 +1854,7 @@ def openWindow(window_name,session=None,**kwargs):
 
 def newGraph(email,password,uid=None,token=None,new_token_callback=None,credentials_callback=None):
     graph = facebook.GraphWrap(token,new_token_callback=new_token_callback,credentials_callback=credentials_callback,version=__version__)
-    graph.setAppData('150505371652086',scope='user_photos,user_videos')
+    graph.setAppData('150505371652086')
     graph.setLogin(email,password,uid)
     return graph
 
