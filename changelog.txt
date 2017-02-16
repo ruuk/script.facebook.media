@@ -9,6 +9,7 @@ Known Issues/TODO:
 
 *** 0.9.16 ***
 
+Fix for errors with Estuary and others
 Fix for thumbnails not loading properly in some instances
 
 *** 0.9.15 ***

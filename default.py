@@ -1852,11 +1852,11 @@ def openWindow(window_name,session=None,**kwargs):
         windowFile = 'facebook-media-main-%s.xml' % CURRENT_SKIN
         windowFilePath = os.path.join(xbmc.translatePath(__addon__.getAddonInfo('path')),'resources','skins',THEME,'720p',windowFile)
         if not os.path.exists(windowFilePath):
-            try:
-                createWindowFile(CURRENT_SKIN)
-            except:
-                ERROR('ERROR GENERATING WINDOW FILE FOR SKIN: %s' % CURRENT_SKIN)
-                windowFile = 'facebook-media-main-skin.confluence.xml'
+            # try:
+            #     createWindowFile(CURRENT_SKIN)
+            # except:
+            #     ERROR('ERROR GENERATING WINDOW FILE FOR SKIN: %s' % CURRENT_SKIN)
+            windowFile = 'facebook-media-main-skin.confluence.xml'
         w = MainWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME)
     elif window_name == 'auth':
         w = AuthWindow(windowFile , xbmc.translatePath(__addon__.getAddonInfo('path')), THEME,session=session,**kwargs)
