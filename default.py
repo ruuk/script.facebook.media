@@ -1056,8 +1056,6 @@ class FacebookSession:
             for v in videos:
                 item = xbmcgui.ListItem()
                 item.setProperty('ispagingitem','no')
-                LOG(v)
-                LOG(v.picture(''))
                 tn = v.picture('') + ('?' in v.picture('') and '&fix=' or '?fix=') + str(time.time()) #why does this work? I have no idea. Why did I try it. I have no idea :)
                 #tn = re.sub('/hphotos-\w+-\w+/\w+\.\w+/','/hphotos-ak-snc1/hs255.snc1/',tn)
                 caption = self.makeCaption(v, uid)
