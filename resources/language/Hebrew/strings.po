@@ -1,0 +1,274 @@
+# XBMC Media Center language file
+msgid ""
+msgstr ""
+"Project-Id-Version: XBMC-Addons\n"
+"Report-Msgid-Bugs-To: alanwww1@xbmc.org\n"
+"POT-Creation-Date: 2013-12-03 23:39+0000\n"
+"PO-Revision-Date: 2017-11-13 09:10+0200\n"
+"Last-Translator: A. Dambledore\n"
+"Language-Team: Eng2Heb\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: he_IL\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30000"
+msgid "Settings"
+msgstr "הגדרות"
+
+msgctxt "#30001"
+msgid "ALBUMS"
+msgstr "אלבומים"
+
+msgctxt "#30002"
+msgid "VIDEOS"
+msgstr "סרטונים"
+
+msgctxt "#30003"
+msgid "FRIENDS"
+msgstr "חברים"
+
+msgctxt "#30004"
+msgid "PHOTOS OF ME"
+msgstr "תמונות שלי"
+
+msgctxt "#30005"
+msgid "VIDEOS OF ME"
+msgstr "קטעי וידאו שלי"
+
+msgctxt "#30006"
+msgid "PHOTOS OF USER"
+msgstr "תמונות של משתמש"
+
+msgctxt "#30007"
+msgid "VIDEOS OF USER"
+msgstr "קטעי וידאו של משתמש"
+
+msgctxt "#30008"
+msgid "CATEGORIES"
+msgstr "קטגוריות"
+
+msgctxt "#30009"
+msgid "OPTIONS"
+msgstr "אפשרויות"
+
+msgctxt "#30010"
+msgid "QUERYING FACEBOOK"
+msgstr "שאילתה לפייסבוק"
+
+msgctxt "#30011"
+msgid "Getting Albums..."
+msgstr "מקבל אלבומים..."
+
+msgctxt "#30012"
+msgid "FRIEND %s of %s"
+msgstr "חבר %s של %s"
+
+msgctxt "#30013"
+msgid "Loading photo %s of %s"
+msgstr "טעינת תמונה %s של %s"
+
+msgctxt "#30014"
+msgid "Loading video %s of %s"
+msgstr "טעינת וידאו %s של %s"
+
+msgctxt "#30015"
+msgid "Downloading Image %s of %s"
+msgstr "הורדת התמונה %s של %s"
+
+msgctxt "#30016"
+msgid "GETTING ALBUMS..."
+msgstr "מקבל אלבומים..."
+
+msgctxt "#30017"
+msgid "GETTING FRIENDS..."
+msgstr "מקבל חברים..."
+
+msgctxt "#30018"
+msgid "GETTING PHOTOS..."
+msgstr "מקבל תצלומים..."
+
+msgctxt "#30019"
+msgid "GETTING VIDEOS..."
+msgstr "מקבל סרטונים..."
+
+msgctxt "#30020"
+msgid "Getting Images..."
+msgstr "מקבל תמונות..."
+
+msgctxt "#30021"
+msgid "Getting Image @CT of @TOT"
+msgstr "מקבל תמונה @CT של @TOT"
+
+msgctxt "#30022"
+msgid "FROM: %s"
+msgstr "מאת: %s"
+
+msgctxt "#30023"
+msgid "No %s or not authorized."
+msgstr "אין %s או לא מורשה."
+
+msgctxt "#30024"
+msgid "End of %s reached."
+msgstr "הגיע לסוף %s."
+
+msgctxt "#30025"
+msgid "None Available"
+msgstr "לא זמינים"
+
+msgctxt "#30026"
+msgid "Photos"
+msgstr "תצלומים"
+
+msgctxt "#30027"
+msgid "Videos"
+msgstr "וידאו"
+
+msgctxt "#30028"
+msgid "Albums"
+msgstr "אלבומים"
+
+msgctxt "#30029"
+msgid "Friends"
+msgstr "חברים"
+
+msgctxt "#30030"
+msgid "TOKEN ERROR"
+msgstr "שגיאת אסימון"
+
+msgctxt "#30031"
+msgid "Failed to renew authorization. Would you like to Re-Authorize?"
+msgstr "לא הצליח לחדש אישור. האם ברצונך לאשר מחדש?"
+
+msgctxt "#30032"
+msgid "No"
+msgstr "לא"
+
+msgctxt "#30033"
+msgid "Yes"
+msgstr "כן"
+
+msgctxt "#30034"
+msgid "ERROR"
+msgstr "שְׁגִיאָה"
+
+msgctxt "#30035"
+msgid "Authorization Error"
+msgstr "שגיאת אימות"
+
+msgctxt "#30036"
+msgid "User Added"
+msgstr "משתמש נוסף"
+
+msgctxt "#30037"
+msgid "Choose User To Remove"
+msgstr "בחר משתמש להסרה"
+
+msgctxt "#30038"
+msgid "Add User"
+msgstr "הוסף משתמש"
+
+msgctxt "#30039"
+msgid "Remove User"
+msgstr "הסר משתמש"
+
+msgctxt "#30040"
+msgid "Re-Authorize Current User"
+msgstr "אשר מחדש את המשתמש הנוכחי"
+
+msgctxt "#30041"
+msgid "COMMENTS"
+msgstr "תגובות"
+
+msgctxt "#30042"
+msgid "Click to add a comment"
+msgstr "לחץ כדי להוסיף תגובה"
+
+msgctxt "#30043"
+msgid "LIKES (%s)"
+msgstr "אהבתי (%s)"
+
+msgctxt "#30044"
+msgid "Click to \"like\" this item"
+msgstr "לחץ כדי להוסיף \\'אהבתי\\' לפריט זה"
+
+msgctxt "#30045"
+msgid "SLIDESHOW"
+msgstr "מצגת"
+
+msgctxt "#30046"
+msgid "Click to view a slideshow"
+msgstr "לחץ כדי להציג מצגת"
+
+msgctxt "#30047"
+msgid "Login Email"
+msgstr "אי-מייל להתחברות"
+
+msgctxt "#30048"
+msgid "Login Password"
+msgstr "סיסמת ההתחברות"
+
+msgctxt "#30049"
+msgid "Finished"
+msgstr "הסתיים"
+
+msgctxt "#30050"
+msgid "Authorization Complete"
+msgstr "אימות פרטים הושלם"
+
+msgctxt "#30051"
+msgid "Back: %s"
+msgstr "חזרה: %s"
+
+msgctxt "#30052"
+msgid "Photos Per Page"
+msgstr "תמונות לעמוד"
+
+msgctxt "#30053"
+msgid "Slideshow Interval"
+msgstr "מרווחי המצגת"
+
+msgctxt "#30054"
+msgid "Slideshow: ON"
+msgstr "מצגת: פועלת"
+
+msgctxt "#30055"
+msgid "Slideshow: OFF"
+msgstr "מצגת: כבויה"
+
+msgctxt "#30056"
+msgid "Share..."
+msgstr "שתף..."
+
+msgctxt "#30057"
+msgid "Photo Options"
+msgstr "אפשרויות תצלום"
+
+msgctxt "#30058"
+msgid "-No Options-"
+msgstr "-ללא אפשרויות-"
+
+msgctxt "#30059"
+msgid "Disable Browser Authorization Auto-Login"
+msgstr "בטל אישור כניסה אוטומטית מהדפדפן"
+
+msgctxt "#30060"
+msgid "Failed To Get Authorization Token"
+msgstr "נכשל בקבלת אסימון אישור"
+
+msgctxt "#30061"
+msgid "Debug Logging"
+msgstr "רישום איתור באגים"
+
+msgctxt "#30062"
+msgid "Encrypted password save enabled"
+msgstr "סיסמה מוצפנת שמורה מופעלת"
+
+msgctxt "#30063"
+msgid "Message"
+msgstr "הודעה"
+
+msgctxt "#30064"
+msgid "Change Password"
+msgstr "שינוי סיסמה"
